@@ -1,0 +1,78 @@
+{
+  "name": "web",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@chakra-ui/icons": "2.1.1",
+    "@chakra-ui/react": "2.8.2",
+    "@chakra-ui/system": "2.6.2",
+    "@emotion/react": "11.11.4",
+    "@emotion/styled": "11.11.5",
+    "@mui/icons-material": "^7.0.2",
+    "@mui/material": "^7.3.2",
+    "@mui/styles": "^6.4.11",
+    "@sentry/react": "^10.17.0",
+    "@sentry/tracing": "^7.120.4",
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "^6.8.0",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^13.5.0",
+    "@types/jest": "^27.5.2",
+    "axios": "1.7.2",
+    "class-variance-authority": "0.7.0",
+    "framer-motion": "10.18.0",
+    "i18n-iso-countries": "^7.14.0",
+    "i18next": "23.10.1",
+    "i18next-browser-languagedetector": "7.2.0",
+    "lucide-react": "0.441.0",
+    "qrcode": "^1.5.4",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "react-i18next": "13.5.0",
+    "react-icons": "^5.5.0",
+    "react-router-dom": "6.22.3",
+    "react-scripts": "5.0.1",
+    "recharts": "^3.2.1",
+    "three": "^0.180.0",
+    "web-vitals": "^2.1.4"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@types/node": "18.19.50",
+    "@types/qrcode": "^1.5.5",
+    "@types/react": "18.2.66",
+    "@types/react-dom": "18.2.22",
+    "@types/three": "^0.180.0",
+    "grapheme-splitter": "^1.0.4",
+    "typescript": "4.9.5"
+  },
+  "overrides": {
+    "class-variance-authority": "0.7.0",
+    "i18next": "23.10.1",
+    "react-i18next": "13.5.0",
+    "i18next-browser-languagedetector": "7.2.0"
+  }
+}

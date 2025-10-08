@@ -1,0 +1,24 @@
+{
+  "files": {
+    "main.css": "/static/css/main.1d8071d7.css",
+    "main.js": "/static/js/main.29e4d22b.js",
+    "static/js/970.786813ab.chunk.js": "/static/js/970.786813ab.chunk.js",
+    "static/js/453.8894421c.chunk.js": "/static/js/453.8894421c.chunk.js",
+    "static/media/DamascusMedium-05.ttf": "/static/media/DamascusMedium-05.63fa8fe35e490cdb6a8a.ttf",
+    "static/media/DamascusSemiBold-09.ttf": "/static/media/DamascusSemiBold-09.448f88be1b7d5708d985.ttf",
+    "static/media/DamascusLight-03.ttf": "/static/media/DamascusLight-03.d8ee5764fc672863ce1f.ttf",
+    "static/media/DamascusBold-07.ttf": "/static/media/DamascusBold-07.2a82574d9bb32f3d8aa6.ttf",
+    "static/media/Damascus-01.ttf": "/static/media/Damascus-01.a570bf8a352a43004c9b.ttf",
+    "static/media/Futura-MediumItalic-02.ttf": "/static/media/Futura-MediumItalic-02.31431c1f729f41b56d23.ttf",
+    "static/media/Futura-Medium-01.ttf": "/static/media/Futura-Medium-01.9e5e9cd1267d9f6c8b26.ttf",
+    "index.html": "/index.html",
+    "main.1d8071d7.css.map": "/static/css/main.1d8071d7.css.map",
+    "main.29e4d22b.js.map": "/static/js/main.29e4d22b.js.map",
+    "970.786813ab.chunk.js.map": "/static/js/970.786813ab.chunk.js.map",
+    "453.8894421c.chunk.js.map": "/static/js/453.8894421c.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.1d8071d7.css",
+    "static/js/main.29e4d22b.js"
+  ]
+}
