@@ -486,7 +486,7 @@ export default function About() {
               {t("company.about.cta.subtitle")}
             </Text>
             <HStack gap={3} flexWrap="wrap" justify="center">
-              <Link href="/learn/resources">
+              <Link href="/courses">
                 <Button bg={GOLD} color="black" _hover={{ opacity: 0.92 }}>
                   {t("home.cta.primary") || "Browse Courses"}
                 </Button>
