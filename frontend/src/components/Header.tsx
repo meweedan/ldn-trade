@@ -130,6 +130,7 @@ const Header: React.FC = () => {
           variant="ghost"
           color={headerFg}
           borderRadius="full"
+          size="lg"
           p={2}
           onClick={onToggleOpen}
         >
@@ -260,7 +261,7 @@ const Header: React.FC = () => {
         <Flex as="header" py={3} minH="64px" align="center" ref={headerRef}>
           <RouterLink to="/">
             <HStack gap={3} ps={{ base: 2, md: 0 }}>
-              <Logo h={10} />
+              <Logo h={12} />
             </HStack>
           </RouterLink>
 
@@ -328,7 +329,7 @@ const Header: React.FC = () => {
 
               {/* Hamburger */}
               <Button
-                size="sm"
+                size="lg"
                 variant="ghost"
                 color={headerFg}
                 borderRadius="full"

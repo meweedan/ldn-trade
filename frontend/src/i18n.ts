@@ -5,7 +5,7 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 const resources = {
   en: {
     translation: {
-      brand: 'LDN Prime',
+      brand: 'LDN Trade',
       nav: {
         search: 'Search',
         enrolled: 'Enrolled',
@@ -538,7 +538,7 @@ const resources = {
         login_subtitle: 'Access premium courses, curated signals and dedicated support',
         login_cta: 'Sign in',
         no_account: 'Don\'t have an account?',
-        join_us: 'Join LDN Prime',
+        join_us: 'Join LDN Trade',
         login_loading: 'Signing you in…',
         login_error: 'Login failed',
         forgot_password: 'Forgot password?',
@@ -603,7 +603,7 @@ const resources = {
 
   fr: {
     translation: {
-      brand: 'LDN Prime',
+      brand: 'LDN Trade',
       nav: {
         search: 'Rechercher',
         enrolled: 'Enrolled',
@@ -1091,7 +1091,7 @@ const resources = {
         login_subtitle: 'Accédez à des cours premium, à des signaux sélectionnés et à un support dédié',
         login_cta: 'Se connecter',
          no_account: 'Vous n\'avez pas de compte ?',
-        join_us: 'Rejoignez LDN Prime',
+        join_us: 'Rejoignez LDN Trade',
         login_loading: 'Connexion…',
         login_error: 'Échec de la connexion',
         verify: 'Vérifier',
@@ -1150,7 +1150,7 @@ const resources = {
 
   ar: {
     translation: {
-      brand: 'LDN برايم',
+      brand: 'LDN Trade',
       nav: {
         search: 'بحث',
         enrolled: 'كورساتي',
@@ -1673,7 +1673,7 @@ const resources = {
         login_subtitle: 'ادخل للوصول إلى أفضل الكورسات، اشارات تداول ممتازة ودعم مخصص',
         login_cta: 'تسجيل الدخول',
         no_account: 'ليس لديك حساب؟',
-        join_us: 'انضم إلى LDN برايم',
+        join_us: 'انضم إلى LDN Trade',
         login_loading: 'جارٍ تسجيل الدخول…',
         login_error: 'فشل تسجيل الدخول',
         verify: 'تحقق',

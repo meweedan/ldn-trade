@@ -47,8 +47,9 @@ export default function FadeInText({
           content: '""',
           position: "absolute",
           inset: "-6px -10px",
-          borderRadius: "16px",
-          backdropFilter: "blur(2px)",
+          borderRadius: "6px",
+          backdropFilter: "blur(20px)",
+          background: "rgba(0, 0, 0, 0.5)",
           zIndex: -1,
         },
       }}

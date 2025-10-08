@@ -39,7 +39,7 @@ export default function Hero() {
     <Box
       as="section"
       position="relative"
-      minH={{ base: "89vh", md: "94vh" }}
+      minH={{ base: "96vh", md: "94vh" }}
       overflow="hidden"
       dir={dir}
     >
@@ -104,7 +104,8 @@ export default function Hero() {
           content: '""',
           position: "absolute",
           inset: 0,
-          bgImage: "url('/candlesticks.gif')",
+          bgImage:
+            mode === "dark" ? "url('/candlesticks.gif')" : "url('/inverted_candlesticks.gif')",
           bgSize: "cover",
           bgRepeat: "no-repeat",
           bgPosition: "center",
@@ -152,19 +153,19 @@ export default function Hero() {
               dir={dir}
               fontSize={{ base: "md", md: "xl" }}
               fontWeight="medium"
-              color={isMobile ? (mode === "dark" ? "whiteAlpha.900" : "black") : "whiteAlpha.900"}
+              color={isMobile ? (mode === "dark" ? "white" : "white") : "whiteAlpha.900"}
               align={{ base: "center", md: isRTL ? "right" : "left" }}
             >
               {t("home.hero.subtitle")}
             </FadeInText>
 
-            <HStack justify="center" spacing={3} pt={1} flexWrap="wrap">
+            <HStack justify="center" spacing={3} pt={1}>
               <Button
                 bg={GOLD}
                 color="black"
                 borderColor={GOLD}
                 borderWidth="1px"
-                _hover={{ bg: "rgba(183,162,125,0.85)", color: "black" }}
+                _hover={{ bg: "blackAlpha.300" }}
                 onClick={() => navigate("/courses")}
                 borderRadius="xl"
               >
@@ -172,9 +173,10 @@ export default function Hero() {
               </Button>
 
               <Button
-                variant="outline"
+                variant="solid"
+                bg={GOLD}
                 borderColor={GOLD}
-                color={isMobile ? (mode === "dark" ? "whiteAlpha.900" : "black") : GOLD}
+                color={isMobile ? (mode === "dark" ? "whiteAlpha.900" : "black") : "white"}
                 _hover={{ bg: "blackAlpha.300" }}
                 onClick={() => navigate("/company/about")}
                 borderRadius="xl"

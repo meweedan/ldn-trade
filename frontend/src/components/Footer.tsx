@@ -204,54 +204,70 @@ const FooterInner: React.FC = () => {
             </VStack>
 
             {/* Sections */}
+            {/* Sections */}
             {sections.map((section, idx) => {
               const isOpen = openIdx === idx;
               return (
                 <Box key={idx}>
-                  {/* Mobile header toggle */}
+                  {/* Mobile header toggle (smaller title) */}
                   <Button
                     w="full"
                     variant="ghost"
                     justifyContent="space-between"
                     px={0}
-                    py={2}
+                    py={3}
                     color={accent}
                     onClick={() => toggleSection(idx)}
                     display={{ base: "flex", md: "none" }}
+                    _hover={{ bg: "transparent", opacity: 0.9 }}
+                    _active={{ bg: "transparent" }}
+                    aria-expanded={isOpen}
                   >
-                    <Heading size="lg">{section.title}</Heading>
+                    <Heading
+                      // Smaller on mobile, same on desktop
+                      fontSize={{ base: "md", md: "lg" }}
+                      fontWeight={700}
+                      letterSpacing="-0.01em"
+                    >
+                      {section.title}
+                    </Heading>
                     <Icon as={isOpen ? ChevronUp : ChevronDown} />
                   </Button>
 
-                  {/* Desktop header */}
+                  {/* Desktop header (unchanged) */}
                   <Heading size="lg" color={accent} display={{ base: "none", md: "block" }} mb={3}>
                     {section.title}
                   </Heading>
 
-                  {/* Mobile links */}
+                  {/* Mobile links (bigger font, vertical list, extra spacing) */}
                   <SmallCollapse in={isOpen}>
-                    <HStack
-                      align={{ base: "center", md: "flex-start" }}
-                      gap={8}
-                      display={{ base: "flex", md: "none" }}
-                      pb={2}
+                    <Box
+                      display={{ base: "block", md: "none" }}
+                      pt={2} // space between title and links
+                      pb={1}
+                      pl={1}
                     >
-                      {section.links.map((item, i) => (
-                        <RouterChakraLink
-                          key={i}
-                          to={item.to}
-                          color={accent}
-                          _hover={{ color: accent }}
-                          transition="color 0.2s"
-                          fontSize={{ base: "xs", md: "sm" }}
-                        >
-                          {item.label}
-                        </RouterChakraLink>
-                      ))}
-                    </HStack>
+                      <VStack align="stretch" gap={2.5}>
+                        {section.links.map((item, i) => (
+                          <RouterChakraLink
+                            key={i}
+                            to={item.to}
+                            color={accent}
+                            fontSize={{ base: "sm", md: "sm" }} // larger than before
+                            lineHeight="1.4"
+                            _hover={{ color: accent, opacity: 0.9 }}
+                            transition="opacity 0.18s ease"
+                            // give each a bigger tap target
+                            sx={{ paddingBlock: "6px" }}
+                          >
+                            {item.label}
+                          </RouterChakraLink>
+                        ))}
+                      </VStack>
+                    </Box>
                   </SmallCollapse>
 
-                  {/* Desktop links */}
+                  {/* Desktop links (unchanged) */}
                   <VStack align="flex-start" gap={2.5} display={{ base: "none", md: "flex" }}>
                     {section.links.map((item, i) => (
                       <RouterChakraLink
@@ -282,47 +298,29 @@ const FooterInner: React.FC = () => {
 
       {/* Mobile sticky micro-bar (only while real footer NOT visible) */}
       {!footerVisible && (
-        <Box
-          display={{ base: "block", md: "none" }}
-          position="fixed"
-          left={0}
-          right={0}
-          bottom={0}
-          zIndex={1000}
-        >
-          {!contactOpen && (
-            <HStack
-              onClick={toggleContact}
-              justify="center"
-              h="38px"
-              bg={accent}
-              color="black"
-              cursor="pointer"
-              userSelect="none"
-              px={3}
-              pb="calc(env(safe-area-inset-bottom) / 2)"
-              fontWeight={600}
-            >
-              <Icon as={ChevronUp} />
-              <Text fontSize="sm">{t("footer.contact_us") || "Contact us"}</Text>
-            </HStack>
-          )}
-
+        <Box display={{ base: "block", md: "none" }} zIndex={1000}>
+          {/* Contact sheet (appears above FAB) */}
           {contactOpen && (
             <Box
+              position="fixed"
+              right="12px"
+              bottom={`calc(78px + env(safe-area-inset-bottom))`} // panel sits above the FAB
               bg="rgba(0,0,0,0.85)"
               backdropFilter="blur(10px)"
-              borderTop="1px solid rgba(255,255,255,0.15)"
-              pt={3}
-              pb={`calc(12px + env(safe-area-inset-bottom))`}
+              border="1px solid rgba(255,255,255,0.12)"
+              rounded="xl"
               px={4}
+              pt={3}
+              pb={3}
+              width="min(92vw, 380px)"
+              boxShadow="xl"
             >
-              <HStack justify="center" mb={2}>
+              <HStack justify="space-between" mb={2}>
+                <Text color="white" fontWeight={600} fontSize="sm">
+                  {t("footer.contact_us") || "Contact us"}
+                </Text>
                 <Button onClick={closeContact} variant="ghost" color="white" size="xs">
-                  <HStack gap={1}>
-                    <Icon as={ChevronDown} />
-                    <Text>{t("common.close") || "Close"}</Text>
-                  </HStack>
+                  {t("common.close") || "Close"}
                 </Button>
               </HStack>
 
@@ -425,6 +423,27 @@ const FooterInner: React.FC = () => {
               </SimpleGrid>
             </Box>
           )}
+
+          {/* Floating Question-mark FAB */}
+          <Button
+            aria-label={t("footer.help") || "Help"}
+            onClick={toggleContact}
+            position="fixed"
+            right="16px"
+            bottom={`calc(16px + env(safe-area-inset-bottom))`}
+            rounded="full"
+            w="56px"
+            h="56px"
+            p={0}
+            bg={accent}
+            color="black"
+            boxShadow="0 8px 24px rgba(0,0,0,0.28)"
+            _hover={{ opacity: 0.95, transform: "translateY(-1px)" }}
+            _active={{ transform: "translateY(0)" }}
+          >
+            {/* Use the Help icon; looks like a question mark bubble */}
+            <Icon as={HelpCircle} boxSize={6} />
+          </Button>
         </Box>
       )}
     </>
