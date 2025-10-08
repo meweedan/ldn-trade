@@ -241,95 +241,12 @@ export default function About() {
 
       {/* Timeline chapters */}
       <SnapSection
-        k="ch-2015"
-        heading={t("company.timeline.2015.title")}
-        sub={t("company.timeline.2015.desc")}
-        media={
-          <Image
-            src="/media/about/journal.jpg"
-            alt="2015"
-            borderRadius="xl"
-            border="1px solid"
-            borderColor={GOLD}
-            objectFit="cover"
-            w="100%"
-            h={{ base: "40vh", md: "60vh" }}
-          />
-        }
-      />
-      <SnapSection
-        heading={t("company.timeline.2016.title")}
-        sub={t("company.timeline.2016.desc")}
-        invert
-        media={
-          <Image
-            src="/media/about/notes.jpg"
-            alt="2016"
-            borderRadius="xl"
-            border="1px solid"
-            borderColor={GOLD}
-            objectFit="cover"
-            w="100%"
-            h={{ base: "40vh", md: "60vh" }}
-          />
-        }
-      />
-      <SnapSection
-        heading={t("company.timeline.2017.title")}
-        sub={t("company.timeline.2017.desc")}
-        media={
-          <Image
-            src="/media/about/risk.jpg"
-            alt="2017"
-            borderRadius="xl"
-            border="1px solid"
-            borderColor={GOLD}
-            objectFit="cover"
-            w="100%"
-            h={{ base: "40vh", md: "60vh" }}
-          />
-        }
-      />
-      <SnapSection
-        heading={t("company.timeline.2018.title")}
-        sub={t("company.timeline.2018.desc")}
-        invert
-        media={
-          <Image
-            src="/media/about/playbooks.jpg"
-            alt="2018"
-            borderRadius="xl"
-            border="1px solid"
-            borderColor={GOLD}
-            objectFit="cover"
-            w="100%"
-            h={{ base: "40vh", md: "60vh" }}
-          />
-        }
-      />
-      <SnapSection
-        heading={t("company.timeline.2019.title")}
-        sub={t("company.timeline.2019.desc")}
-        media={
-          <Image
-            src="/media/about/focus.jpg"
-            alt="2019"
-            borderRadius="xl"
-            border="1px solid"
-            borderColor={GOLD}
-            objectFit="cover"
-            w="100%"
-            h={{ base: "40vh", md: "60vh" }}
-          />
-        }
-      />
-      <SnapSection
+        k="ch-2020"
         heading={t("company.timeline.2020.title")}
         sub={t("company.timeline.2020.desc")}
-        invert
         media={
           <Image
-            src="/media/about/remote.jpg"
+            src="../../../images/rand/2020.png"
             alt="2020"
             borderRadius="xl"
             border="1px solid"
@@ -340,12 +257,15 @@ export default function About() {
           />
         }
       />
+
       <SnapSection
+        k="ch-2021"
         heading={t("company.timeline.2021.title")}
         sub={t("company.timeline.2021.desc")}
+        invert
         media={
           <Image
-            src="/media/about/community.jpg"
+            src="../../../images/rand/2021.png"
             alt="2021"
             borderRadius="xl"
             border="1px solid"
@@ -356,13 +276,14 @@ export default function About() {
           />
         }
       />
+
       <SnapSection
+        k="ch-2022"
         heading={t("company.timeline.2022.title")}
         sub={t("company.timeline.2022.desc")}
-        invert
         media={
           <Image
-            src="/media/about/curriculum.jpg"
+            src="../../../images/rand/2022.png"
             alt="2022"
             borderRadius="xl"
             border="1px solid"
@@ -373,12 +294,15 @@ export default function About() {
           />
         }
       />
+
       <SnapSection
+        k="ch-2023"
         heading={t("company.timeline.2023.title")}
         sub={t("company.timeline.2023.desc")}
+        invert
         media={
           <Image
-            src="/media/about/signals.jpg"
+            src="../../../images/rand/2023.png"
             alt="2023"
             borderRadius="xl"
             border="1px solid"
@@ -389,13 +313,14 @@ export default function About() {
           />
         }
       />
+
       <SnapSection
+        k="ch-2024"
         heading={t("company.timeline.2024.title")}
         sub={t("company.timeline.2024.desc")}
-        invert
         media={
           <Image
-            src="/media/about/platform.jpg"
+            src="../../../images/rand/2024.png"
             alt="2024"
             borderRadius="xl"
             border="1px solid"
@@ -406,13 +331,14 @@ export default function About() {
           />
         }
       />
+
       <SnapSection
         k="ch-2025"
         heading={t("company.timeline.2025.title")}
         sub={t("company.timeline.2025.desc")}
         media={
           <Image
-            src="/media/about/mentorship.jpg"
+            src="../../../images/rand/2025.png"
             alt="2025"
             borderRadius="xl"
             border="1px solid"

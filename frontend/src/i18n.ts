@@ -1931,75 +1931,47 @@ const NEW_PAGE_STRINGS = {
       },
       company: {
         about: {
-          title: "A decade of grit, humility, and service",
-          body:
-            "In 2015 our founder began trading with a borrowed laptop and a prepaid data plan. Losses came first. Then notebooks—thousands of handwritten observations, screen-time, and methodical journaling. By 2018 the approach matured into a rules-based system. In 2020, when the world went remote, mentoring a few friends became a private community. We learned that what most people need isn’t hype—it’s a structured path, accountability, and real examples. Today our mission is simple: help you learn trading the right way, responsibly, so you can build optionality and financial freedom without gambling your future.",
+          title: "From one desk to a movement",
+          body: "In 2020, a single trader began sharing notes and trade reviews—teaching sharpened execution and revealed a bigger purpose. By 2021, a small team of developers, analysts, and mentors formed, replacing improvisation with systems. In 2022, the first structured curriculum was born, blending technical precision with the rhythm of real markets. 2023 proved the method’s power as consistency and data spoke louder than claims. By 2024, our own ecosystem united education, analytics, and mentorship under one roof. Today, in 2025, what began as one desk has grown into a global network—a movement helping traders pursue freedom through structure, discipline, and conviction.",
           more: {
-            title: "…and many more to come",
-            subtitle:
-              "We’re just getting started. New modules, better tools, deeper mentorship—always guided by integrity and real outcomes.",
+            title: "…and the story continues",
+            subtitle: "Every year brings new tools, stronger mentorship, and a growing community of disciplined traders building real results."
           },
           cta: {
-            title: "Ready to start the next chapter?",
-            subtitle:
-              "Learn the craft with structure, examples, and support that actually cares.",
-          },
+            title: "Join the next chapter",
+            subtitle: "Learn, trade, and grow with the system built by traders who’ve lived it—responsibly, consistently, and together."
+          }
         },
         timeline: {
-          "2015": {
-            title: "First trades, first lessons",
+        "2020": {
+          title: "From trader to teacher",
             desc:
-              "A second-hand laptop, patchy internet, and the determination to learn markets from the ground up.",
-          },
-          "2016": {
-            title: "Journaling the craft",
-            desc:
-              "Daily logs, screenshots, and mistakes catalogued. Debriefs after every session become ritual.",
-          },
-          "2017": {
-            title: "Risk first mindset",
-            desc:
-              "Position sizing rules and a max daily loss. Discipline over prediction becomes the north star.",
-          },
-          "2018": {
-            title: "From opinions to playbooks",
-            desc:
-              "Repeatable setups formalized. Checklists replace guesswork. Backtesting and forward tracking begin.",
-          },
-          "2019": {
-            title: "Consistency over intensity",
-            desc:
-              "Fewer, higher-quality trades. Focus shifts to expected value and process adherence.",
-          },
-          "2020": {
-            title: "Teaching in lockdown",
-            desc:
-              "Remote mentoring for friends. Private notes evolve into frameworks others can follow.",
+              "What began as one trader’s daily routine turns into shared notes and live reviews. Teaching sharpens execution and reveals a bigger mission.",
           },
           "2021": {
-            title: "Community & accountability",
+            title: "A team forms",
             desc:
-              "A small cohort forms. Weekly debriefs and shared journals raise standards together.",
+              "Developers, analysts, and mentors join. Systems replace improvisation. The foundation for a structured company starts taking shape.",
           },
           "2022": {
-            title: "Curriculum v1",
+            title: "The first blueprint",
             desc:
-              "Structured modules from foundations to advanced execution. First certificates issued.",
+              "Every process documented, every setup codified. The company’s first curriculum blends technical precision with real-world trading flow.",
           },
           "2023": {
-            title: "Signals with context",
+            title: "Proof through results",
             desc:
-              "Signals paired with reasoning and risk plans—education first, alerts second.",
+              "Traders trained under the system show measurable consistency. Data replaces anecdotes, and the brand gains industry credibility.",
           },
           "2024": {
-            title: "Platform and tools",
+            title: "Building the ecosystem",
             desc:
-              "Refined learning platform, downloads library, and progress tracking for every student.",
+              "An integrated platform launches—analytics, education, and mentorship under one roof. The focus: scalable growth and transparency.",
           },
           "2025": {
-            title: "Scaling mentorship",
+            title: "A movement, not just a firm",
             desc:
-              "Cohorts, 24/7 support, and the same mission: teach responsibly so learners can build real freedom.",
+              "From a single desk to a global network. A company teaching financial freedom through structure, discipline, and shared conviction.",
           },
         },
         careers: {
@@ -2249,6 +2221,38 @@ const NEW_PAGE_STRINGS = {
         }
       },
       company: {
+        timeline: {
+        "2020": {
+            title: "من متداول إلى معلّم",
+            desc:
+              "ما بدأ كروتين يومي لمتداول واحد تحوّل إلى ملاحظات مشتركة ومراجعات مباشرة. التعليم صقل الأداء وكشف عن رسالة أوسع.",
+          },
+          "2021": {
+            title: "تكوّن الفريق",
+            desc:
+              "انضم مطوّرون ومحلّلون وموجّهون. الأنظمة حلّت محل الارتجال. بدأت ملامح الشركة المنظمة تتكوّن.",
+          },
+          "2022": {
+            title: "المخطط الأول",
+            desc:
+              "كل عملية موثّقة، وكل نموذج تداول محدد. أول منهج للشركة يجمع بين الدقّة التقنية وسير العمل الواقعي في الأسواق.",
+          },
+          "2023": {
+            title: "الإثبات بالنتائج",
+            desc:
+              "المتداولون الذين تدرّبوا ضمن النظام حقّقوا ثباتًا ملحوظًا. البيانات حلّت محل القصص، واكتسبت العلامة ثقة في المجال.",
+          },
+          "2024": {
+            title: "بناء المنظومة",
+            desc:
+              "إطلاق منصة متكاملة تجمع التحليل والتعليم والإرشاد في مكان واحد. الهدف: نمو قابل للتوسع وشفافية كاملة.",
+          },
+          "2025": {
+            title: "حركة وليست مجرد شركة",
+            desc:
+              "من مكتب واحد إلى شبكة عالمية. شركة تزرع الحرية المالية عبر الانضباط، والنظام، والإيمان المشترك.",
+          },
+        },
         careers: {
           apply: {
             title: "قدّم طلبك",
@@ -2289,18 +2293,16 @@ const NEW_PAGE_STRINGS = {
           }
         },
         about: {
-          title: "عقدٌ من المثابرة والتواضع والخدمة",
-          body:
-            "في 2015 بدأ مؤسسنا التداول على حاسوب مستعمل واتصال بيانات مسبق الدفع...",
+          title: "من مكتب واحد إلى حركة عالمية",
+          body: "في عام 2020، بدأ متداول واحد بمشاركة ملاحظاته ومراجعاته اليومية—فأصبح التعليم وسيلة لصقل المهارة وكشف هدف أعمق. في عام 2021، تكوّن فريق صغير من المطورين والمحللين والموجهين، ليستبدل العشوائية بالنظام. في عام 2022، وُلد أول منهج تدريبي منظم يجمع بين الدقة التقنية وإيقاع الأسواق الحقيقية. في عام 2023، أثبتت النتائج فعالية النظام حيث تحدثت البيانات والاتساق بأعلى صوت. في عام 2024، أطلقنا منظومة متكاملة تجمع التعليم والتحليل والإرشاد تحت سقف واحد. واليوم، في عام 2025، ما بدأ كمكتب واحد أصبح شبكة عالمية—حركة تساعد المتداولين على تحقيق الحرية من خلال الهيكل والانضباط والالتزام.",
           more: {
-            title: "…والقادم أجمل",
-            subtitle:
-              "ما زلنا في البداية. وحدات أعمق، أدوات أفضل، وإرشاد أقرب.",
+            title: "…والقصة مستمرة",
+            subtitle: "كل عام يجلب أدوات جديدة، وتوجيهاً أعمق، ومجتمعاً متنامياً من المتداولين المنضبطين الذين يحققون نتائج حقيقية."
           },
           cta: {
-            title: "جاهز لبدء الفصل التالي؟",
-            subtitle: "تعلّم الحرفة بمنهجية وأمثلة ودعم حقيقي.",
-          },
+            title: "انضم إلى الفصل التالي",
+            subtitle: "تعلّم وتداول وتطوّر من خلال نظام بُني على الخبرة والانضباط—بمسؤولية وثبات وبتعاون حقيقي."
+          }
         },
       },
     },
@@ -2332,6 +2334,50 @@ const NEW_PAGE_STRINGS = {
       company: {
         careers: {
           apply: "Postuler",
+        },
+        about: {
+          title: "D’un simple bureau à un mouvement",
+          body: "En 2020, un seul trader commence à partager ses notes et analyses de marché—enseigner affine sa discipline et révèle une mission plus grande. En 2021, une petite équipe de développeurs, d’analystes et de mentors se forme, remplaçant l’improvisation par des systèmes. En 2022, naît le premier programme structuré, alliant précision technique et rythme réel des marchés. En 2023, les résultats parlent d’eux-mêmes : cohérence, données, crédibilité. En 2024, notre propre écosystème réunit éducation, analyses et mentorat sous un même toit. Aujourd’hui, en 2025, ce qui n’était qu’un bureau est devenu un réseau mondial—un mouvement qui aide les traders à atteindre la liberté grâce à la structure, la discipline et la conviction.",
+          more: {
+            title: "…et l’histoire continue",
+            subtitle: "Chaque année apporte de nouveaux outils, un mentorat renforcé et une communauté croissante de traders disciplinés aux résultats concrets."
+          },
+          cta: {
+            title: "Rejoignez le prochain chapitre",
+            subtitle: "Apprenez, tradez et progressez avec un système conçu par des traders expérimentés—de manière responsable, cohérente et collective."
+          }
+        },
+        timeline: {
+          "2020": {
+            title: "Du trader au mentor",
+            desc:
+              "Ce qui n’était qu’une routine solitaire devient des notes partagées et des revues en direct. Enseigner affine la pratique et révèle une mission plus vaste.",
+          },
+          "2021": {
+            title: "Une équipe prend forme",
+            desc:
+              "Développeurs, analystes et formateurs rejoignent l’aventure. Les systèmes remplacent l’improvisation. L’entreprise prend ses fondations.",
+          },
+          "2022": {
+            title: "Le premier plan directeur",
+            desc:
+              "Chaque processus est documenté, chaque stratégie structurée. Le premier programme unit rigueur technique et réalisme du terrain.",
+          },
+          "2023": {
+            title: "La preuve par les résultats",
+            desc:
+              "Les traders formés au sein du système démontrent une constance mesurable. Les données remplacent les récits, et la marque gagne en crédibilité.",
+          },
+          "2024": {
+            title: "Construire l’écosystème",
+            desc:
+              "Lancement d’une plateforme intégrée : analyse, formation et mentorat réunis. Objectif : croissance durable et transparence totale.",
+          },
+          "2025": {
+            title: "Un mouvement avant tout",
+            desc:
+              "D’un bureau isolé à un réseau mondial. Une entreprise qui enseigne la liberté financière par la méthode, la discipline et la vision partagée.",
+          },
         },
         apply: {
           title: "Postuler",
