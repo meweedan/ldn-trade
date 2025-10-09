@@ -87,9 +87,9 @@ app.get('/health', (req, res) => {
 // Error handling middleware
 app.use(errorHandler);
 
-// Start server
+// Start server only in non-serverless environments (e.g., local dev)
 let server: any;
-if (process.env.NODE_ENV !== 'test' && process.env.DISABLE_RATE_LIMIT !== '1') {
+if (!process.env.VERCEL && process.env.NODE_ENV !== 'test' && process.env.DISABLE_RATE_LIMIT !== '1') {
   server = app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
   });
