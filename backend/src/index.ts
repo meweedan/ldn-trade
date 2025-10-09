@@ -38,43 +38,20 @@ if (process.env.NODE_ENV !== "test" && process.env.DISABLE_RATE_LIMIT !== "1") {
   app.use(rateLimit({ windowMs: 15 * 60 * 1000, limit: 300 }));
 }
 
-/* ---------------- CORS (strict, credentials-safe) ---------------- */
-// Whitelist your frontends (add more if you have custom domains)
-const allowedOrigins = new Set<string>([
-  "http://localhost:3000",
-  "http://127.0.0.1:3000",
-  "https://ldn-trade.vercel.app",
-]);
-
+/* ---------------- CORS (permissive to unblock) ---------------- */
+// Reflect any Origin and allow credentials; tighten later if needed
 const corsOptions: cors.CorsOptions = {
-  origin: (origin, cb) => {
-    // allow same-origin / non-browser (curl, server-side)
-    if (!origin) return cb(null, true);
-    if (allowedOrigins.has(origin)) return cb(null, true);
-    return cb(new Error(`CORS: Origin not allowed: ${origin}`));
-  },
+  origin: true,
   credentials: true,
-  methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE", "OPTIONS"],
-  allowedHeaders: [
-    "Content-Type",
-    "Authorization",
-    "X-Requested-With",
-    "sentry-trace",
-    "baggage",
-    "x-client",
-  ],
   optionsSuccessStatus: 204,
 };
 
 app.use((req, res, next) => {
-  // Make sure proxies/CDNs don’t cache one Origin’s result for another
   res.setHeader("Vary", "Origin");
   next();
 });
 
 app.use(cors(corsOptions));
-// Reply to ALL preflights early
-app.options("*", cors(corsOptions));
 
 /* ---------------- Body/cookies/logs ---------------- */
 app.use(express.json({ limit: "20mb" }));
@@ -117,7 +94,7 @@ app.use(
       // Mirror CORS success for the tunnel too
       res.setHeader("Access-Control-Allow-Credentials", "true");
       const origin = (req.headers.origin as string) || "";
-      if (allowedOrigins.has(origin)) res.setHeader("Access-Control-Allow-Origin", origin);
+      if (origin) res.setHeader("Access-Control-Allow-Origin", origin);
       return res.status(200).end("OK");
     } catch {
       // Don’t break the app if monitoring fails
