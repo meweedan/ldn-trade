@@ -335,6 +335,7 @@ const Register: React.FC = () => {
                           type="date"
                           value={dob}
                           onChange={(e) => setDob(e.target.value)}
+                          placeholder={t("auth.dob_placeholder") || "Date of birth"}
                         />
                       </Box>
                       <Box minW={{ base: "100%", md: "48%" }}>

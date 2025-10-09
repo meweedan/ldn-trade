@@ -47,7 +47,7 @@ const Header: React.FC = () => {
 
   // SOLID colors (no translucency/blur)
   const gold = "#b7a27d";
-  const headerBg = mode === "dark" ? "#000000" : "#ffffff";
+  const headerBg = mode === "dark" ? "#000000" : "#f9f6f2";
   const headerFg = "#b7a27d";
 
   // ---- measure header height to place mobile dropdown flush to it ----

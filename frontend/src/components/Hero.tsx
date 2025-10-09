@@ -97,7 +97,7 @@ export default function Hero() {
       <Box
         display={{ base: "none", md: "block" }}
         position="absolute"
-        width="150%"
+        width="150% auto"
         inset={0}
         // If you want light/dark variants like mobile, switch source based on `mode`
         style={{
