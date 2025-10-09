@@ -1,147 +1,184 @@
-import express from 'express';
-import * as Sentry from '@sentry/node';
-import axios from 'axios';
-import path from 'path';
-import cors from 'cors';
-import helmet from 'helmet';
-import morgan from 'morgan';
-import dotenv from 'dotenv';
-import cookieParser from 'cookie-parser';
-import rateLimit from 'express-rate-limit';
-import { errorHandler } from './middleware/errorHandler';
-import apiRoutes from './routes/index';
-import prisma from './config/prisma';
+import express from "express";
+import * as Sentry from "@sentry/node";
+import axios from "axios";
+import path from "path";
+import cors from "cors";
+import helmet from "helmet";
+import morgan from "morgan";
+import dotenv from "dotenv";
+import cookieParser from "cookie-parser";
+import rateLimit from "express-rate-limit";
+import { errorHandler } from "./middleware/errorHandler";
+import apiRoutes from "./routes/index";
+import prisma from "./config/prisma";
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Sentry init (no-op if DSN not provided)
+/* ---------------- Sentry ---------------- */
 Sentry.init({
   dsn: "https://6930c42c9841e3c477e1a8be0c1b7518@o4510122251517952.ingest.de.sentry.io/4510122267705424",
-  // Setting this option to true will send default PII data to Sentry.
-  // For example, automatic IP address collection on events
-  sendDefaultPii: true
+  sendDefaultPii: true,
 });
 
-// Middleware
-app.set('etag', false);
-// Allow cross-origin resource embedding (images) from the web app on :3000
-app.use(helmet({
-  crossOriginResourcePolicy: { policy: 'cross-origin' },
-  crossOriginEmbedderPolicy: false,
-}));
-if (process.env.NODE_ENV !== 'test' && process.env.DISABLE_RATE_LIMIT !== '1') {
+/* ---------------- Express baseline ---------------- */
+app.set("etag", false);
+app.set("trust proxy", 1); // behind Vercel proxy
+
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+    crossOriginEmbedderPolicy: false,
+  })
+);
+
+if (process.env.NODE_ENV !== "test" && process.env.DISABLE_RATE_LIMIT !== "1") {
   app.use(rateLimit({ windowMs: 15 * 60 * 1000, limit: 300 }));
 }
-// CORS: explicitly allow common methods/headers and handle preflight
+
+/* ---------------- CORS (strict, credentials-safe) ---------------- */
+// Whitelist your frontends (add more if you have custom domains)
+const allowedOrigins = new Set<string>([
+  "http://localhost:3000",
+  "http://127.0.0.1:3000",
+  "https://ldn-trade.vercel.app",
+]);
+
 const corsOptions: cors.CorsOptions = {
-  origin: true, // reflect request origin
+  origin: (origin, cb) => {
+    // allow same-origin / non-browser (curl, server-side)
+    if (!origin) return cb(null, true);
+    if (allowedOrigins.has(origin)) return cb(null, true);
+    return cb(new Error(`CORS: Origin not allowed: ${origin}`));
+  },
   credentials: true,
-  methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE", "OPTIONS"],
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+    "X-Requested-With",
+    "sentry-trace",
+    "baggage",
+    "x-client",
+  ],
+  optionsSuccessStatus: 204,
 };
-app.use(cors(corsOptions));
-app.use(express.json({ limit: '20mb' }));
-app.use(express.urlencoded({ limit: '20mb', extended: true }));
-app.use(cookieParser());
-app.use(morgan('dev'));
 
-// Static uploads (for admin media) - mount BEFORE API routes so they bypass any /api middleware
-const uploadsDir = path.resolve(process.cwd(), 'uploads');
-// Ensure CORP header specifically on uploads to allow cross-origin <img> embedding
-app.use('/api/uploads', (req, res, next) => {
-  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+app.use((req, res, next) => {
+  // Make sure proxies/CDNs don’t cache one Origin’s result for another
+  res.setHeader("Vary", "Origin");
   next();
-}, express.static(uploadsDir));
+});
 
-// Sentry tunnel to bypass ad-blockers
-// Accept raw envelope body and forward to Sentry's envelope endpoint
-app.use('/monitoring', express.raw({ type: '*/*', limit: '1mb' }), async (req, res) => {
-  try {
-    const dsn = process.env.SENTRY_DSN || '';
-    const match = dsn.match(/^https?:\/\/([^@]+)@([^/]+)\/([^\s]+)$/);
-    // Fallback to direct values if DSN is not set but hardcoded was used earlier
-    const publicKey = match ? match[1].split(':')[0] : '6930c42c9841e3c477e1a8be0c1b7518';
-    const host = match ? match[2] : 'o4510122251517952.ingest.de.sentry.io';
-    const projectId = match ? match[3] : '4510122267705424';
-    const url = `https://${host}/api/${projectId}/envelope/?sentry_version=7&sentry_key=${publicKey}`;
+app.use(cors(corsOptions));
+// Reply to ALL preflights early
+app.options("*", cors(corsOptions));
 
-    await axios.post(url, req.body, {
-      headers: {
-        'Content-Type': 'application/x-sentry-envelope',
-      },
-      timeout: 5000,
-      // send raw bytes
-      maxBodyLength: Infinity,
-    });
-    return res.status(200).end('OK');
-  } catch (err) {
-    // Do not break app on monitoring failure
-    return res.status(204).end();
+/* ---------------- Body/cookies/logs ---------------- */
+app.use(express.json({ limit: "20mb" }));
+app.use(express.urlencoded({ limit: "20mb", extended: true }));
+app.use(cookieParser());
+app.use(morgan("dev"));
+
+/* ---------------- Static uploads ---------------- */
+const uploadsDir = path.resolve(process.cwd(), "uploads");
+app.use(
+  "/api/uploads",
+  (req, res, next) => {
+    res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+    next();
+  },
+  express.static(uploadsDir)
+);
+
+/* ---------------- Sentry tunnel (CORS + raw) ---------------- */
+// Handle preflight explicitly for the tunnel (some adblockers get picky)
+app.options("/monitoring", cors(corsOptions));
+app.use(
+  "/monitoring",
+  express.raw({ type: "*/*", limit: "1mb" }),
+  async (req, res) => {
+    try {
+      const dsn = process.env.SENTRY_DSN || "";
+      const match = dsn.match(/^https?:\/\/([^@]+)@([^/]+)\/([^\s]+)$/);
+      const publicKey = match ? match[1].split(":")[0] : "6930c42c9841e3c477e1a8be0c1b7518";
+      const host = match ? match[2] : "o4510122251517952.ingest.de.sentry.io";
+      const projectId = match ? match[3] : "4510122267705424";
+      const url = `https://${host}/api/${projectId}/envelope/?sentry_version=7&sentry_key=${publicKey}`;
+
+      await axios.post(url, req.body, {
+        headers: { "Content-Type": "application/x-sentry-envelope" },
+        timeout: 5000,
+        maxBodyLength: Infinity,
+      });
+
+      // Mirror CORS success for the tunnel too
+      res.setHeader("Access-Control-Allow-Credentials", "true");
+      const origin = (req.headers.origin as string) || "";
+      if (allowedOrigins.has(origin)) res.setHeader("Access-Control-Allow-Origin", origin);
+      return res.status(200).end("OK");
+    } catch {
+      // Don’t break the app if monitoring fails
+      return res.status(204).end();
+    }
   }
+);
+
+/* ---------------- Routes ---------------- */
+app.use("", apiRoutes);
+
+app.get("/health", (_req, res) => {
+  res.status(200).json({ status: "ok" });
 });
 
-// API Routes
-app.use('', apiRoutes);
-
-// Health check endpoint
-app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'ok' });
-});
-
-// DB connectivity check (Supabase/Prisma)
-app.get('/db-check', async (req, res) => {
+app.get("/db-check", async (_req, res) => {
   try {
     const nowRows = await prisma.$queryRaw<any[]>`SELECT now() as now`;
     const dbRows = await prisma.$queryRaw<any[]>`SELECT current_database() as db`;
     res.json({ ok: true, now: nowRows?.[0]?.now ?? null, database: dbRows?.[0]?.db ?? null });
   } catch (e: any) {
-    res.status(500).json({ ok: false, error: e?.message || 'db error' });
+    res.status(500).json({ ok: false, error: e?.message || "db error" });
   }
 });
 
-// Error handling middleware
+/* ---------------- Errors ---------------- */
 app.use(errorHandler);
 
-// Start server only in non-serverless environments (e.g., local dev)
+/* ---------------- Local only: listen ---------------- */
 let server: any;
-if (!process.env.VERCEL && process.env.NODE_ENV !== 'test' && process.env.DISABLE_RATE_LIMIT !== '1') {
+if (!process.env.VERCEL && process.env.NODE_ENV !== "test" && process.env.DISABLE_RATE_LIMIT !== "1") {
   server = app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
   });
+  // Tune timeouts for local/dev
+  // @ts-ignore
+  server.keepAliveTimeout = 65000;
+  // @ts-ignore
+  server.headersTimeout = 66000;
+  // @ts-ignore
+  server.requestTimeout = 0;
 }
 
-// Tune HTTP timeouts to avoid premature disconnects during heavy refresh
-// Keep-Alive slightly below common proxies (e.g., 75s) and align headers timeout
-// @ts-ignore - Node types may vary by version
-if (server) {
-  server.keepAliveTimeout = 65000; // 65s
-  // @ts-ignore
-  server.headersTimeout = 66000; // must be > keepAliveTimeout
-  // @ts-ignore
-  server.requestTimeout = 0; // disable per-request inactivity timeout
-}
-
+/* ---------------- Graceful shutdown ---------------- */
 const shutdown = async (signal: string) => {
   console.log(`\nReceived ${signal}. Shutting down...`);
   try {
     await prisma.$disconnect();
   } catch (e) {
-    console.error('Error disconnecting Prisma:', e);
+    console.error("Error disconnecting Prisma:", e);
   } finally {
     if (server) {
       server.close(() => process.exit(0));
     } else {
       process.exit(0);
     }
-    // Force-exit if close hangs
     setTimeout(() => process.exit(0), 5000).unref();
   }
 };
 
-process.on('SIGINT', () => shutdown('SIGINT'));
-process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on("SIGINT", () => shutdown("SIGINT"));
+process.on("SIGTERM", () => shutdown("SIGTERM"));
 
 export default app;
