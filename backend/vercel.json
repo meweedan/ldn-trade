@@ -1,11 +1,13 @@
 {
   "version": 2,
   "functions": {
-    "api/index.ts": { "runtime": "nodejs20.x" }
+    "backend/api/index.ts": { "runtime": "nodejs20.x" }
   },
+  "installCommand": "cd backend && npm ci",
+  "buildCommand": "cd backend && npm run build",
   "routes": [
-    { "src": "/api/(.*)", "dest": "/api/index.ts" },
-    { "src": "/health", "dest": "/api/index.ts" },
-    { "src": "/db-check", "dest": "/api/index.ts" }
+    { "src": "/api/(.*)", "dest": "backend/api/index.ts" },
+    { "src": "/health",   "dest": "backend/api/index.ts" },
+    { "src": "/db-check", "dest": "backend/api/index.ts" }
   ]
 }
