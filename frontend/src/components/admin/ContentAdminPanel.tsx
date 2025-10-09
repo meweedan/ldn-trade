@@ -14,7 +14,7 @@ import {
   Badge,
 } from "@chakra-ui/react";
 import { FilePlus2, Save, Upload, Trash2 } from "lucide-react";
-import defaultApi from "../../api/client"; // kept as fallback
+import api from "../../api/client"; // kept as fallback
 import GlassCard from "../../components/GlassCard";
 import { useTranslation } from "react-i18next";
 
@@ -25,7 +25,7 @@ export type ContentAdminPanelProps = {
   /** Gate the panel; if false, shows a Forbidden notice */
   isAdmin?: boolean;
   /** Inject a custom API client; falls back to ../../api/client */
-  apiClient?: typeof defaultApi;
+  apiClient?: typeof api;
   /** Auto-load tiers/banners on mount (default: true) */
   autoLoad?: boolean;
   /** Initial data (useful when server-side fetching or lifting state up) */
@@ -69,7 +69,7 @@ type Banner = {
 
 const ContentAdminPanel: React.FC<ContentAdminPanelProps> = ({
   isAdmin = false,
-  apiClient = defaultApi,
+  apiClient = api,
   autoLoad = true,
   initialTiers = [],
   initialBanners = [],

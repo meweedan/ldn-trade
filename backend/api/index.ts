@@ -2,27 +2,18 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 import serverless from "serverless-http";
 import app from "../src/index";
 
-// Allow both the hosted FE and local dev
-const ALLOWED = new Set([
-  "https://ldn-trade.vercel.app",
-  "http://localhost:3000",
-  "http://127.0.0.1:3000",
-]);
-
 function setCors(req: VercelRequest, res: VercelResponse) {
   const origin = (req.headers.origin as string) || "";
-  if (origin && ALLOWED.has(origin)) {
+  if (origin) {
     res.setHeader("Access-Control-Allow-Origin", origin);
     res.setHeader("Access-Control-Allow-Credentials", "true");
   }
-  res.setHeader(
-    "Access-Control-Allow-Methods",
-    "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS"
-  );
+  res.setHeader("Access-Control-Allow-Methods", "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS");
   res.setHeader(
     "Access-Control-Allow-Headers",
     "Content-Type,Authorization,X-Requested-With,sentry-trace,baggage,x-client"
   );
+  res.setHeader("Access-Control-Max-Age", "86400");
   res.setHeader("Vary", "Origin");
 }
 
