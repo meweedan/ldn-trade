@@ -3,6 +3,8 @@
   "functions": {
     "backend/api/index.ts": { "runtime": "nodejs20.x" }
   },
+  "installCommand": "cd backend && npm ci",
+  "buildCommand": "cd backend && npm run vercel-build",
   "routes": [
     { "src": "/(.*)", "dest": "/backend/api/index.ts" }
   ]
