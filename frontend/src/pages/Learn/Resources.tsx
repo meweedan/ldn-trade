@@ -144,15 +144,12 @@ export default function Resources() {
 
             <Box>
               <Image
-                src="/images/rand/learning-hero.jpg"
+                src="/images/rand/terms.png"
                 alt={
                   t("learn.resources.image_alt") ||
                   "Students learning with structured course content"
                 }
                 w="100%"
-                borderRadius="2xl"
-                border="1px solid"
-                borderColor="rgba(183,162,125,.35)"
                 objectFit="cover"
               />
             </Box>

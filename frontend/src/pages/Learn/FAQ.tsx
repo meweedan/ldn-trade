@@ -138,7 +138,7 @@ export default function FAQ() {
 
             <Box>
               <Image
-                src="/images/rand/learning-hero.jpg"
+                src="/images/rand/students.png"
                 alt={
                   t("learn.resources.image_alt") ||
                   "Students learning with structured course content"

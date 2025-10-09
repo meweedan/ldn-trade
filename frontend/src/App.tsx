@@ -27,11 +27,13 @@ import Resources from './pages/Learn/Resources';
 import FAQ from './pages/Learn/FAQ';
 import Apply from './pages/Apply';
 import NotFound from "./pages/404";
+import ScrollToTop from "./components/ScrollToTop";
 
 function App() {
-
   return (
     <Box minH="100vh" display="flex" flexDirection="column">
+      {/* Router is already provided ABOVE in index.tsx */}
+      <ScrollToTop />
       <Header />
       <Box pb={16} flex="1" w="100%">
         <RouteTracker />
