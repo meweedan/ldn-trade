@@ -66,6 +66,7 @@ export default function Hero() {
         opacity={0.35}
         zIndex={1}
       />
+      {/* ↓ Lower clouds to sit under the GIF */}
       <Box
         display={{ base: "none", md: "block" }}
         position="absolute"
@@ -77,7 +78,7 @@ export default function Hero() {
           backgroundPosition: "center",
         }}
         opacity={0.15}
-        zIndex={2}
+        zIndex={1}
       />
       <Box
         display={{ base: "none", md: "block" }}
@@ -89,10 +90,28 @@ export default function Hero() {
         bgRepeat="no-repeat"
         bgSize={{ base: "100% auto", md: "contain" }}
         bgPosition={isRTL ? "right bottom" : "left bottom"}
-        opacity={0.5}
+        opacity={0.65}
         zIndex={3}
       />
-
+      {/* === NEW: Desktop candlesticks GIF (full-width, under skyline) === */}
+      <Box
+        display={{ base: "none", md: "block" }}
+        position="absolute"
+        width="150%"
+        inset={0}
+        // If you want light/dark variants like mobile, switch source based on `mode`
+        style={{
+          backgroundImage:
+            typeof mode !== "undefined" && mode === "dark"
+              ? "url('/candlesticks.gif')"
+              : "url('/inverted_candlesticks.gif')",
+          backgroundRepeat: "no-repeat",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+        opacity={0.1} // tweak to taste
+        zIndex={1}
+      />
       {/* === Mobile: candlesticks GIF background === */}
       <Box
         display={{ base: "block", md: "none" }}
@@ -113,7 +132,6 @@ export default function Hero() {
           zIndex: 0,
         }}
       />
-
       {/* === Content === */}
       <Container
         maxW={{ base: "90%", md: "container.2xl" }}

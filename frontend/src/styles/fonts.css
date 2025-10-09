@@ -1,68 +1,19 @@
 /* Custom fonts and section heading styles */
 
-/* Futura for Latin (English) — use Medium (and Medium Italic) only */
-@font-face {
-  font-family: 'FuturaCustom';
-  src: url('../../public../../public/fonts/Futura-Medium-01.ttf') format('truetype');
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-  unicode-range: U+0000-00FF, U+0100-024F; /* Latin */
-}
-@font-face {
-  font-family: 'FuturaCustom';
-  src: url('../../public/fonts/Futura-MediumItalic-02.ttf') format('truetype');
-  font-weight: 500;
-  font-style: italic;
-  font-display: swap;
-  unicode-range: U+0000-00FF, U+0100-024F;
-}
+/* Note: @font-face declarations are injected in public/index.html */
 
-/* Damascus for Arabic — using provided TTF files under public../../public/fonts */
-@font-face {
-  font-family: 'DamascusCustom';
-  src: url('../../public/fonts/Damascus-01.ttf') format('truetype');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-  unicode-range: U+0600-06FF, U+0750-077F;
+/* Global defaults: use Futura in LTR, Hacen in RTL */
+html[dir='ltr'] body {
+  font-family: 'FuturaCustom', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, 'Apple Color Emoji', 'Segoe UI Emoji' !important;
 }
-@font-face {
-  font-family: 'DamascusCustom';
-  src: url('../../public/fonts/DamascusLight-03.ttf') format('truetype');
-  font-weight: 300;
-  font-style: normal;
-  font-display: swap;
-  unicode-range: U+0600-06FF, U+0750-077F;
-}
-@font-face {
-  font-family: 'DamascusCustom';
-  src: url('../../public/fonts/DamascusMedium-05.ttf') format('truetype');
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-  unicode-range: U+0600-06FF, U+0750-077F;
-}
-@font-face {
-  font-family: 'DamascusCustom';
-  src: url('../../public/fonts/DamascusSemiBold-09.ttf') format('truetype');
-  font-weight: 600;
-  font-style: normal;
-  font-display: swap;
-  unicode-range: U+0600-06FF, U+0750-077F;
-}
-@font-face {
-  font-family: 'DamascusCustom';
-  src: url('../../public/fonts/DamascusBold-07.ttf') format('truetype');
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-  unicode-range: U+0600-06FF, U+0750-077F;
+html[dir='rtl'] body {
+  font-family: 'Hacen-Liner-Print-Out', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, 'Apple Color Emoji', 'Segoe UI Emoji' !important;
+  font-weight: 400; /* only 400 face provided */
 }
 
 /* Reusable section heading style */
 .section-heading {
-  font-family: 'FuturaCustom', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, 'Apple Color Emoji', 'Segoe UI Emoji';
+  font-family: 'FuturaCustom', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, 'Apple Color Emoji', 'Segoe UI Emoji' !important;
   font-weight: 500;
   letter-spacing: 0.02em;
   line-height: 1.02;
@@ -79,5 +30,5 @@
 /* RTL: switch to Damascus and center underline remains */
 html[dir='rtl'] .section-heading,
 body[dir='rtl'] .section-heading {
-  font-family: 'DamascusCustom', ui-sans-serif, system-ui, -apple-system, 'SF Pro AR', 'Noto Naskh Arabic', 'Segoe UI', Roboto, Helvetica, Arial;
+  font-family: 'Hacen-Liner-Print-Out' !important;
 }

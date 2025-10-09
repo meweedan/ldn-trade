@@ -394,6 +394,7 @@ const Home: React.FC = () => {
 
   return (
     <Box dir={isRTL ? "rtl" : "ltr"}>
+      
       {/* Hero */}
       <Hero />
 
@@ -412,12 +413,9 @@ const Home: React.FC = () => {
             {featureHighlights.map((feature, idx) => (
               <Box
                 key={idx}
-                borderRadius="lg"
                 overflow="hidden"
                 boxShadow="xl"
                 h="100%"
-                border="1px solid"
-                borderColor="#b7a27d"
                 backdropFilter="blur(6px)"
               >
                 <Grid
@@ -484,7 +482,7 @@ const Home: React.FC = () => {
                 viewport={{ once: true }}
                 variants={fadeIn}
               >
-                <Box p={6} h="full" borderRadius="xl" borderColor={accentColor} borderWidth={2}>
+                <Box p={6} h="full">
                   <VStack align="center" gap={4}>
                     <Heading size="md" color={accentColor} textAlign="center">
                       {f.title}
@@ -610,9 +608,6 @@ const Home: React.FC = () => {
                           {tier.latestReviews.map((r: any, i: number) => (
                             <Box
                               key={r.id || i}
-                              borderWidth={1}
-                              borderColor={accentColor}
-                              borderRadius="md"
                               p={3}
                             >
                               <HStack justify="space-between" mb={1}>
@@ -852,7 +847,6 @@ const Home: React.FC = () => {
               <Text
                 color={accentColor}
                 fontWeight="bold"
-                textTransform="uppercase"
                 fontSize={{ base: "3xl", md: "4xl" }}
               >
                 {t("home.cta.kicker") || "Ready to Learn?"}
