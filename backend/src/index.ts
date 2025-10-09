@@ -35,7 +35,14 @@ app.use(helmet({
 if (process.env.NODE_ENV !== 'test' && process.env.DISABLE_RATE_LIMIT !== '1') {
   app.use(rateLimit({ windowMs: 15 * 60 * 1000, limit: 300 }));
 }
-app.use(cors({ origin: true, credentials: true }));
+// CORS: explicitly allow common methods/headers and handle preflight
+const corsOptions: cors.CorsOptions = {
+  origin: true, // reflect request origin
+  credentials: true,
+  methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+};
+app.use(cors(corsOptions));
 app.use(express.json({ limit: '20mb' }));
 app.use(express.urlencoded({ limit: '20mb', extended: true }));
 app.use(cookieParser());
@@ -82,6 +89,17 @@ app.use('', apiRoutes);
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok' });
+});
+
+// DB connectivity check (Supabase/Prisma)
+app.get('/db-check', async (req, res) => {
+  try {
+    const nowRows = await prisma.$queryRaw<any[]>`SELECT now() as now`;
+    const dbRows = await prisma.$queryRaw<any[]>`SELECT current_database() as db`;
+    res.json({ ok: true, now: nowRows?.[0]?.now ?? null, database: dbRows?.[0]?.db ?? null });
+  } catch (e: any) {
+    res.status(500).json({ ok: false, error: e?.message || 'db error' });
+  }
 });
 
 // Error handling middleware
