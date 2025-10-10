@@ -60,15 +60,18 @@ app.use(cookieParser());
 app.use(morgan("dev"));
 
 /* ---------------- Static uploads ---------------- */
-const uploadsDir = path.resolve(process.cwd(), "uploads");
-app.use(
-  "/api/uploads",
-  (req, res, next) => {
-    res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
-    next();
-  },
-  express.static(uploadsDir)
-);
+// Only serve static files locally, not on Vercel
+if (!process.env.VERCEL) {
+  const uploadsDir = path.resolve(process.cwd(), "uploads");
+  app.use(
+    "/api/uploads",
+    (req, res, next) => {
+      res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+      next();
+    },
+    express.static(uploadsDir)
+  );
+}
 
 /* ---------------- Sentry tunnel (CORS + raw) ---------------- */
 // Handle preflight explicitly for the tunnel (some adblockers get picky)

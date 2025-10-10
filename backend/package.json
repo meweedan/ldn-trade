@@ -10,8 +10,6 @@
     "migrate:deploy": "prisma migrate deploy",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev --name init",
-    "postinstall": "prisma generate",
-    "vercel-build": "tsc",
     "test": "jest",
     "load:test": "mkdir -p reports && node -r ./scripts/undici-polyfill.js ./node_modules/.bin/artillery run artillery.yml -o reports/artillery.json",
     "load:report": "artillery report reports/artillery.json -o reports/artillery.html",
@@ -21,6 +19,8 @@
     "format": "prettier --write \"src/**/*.ts\"",
     "migrate:up": "ts-node src/config/migrate.ts up",
     "migrate:down": "ts-node src/config/migrate.ts down",
+     "vercel-build": "prisma generate && tsc",
+    "postinstall": "prisma generate",
     "prisma:studio": "prisma studio"
   },
   "repository": {
