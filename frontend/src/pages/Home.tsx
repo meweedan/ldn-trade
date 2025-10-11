@@ -34,6 +34,7 @@ import BannerCarousel from "../components/BannerCarousel";
 import { useThemeMode } from "../themeProvider";
 import { ChevronLeft, ChevronRight, Star, ChevronDown } from "lucide-react";
 import Hero from "../components/Hero";
+import { useSessionMemory } from "../hooks/useSessionMemory";
 
 const MotionBox = motion(Box);
 
@@ -256,44 +257,74 @@ const Home: React.FC = () => {
     },
   ];
 
-  // ===== Lead magnet form (moved to bottom) =====
-  const [lead, setLead] = React.useState<{ name: string; email: string }>({ name: "", email: "" });
-  const [submitting, setSubmitting] = React.useState(false);
-  const emailValid = React.useMemo(() => /\S+@\S+\.\S+/.test(lead.email), [lead.email]);
+    // ===== Lead magnet form (moved to bottom) =====
+    const [lead, setLead] = React.useState({
+      name: "",
+      email: "",
+      phone: "",
+      method: "email", // default
+    });
+    const [submitting, setSubmitting] = React.useState(false);
+    const { session } = useSessionMemory();
 
-  const submitLead = async (e?: React.FormEvent) => {
-    e?.preventDefault();
-    if (!emailValid) return;
-    setSubmitting(true);
-    try {
-      await api.post("/leads", {
-        ...lead,
-        tag: "FREE_TRADING_CHECKLIST",
-        locale: i18n.language || "en",
-        page: "home",
-      });
-      toast({
-        title: t("lead.success") || "Check your inbox!",
-        description:
-          t("lead.success_desc") ||
-          "We’ve sent you the 3-Step Halal Trading Checklist and a free lesson link.",
-        status: "success",
-        duration: 4000,
-        isClosable: true,
-      });
-      setLead({ name: "", email: "" });
-    } catch (err) {
-      toast({
-        title: t("lead.error") || "Something went wrong",
-        description: t("lead.error_desc") || "Please try again in a moment.",
-        status: "error",
-        duration: 4000,
-        isClosable: true,
-      });
-    } finally {
-      setSubmitting(false);
+    const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(lead.email.trim());
+    const phoneValid = /^\+?[0-9\s\-]{7,15}$/.test(lead.phone.trim());
+
+    async function submitLead(e: React.FormEvent) {
+      e.preventDefault();
+      if (!lead.name.trim()) {
+        toast({ status: "warning", title: t("lead.name_required") || "Please enter your name." });
+        return;
+      }
+      if (lead.method === "email" && !emailValid) {
+        toast({
+          status: "warning",
+          title: t("lead.email_invalid") || "Please enter a valid email.",
+        });
+        return;
+      }
+      if (lead.method === "phone" && !phoneValid) {
+        toast({
+          status: "warning",
+          title: t("lead.phone_invalid") || "Please enter a valid phone number.",
+        });
+        return;
+      }
+
+      setSubmitting(true);
+      try {
+        const message = [
+          "Lead Magnet Submission",
+          `Name: ${lead.name}`,
+          `Contact: ${lead.method === "email" ? lead.email : lead.phone}`,
+          `Locale: ${i18n.language}`,
+          session?.utm ? `UTM: ${JSON.stringify(session.utm)}` : null,
+        ]
+          .filter(Boolean)
+          .join("\n");
+
+        await api.post("/communications", {
+          name: lead.name,
+          email: lead.method === "email" ? lead.email : undefined,
+          phone: lead.method === "phone" ? lead.phone : undefined,
+          message,
+          locale: i18n.language,
+          url: window.location.href,
+          utm: session?.utm || undefined,
+        });
+
+        toast({ status: "success", title: t("lead.success") || "Thank you for your interest!" });
+        setLead({ name: "", email: "", phone: "", method: "email" });
+      } catch (err) {
+        toast({
+          status: "error",
+          title: t("lead.error") || "Something went wrong. Please try again.",
+        });
+      } finally {
+        setSubmitting(false);
+      }
     }
-  };
+
 
   const ReviewCard: React.FC<{ review: Review; accentColor: string }> = ({
     review,
@@ -995,26 +1026,79 @@ const Home: React.FC = () => {
                 {t("lead.subtitle") || "Plus: get an instant free lesson and weekly setups."}
               </Text>
             </VStack>
+
+            {/* === Lead form === */}
             <Box as="form" onSubmit={submitLead} w={{ base: "100%", md: "auto" }}>
               <Stack direction={{ base: "column", md: "row" }} gap={3}>
                 <Input
                   placeholder={t("lead.name") || "Your name"}
                   value={lead.name}
                   onChange={(e) => setLead((s) => ({ ...s, name: e.target.value }))}
+                  required
                 />
-                <FormControl isInvalid={lead.email.length > 0 && !emailValid}>
-                  <Input
-                    type="email"
-                    placeholder={t("lead.email") || "Email address"}
-                    value={lead.email}
-                    onChange={(e) => setLead((s) => ({ ...s, email: e.target.value }))}
-                    required
-                  />
-                  <FormErrorMessage>
-                    {t("lead.email_invalid") || "Please enter a valid email."}
-                  </FormErrorMessage>
-                </FormControl>
-                <Button variant="solid" isLoading={submitting} bg={accentColor}>
+
+                {/* Contact method switcher */}
+                <Stack direction="row" spacing={1} align="center" justify="center">
+                  <Button
+                    size="sm"
+                    variant={lead.method === "email" ? "solid" : "outline"}
+                    bg={lead.method === "email" ? accentColor : "transparent"}
+                    color={lead.method === "email" ? "white" : accentColor}
+                    borderColor={accentColor}
+                    borderWidth="1px"
+                    _hover={{
+                      bg: lead.method === "email" ? accentColor : "rgba(183,162,125,0.15)",
+                    }}
+                    onClick={() => setLead((s) => ({ ...s, method: "email" }))}
+                  >
+                    {t("common.email") || "Email"}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={lead.method === "phone" ? "solid" : "outline"}
+                    bg={lead.method === "phone" ? accentColor : "transparent"}
+                    color={lead.method === "phone" ? "white" : accentColor}
+                    borderColor={accentColor}
+                    borderWidth="1px"
+                    _hover={{
+                      bg: lead.method === "phone" ? accentColor : "rgba(183,162,125,0.15)",
+                    }}
+                    onClick={() => setLead((s) => ({ ...s, method: "phone" }))}
+                  >
+                    {t("common.phone") || "Phone"}
+                  </Button>
+                </Stack>
+
+                {/* Conditional input */}
+                {lead.method === "email" ? (
+                  <FormControl isInvalid={lead.email.length > 0 && !emailValid}>
+                    <Input
+                      type="email"
+                      placeholder={t("lead.email") || "Email address"}
+                      value={lead.email}
+                      onChange={(e) => setLead((s) => ({ ...s, email: e.target.value }))}
+                      required
+                    />
+                    <FormErrorMessage>
+                      {t("lead.email_invalid") || "Please enter a valid email."}
+                    </FormErrorMessage>
+                  </FormControl>
+                ) : (
+                  <FormControl isInvalid={lead.phone.length > 0 && !phoneValid}>
+                    <Input
+                      type="tel"
+                      placeholder={t("lead.phone") || "Phone number"}
+                      value={lead.phone}
+                      onChange={(e) => setLead((s) => ({ ...s, phone: e.target.value }))}
+                      required
+                    />
+                    <FormErrorMessage>
+                      {t("lead.phone_invalid") || "Please enter a valid phone number."}
+                    </FormErrorMessage>
+                  </FormControl>
+                )}
+
+                <Button type="submit" variant="solid" isLoading={submitting} bg={accentColor}>
                   {t("lead.cta") || "Get it free"}
                 </Button>
               </Stack>
