@@ -89,7 +89,7 @@ const Login: React.FC = () => {
           <Text color="text.muted" textAlign="center">
             {t('auth.no_account') || "Don't have an account?"}{' '}
             <RouterLink to="/auth/register" style={{ color: 'var(--chakra-colors-accent-500)' }}>
-              {t('auth.join_us') || 'Join LDN Trade'}
+              {t('auth.join_us') || 'Join Trade Profitably'}
             </RouterLink>
           </Text>
         </VStack>

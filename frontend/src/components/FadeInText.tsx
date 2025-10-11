@@ -1,6 +1,7 @@
 // src/components/FadeInText.tsx
 import React from "react";
 import { Heading, Text, chakra, keyframes } from "@chakra-ui/react";
+import { useThemeMode } from "../themeProvider";
 
 const fadeUp = keyframes`
   0%   { opacity: 0; transform: translateY(8px) scale(0.99); filter: blur(1px); }
@@ -16,6 +17,7 @@ type Props = {
   color?: any;
   align?: any;
   dir?: "ltr" | "rtl";
+  mode?: "dark" | "light";
 };
 
 export default function FadeInText({
@@ -28,6 +30,7 @@ export default function FadeInText({
   dir = "ltr",
 }: Props) {
   const Tag = as === "h1" ? Heading : Text;
+  const { mode } = useThemeMode();
   return (
     <Tag
       as={as === "h1" ? "h1" : undefined}
@@ -49,7 +52,7 @@ export default function FadeInText({
           inset: "-6px -10px",
           borderRadius: "6px",
           backdropFilter: "blur(20px)",
-          background: "rgba(0, 0, 0, 0.5)",
+          background: mode === "dark" ? "rgba(255, 255, 255, 0.85)" : "rgba(0, 0, 0, 0.85)",
           zIndex: -1,
         },
       }}

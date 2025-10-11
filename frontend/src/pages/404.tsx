@@ -142,7 +142,7 @@ return (
               {t("errors.404.cta_retry") || "Try Again"}
             </Button>
             <Link
-              href={`mailto:${t("legal.common.support_email") || "support@ldnprime.com"}`}
+              href={`mailto:${t("legal.common.support_email") || "support@tradeprofitab.ly"}`}
               _hover={{ textDecoration: "none", opacity: 0.9 }}
             >
               <Button variant="ghost" borderRadius="xl">

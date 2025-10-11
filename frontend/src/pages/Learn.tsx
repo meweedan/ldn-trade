@@ -32,7 +32,7 @@ const Learn: React.FC = () => {
   const [myComment, setMyComment] = React.useState<string>("");
   const [submittingReview, setSubmittingReview] = React.useState(false);
   const tpLogo = mode === "dark" ? "/images/logos/TP-White.png" : "/images/logos/TP-Black.png";
-  const TRUSTPILOT_URL = "https://www.trustpilot.com/review/ldnprime.com"; // <-- put your page here
+  const TRUSTPILOT_URL = "https://www.trustpilot.com/review/tradeprofitab.ly"; // <-- put your page here
 
   const isCompleted = Boolean(
     (course as any)?.completed || (course as any)?.status === "COMPLETED"

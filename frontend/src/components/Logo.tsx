@@ -22,7 +22,7 @@ const Logo: React.FC<LogoProps> = ({ h }) => {
       height={responsiveHeight}
       width="auto"
       objectFit="contain"
-      alt="LDN Trade"
+      alt="Trade Profitably"
     />
   );
 };

@@ -5,7 +5,7 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 const resources = {
   en: {
     translation: {
-      brand: 'LDN Trade',
+      brand: 'Trade Profitably',
       nav: {
         search: 'Search',
         enrolled: 'Enrolled',
@@ -415,6 +415,16 @@ const resources = {
         toast_sent_title: "Message sent",
         toast_sent_desc: "We will get back to you shortly."
       },
+      lead: {
+        title: "Join our newsletter and get expert market updates!",
+        subtitle: "Plus: get exclusive access to our courses.",
+        cta: "Join",
+        placeholder: "Enter your email address",
+        success: "Thank you for your interest!",
+        name: "Your Name",
+        email: "Email",
+        error: "Something went wrong. Please try again.",
+      },
       home: {
         offers: 'Limited-time Offers',
         badge: { exclusive: 'Exclusive' },
@@ -429,10 +439,15 @@ const resources = {
         trust_line: 'Trusted by travelers worldwide • Premium support 24/7',
         search: 'Search',
         hero: {
-          title: 'Learn from the best.',
-          subtitle: 'Our programs help turn your dreams into reality.',
-          cta_primary: 'Browse Courses',
-          cta_secondary: 'Explore Curriculum',
+          title: 'Master Trading with Proven Experts.',
+          subtitle: 'Join thousands of learners achieving real profits in around 4 weeks. Your journey to financial freedom starts here.',
+          cta_primary: 'Start Learning Now',
+          cta_secondary: 'View Course Details',
+        },
+        urgency: {
+          kicker: "Cohort enrollment closes in",
+          enroll: "Enroll Now",
+          talk: "Talk to an Advisor"
         },
         trustpilot: {
           title: "Verified by learners — and it shows",
@@ -538,7 +553,7 @@ const resources = {
         login_subtitle: 'Access premium courses, curated signals and dedicated support',
         login_cta: 'Sign in',
         no_account: 'Don\'t have an account?',
-        join_us: 'Join LDN Trade',
+        join_us: 'Join Trade Profitably',
         login_loading: 'Signing you in…',
         login_error: 'Login failed',
         forgot_password: 'Forgot password?',
@@ -603,7 +618,7 @@ const resources = {
 
   fr: {
     translation: {
-      brand: 'LDN Trade',
+      brand: 'Trade Profitably',
       nav: {
         search: 'Rechercher',
         enrolled: 'Enrolled',
@@ -904,12 +919,27 @@ const resources = {
           pfp_blocked: "Capture bloquée"
         }
       },
+      lead: {
+        title: "Rejoignez notre newsletter et recevez les dernières actualités du marché !",
+        subtitle: "De plus : bénéficiez d’un accès exclusif à nos formations.",
+        cta: "S’inscrire",
+        placeholder: "Entrez votre adresse e-mail",
+        success: "Merci pour votre intérêt ! Votre inscription est confirmée.",
+        name: "Votre nom",
+        email: "E-mail",
+        error: "Une erreur s’est produite. Veuillez réessayer.",
+      },
       home: {
         hero: {
-          title: 'Apprenez auprès de l’élite du secteur.',
-          subtitle: 'Nos programmes vous aident à réaliser vos rêves.',
-          cta_primary: 'Parcourir les cours',
-          cta_secondary: 'Explorer le programme',
+          title: 'Devenez un trader expert avec les meilleurs.',
+          subtitle: 'Rejoignez des milliers d’apprenants qui gagnent déjà grâce à nos formations intensives. Commencez votre succès dès aujourd’hui.',
+          cta_primary: 'Commencer la formation',
+          cta_secondary: 'Voir le programme',
+        },
+        urgency: {
+          kicker: "Les inscriptions à la cohorte se terminent dans",
+          enroll: "S’inscrire maintenant",
+          talk: "Parler à un conseiller"
         },
         trustpilot: {
           title: "Vérifié par les apprenants — et ça se voit",
@@ -1091,7 +1121,7 @@ const resources = {
         login_subtitle: 'Accédez à des cours premium, à des signaux sélectionnés et à un support dédié',
         login_cta: 'Se connecter',
          no_account: 'Vous n\'avez pas de compte ?',
-        join_us: 'Rejoignez LDN Trade',
+        join_us: 'Rejoignez Trade Profitably',
         login_loading: 'Connexion…',
         login_error: 'Échec de la connexion',
         verify: 'Vérifier',
@@ -1156,7 +1186,7 @@ const resources = {
 
   ar: {
     translation: {
-      brand: 'LDN Trade',
+      brand: 'Trade Profitably',
       nav: {
         search: 'بحث',
         enrolled: 'كورساتي',
@@ -1544,16 +1574,31 @@ const resources = {
           pfp_blocked: "تم حظر اللقطة"
         }
       },
+      lead: {
+        title: "انضم إلى نشرتنا الإخبارية واحصل على آخر التحديثات من الأسواق!",
+        subtitle: "بالإضافة إلى ذلك: احصل على وصول حصري إلى دوراتنا التدريبية.",
+        cta: "انضم الآن",
+        placeholder: "أدخل بريدك الإلكتروني",
+        success: "شكرًا لاهتمامك! تم الاشتراك بنجاح.",
+        name: "اسمك",
+        email: "البريد الإلكتروني",
+        error: "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
+      },
       home: {
         offers: 'عروض لوقت محدود',
         searching: 'جارٍ البحث...',
         form_note: 'إلغاء مجاني على بعض الأسعار المختارة',
         search: 'بحث',
         hero: {
-          title: 'تعلم من نخبة المجال.',
-          subtitle: 'برامجنا تساعدك لتحقق احلامك.',
-          cta_primary: 'تصفح الكورسات',
-          cta_secondary: 'استكشف المنهج',
+          title: 'أتقن التداول مع نخبة الخبراء.',
+          subtitle: 'انضم إلى آلاف المتدربين الذين يحققون أرباحًا حقيقية خلال حوالي 4 أسابيع فقط. ابدأ رحلتك نحو الحرية المالية اليوم.',
+          cta_primary: 'ابدأ التعلم الآن',
+          cta_secondary: 'عرض تفاصيل الكورس',
+        },
+        urgency: {
+          kicker: "التسجيل في المجموعة تنتهي في",
+          enroll: "التسجيل الآن",
+          talk: "تحدث مع مستشار",
         },
         trustpilot: {
           title: "موثوق من المتعلمين — والنتائج واضحة",
@@ -1679,7 +1724,7 @@ const resources = {
         login_subtitle: 'ادخل للوصول إلى أفضل الكورسات، اشارات تداول ممتازة ودعم مخصص',
         login_cta: 'تسجيل الدخول',
         no_account: 'ليس لديك حساب؟',
-        join_us: 'انضم إلى LDN Trade',
+        join_us: 'انضم إلى Trade Profitably',
         login_loading: 'جارٍ تسجيل الدخول…',
         login_error: 'فشل تسجيل الدخول',
         verify: 'تحقق',
@@ -1925,7 +1970,7 @@ const NEW_PAGE_STRINGS = {
           last_updated: "Last updated",
           contact: "Contact",
           contact_text: "For privacy questions or refund requests, reach us at ",
-          support_email: "support@ldnprime.com",
+          support_email: "support@tradeprofitab.ly",
           disclaimer: "Nothing here is financial advice. Trading involves substantial risk of loss. Educational content is provided as-is without guarantees."
         }
       },
@@ -2228,7 +2273,7 @@ const NEW_PAGE_STRINGS = {
           last_updated: "آخر تحديث",
           contact: "تواصل معنا",
           contact_text: "للاستفسارات حول الخصوصية أو طلبات الاسترداد، تواصل معنا عبر ",
-          support_email: "support@ldnprime.com",
+          support_email: "support@tradeprofitab.ly",
           disclaimer: "لا يُعد أي مما ورد هنا نصيحة مالية. التداول ينطوي على مخاطر كبيرة بالخسارة. يُقدَّم المحتوى التعليمي كما هو ودون أي ضمانات."
         }
       },
@@ -2603,7 +2648,7 @@ const NEW_PAGE_STRINGS = {
           last_updated: "Dernière mise à jour",
           contact: "Contact",
           contact_text: "Pour toute question relative à la confidentialité ou aux remboursements, contactez-nous à ",
-          support_email: "support@ldnprime.com",
+          support_email: "support@tradeprofitab.ly",
           disclaimer: "Rien ici ne constitue un conseil financier. Le trading comporte un risque significatif de perte. Le contenu éducatif est fourni tel quel, sans garantie."
         }
       },

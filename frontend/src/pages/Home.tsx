@@ -21,6 +21,11 @@ import {
   Icon, // ⬅️ add
   Accordion, // ⬅️ add (namespace in v3)
   Badge,
+  useToast,
+  Stack,
+  Input,
+  FormControl,
+  FormErrorMessage,
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -37,6 +42,7 @@ const Home: React.FC = () => {
   const isRTL = i18n?.language === "ar";
   const navigate = useNavigate();
   const { mode } = useThemeMode();
+  const toast = useToast();
   const lang = String(i18n?.language || "en").toLowerCase();
   const isAR = lang.startsWith("ar");
   const isFR = lang.startsWith("fr");
@@ -101,8 +107,7 @@ const Home: React.FC = () => {
     },
     {
       title: t("home.benefits.four") || "Shariah-compliant",
-      description:
-        t("home.benefits.four_desc") || "All courses teach Shariah-compliant trading.",
+      description: t("home.benefits.four_desc") || "All courses teach Shariah-compliant trading.",
       image: "/images/rand/0-fees.png",
     },
   ];
@@ -251,6 +256,45 @@ const Home: React.FC = () => {
     },
   ];
 
+  // ===== Lead magnet form (moved to bottom) =====
+  const [lead, setLead] = React.useState<{ name: string; email: string }>({ name: "", email: "" });
+  const [submitting, setSubmitting] = React.useState(false);
+  const emailValid = React.useMemo(() => /\S+@\S+\.\S+/.test(lead.email), [lead.email]);
+
+  const submitLead = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (!emailValid) return;
+    setSubmitting(true);
+    try {
+      await api.post("/leads", {
+        ...lead,
+        tag: "FREE_TRADING_CHECKLIST",
+        locale: i18n.language || "en",
+        page: "home",
+      });
+      toast({
+        title: t("lead.success") || "Check your inbox!",
+        description:
+          t("lead.success_desc") ||
+          "We’ve sent you the 3-Step Halal Trading Checklist and a free lesson link.",
+        status: "success",
+        duration: 4000,
+        isClosable: true,
+      });
+      setLead({ name: "", email: "" });
+    } catch (err) {
+      toast({
+        title: t("lead.error") || "Something went wrong",
+        description: t("lead.error_desc") || "Please try again in a moment.",
+        status: "error",
+        duration: 4000,
+        isClosable: true,
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const ReviewCard: React.FC<{ review: Review; accentColor: string }> = ({
     review,
     accentColor,
@@ -337,6 +381,49 @@ const Home: React.FC = () => {
     visible: { opacity: 1, scale: 1, transition: { duration: 0.6 } },
   };
 
+  // --- ratings & reviews helpers ---
+  const getAvgRating = (tier: any): { avg: number; count: number } => {
+    // explicit numeric rating on the tier takes precedence
+    const explicit = Number(tier?.rating);
+    const lr = Array.isArray(tier?.latestReviews) ? tier.latestReviews : [];
+    const count = lr.length;
+
+    // average from latestReviews if present
+    const fromReviews =
+      count > 0 ? lr.reduce((s: number, r: any) => s + (Number(r?.rating) || 0), 0) / count : NaN;
+
+    const avg =
+      !Number.isNaN(explicit) && explicit > 0
+        ? explicit
+        : Number.isNaN(fromReviews)
+        ? 0
+        : fromReviews;
+    return { avg, count };
+  };
+
+  // keep only positive (4★+) comments with non-empty text
+  const getPositiveComments = (tier: any, limit = 3): any[] => {
+    const lr = Array.isArray(tier?.latestReviews) ? tier.latestReviews : [];
+    // Score = rating, tie-break: newer first, then longer useful text
+    const scored = lr
+      .filter(
+        (r: any) => (Number(r?.rating) || 0) >= 4 && String(r?.comment || "").trim().length > 0
+      )
+      .map((r: any) => ({
+        ...r,
+        __score:
+          (Number(r?.rating) || 0) * 1000 +
+          (r?.created_at ? new Date(r.created_at).getTime() / 1e11 : 0) + // tiny tilt toward recency
+          Math.min(String(r?.comment || "").length, 180) / 180, // small bonus for substance
+      }))
+      .sort((a: any, b: any) => b.__score - a.__score);
+
+    return scored.slice(0, limit);
+  };
+
+  // pretty print average to one decimal (e.g., 4.7)
+  const fmtAvg = (n: number) => (n ? (Math.round(n * 10) / 10).toFixed(1) : "0.0");
+
   type FaqRowProps = {
     q: string;
     a: string;
@@ -394,7 +481,6 @@ const Home: React.FC = () => {
 
   return (
     <Box dir={isRTL ? "rtl" : "ltr"}>
-      
       {/* Hero */}
       <Hero />
 
@@ -411,13 +497,7 @@ const Home: React.FC = () => {
           </Heading>
           <SimpleGrid columns={{ base: 2, md: 4 }} gap={8}>
             {featureHighlights.map((feature, idx) => (
-              <Box
-                key={idx}
-                overflow="hidden"
-                boxShadow="xl"
-                h="100%"
-                backdropFilter="blur(6px)"
-              >
+              <Box key={idx} overflow="hidden" boxShadow="xl" h="100%" backdropFilter="blur(6px)">
                 <Grid
                   templateColumns={{ base: "1fr", md: "70px 1fr" }}
                   templateAreas={{ base: `"img" "content"`, md: `"img content"` }}
@@ -533,30 +613,26 @@ const Home: React.FC = () => {
                         <Heading size="md">{tier.name}</Heading>
                         <Text fontSize="sm">{tier.description}</Text>
                         {(() => {
-                          const explicit = Number((tier as any)?.rating);
-                          const fromReviews =
-                            Array.isArray((tier as any)?.latestReviews) &&
-                            (tier as any).latestReviews.length
-                              ? (tier as any).latestReviews.reduce(
-                                  (s: number, r: any) => s + (Number(r?.rating) || 0),
-                                  0
-                                ) / (tier as any).latestReviews.length
-                              : 0;
-                          const avg = explicit > 0 ? explicit : fromReviews;
-                          if (!avg || Number.isNaN(avg)) return null;
+                          const { avg, count } = getAvgRating(tier);
+                          if (!avg) return null;
                           const full = Math.round(avg);
                           return (
-                            <HStack justify="center" gap={1}>
-                              {Array.from({ length: 5 }).map((_, k) => (
-                                <Icon
-                                  key={k}
-                                  as={Star}
-                                  boxSize={3.5}
-                                  color={k < full ? accentColor : "gray.400"}
-                                  fill={k < full ? accentColor : "none"}
-                                />
-                              ))}
-                            </HStack>
+                            <VStack gap={1}>
+                              <HStack justify="center" gap={1}>
+                                {Array.from({ length: 5 }).map((_, k) => (
+                                  <Icon
+                                    key={k}
+                                    as={Star}
+                                    boxSize={3.5}
+                                    color={k < full ? accentColor : "gray.400"}
+                                    fill={k < full ? accentColor : "none"}
+                                  />
+                                ))}
+                              </HStack>
+                              <Text fontSize="xs" opacity={0.8}>
+                                {fmtAvg(avg)} • {count || 0} {t("common.reviews") || "reviews"}
+                              </Text>
+                            </VStack>
                           );
                         })()}
                       </VStack>
@@ -600,34 +676,64 @@ const Home: React.FC = () => {
                       <VStack gap={4}>
                         <Heading size="lg">{tier.name}</Heading>
                         <Text fontSize="sm">{tier.description}</Text>
+                        {/* Average summary */}
+                        {(() => {
+                          const { avg, count } = getAvgRating(tier);
+                          if (!avg) return null;
+                          const rounded = Math.round(avg);
+                          return (
+                            <VStack gap={1}>
+                              <HStack justify="center" gap={1}>
+                                {Array.from({ length: 5 }).map((_, k) => (
+                                  <Icon
+                                    key={k}
+                                    as={Star}
+                                    boxSize={4}
+                                    color={k < rounded ? accentColor : "gray.400"}
+                                    fill={k < rounded ? accentColor : "none"}
+                                  />
+                                ))}
+                              </HStack>
+                              <Text fontSize="xs" opacity={0.8}>
+                                {fmtAvg(avg)} • {count || 0} {t("common.reviews") || "reviews"}
+                              </Text>
+                            </VStack>
+                          );
+                        })()}
                       </VStack>
                     </Box>
-                    {Array.isArray(tier.latestReviews) && tier.latestReviews.length > 0 && (
-                      <Box px={8} pt={0} pb={4}>
-                        <VStack align="stretch" gap={3}>
-                          {tier.latestReviews.map((r: any, i: number) => (
-                            <Box
-                              key={r.id || i}
-                              p={3}
-                            >
-                              <HStack justify="space-between" mb={1}>
-                                <HStack gap={1}>
-                                  {Array.from({ length: 5 }).map((_, k) => (
-                                    <Icon
-                                      key={k}
-                                      as={Star}
-                                      boxSize={3.5}
-                                      color={k < (Number(r.rating) || 0) ? accentColor : "gray.400"}
-                                      fill={k < (Number(r.rating) || 0) ? accentColor : "none"}
-                                    />
-                                  ))}
+                    {(() => {
+                      const positives = getPositiveComments(tier, 3); // top 3 positive comments
+                      if (positives.length === 0) return null;
+
+                      return (
+                        <Box px={8} pt={0} pb={4}>
+                          <VStack align="stretch" gap={3}>
+                            {positives.map((r: any, i: number) => (
+                              <Box key={r.id || i} p={3}>
+                                <HStack justify="space-between" mb={1}>
+                                  <HStack gap={1}>
+                                    {Array.from({ length: 5 }).map((_, k) => (
+                                      <Icon
+                                        key={k}
+                                        as={Star}
+                                        boxSize={3.5}
+                                        color={
+                                          k < (Number(r.rating) || 0) ? accentColor : "gray.400"
+                                        }
+                                        fill={k < (Number(r.rating) || 0) ? accentColor : "none"}
+                                      />
+                                    ))}
+                                  </HStack>
+                                  <Text fontSize="xs" opacity={0.7}>
+                                    {r?.user?.name || t("common.anonymous") || "Student"} •{" "}
+                                    {r?.created_at
+                                      ? new Date(r.created_at).toLocaleDateString()
+                                      : ""}
+                                  </Text>
                                 </HStack>
-                                <Text fontSize="xs" opacity={0.7}>
-                                  {r?.user?.name || t("common.anonymous") || "Student"} •{" "}
-                                  {r?.created_at ? new Date(r.created_at).toLocaleDateString() : ""}
-                                </Text>
-                              </HStack>
-                              {r?.comment && (
+
+                                {/* positive comment body */}
                                 <Text
                                   fontSize="sm"
                                   style={{
@@ -637,15 +743,15 @@ const Home: React.FC = () => {
                                     overflow: "hidden",
                                   }}
                                 >
-                                  {String(r.comment).slice(0, 200) +
-                                    (String(r.comment).length > 200 ? "..." : "")}
+                                  {String(r.comment).slice(0, 240) +
+                                    (String(r.comment).length > 240 ? "..." : "")}
                                 </Text>
-                              )}
-                            </Box>
-                          ))}
-                        </VStack>
-                      </Box>
-                    )}
+                              </Box>
+                            ))}
+                          </VStack>
+                        </Box>
+                      );
+                    })()}
                     <Box p={8} pt={0}>
                       <Button
                         w="full"
@@ -844,11 +950,7 @@ const Home: React.FC = () => {
             variants={fadeIn}
           >
             <VStack gap={6} align="center" textAlign="center">
-              <Text
-                color={accentColor}
-                fontWeight="bold"
-                fontSize={{ base: "3xl", md: "4xl" }}
-              >
+              <Text color={accentColor} fontWeight="bold" fontSize={{ base: "3xl", md: "4xl" }}>
                 {t("home.cta.kicker") || "Ready to Learn?"}
               </Text>
               <Heading fontSize={{ base: "3xl", md: "4xl" }}>
@@ -873,6 +975,51 @@ const Home: React.FC = () => {
               </HStack>
             </VStack>
           </MotionBox>
+        </Box>
+
+        {/* Lead Magnet — moved to bottom */}
+        <Box
+          mt={{ base: 8, md: 8 }}
+          p={{ base: 4, md: 6 }}
+          border="1px solid"
+          borderRadius="2xl"
+          borderColor={accentColor}
+          bg="rgba(183,162,125,0.05)"
+        >
+          <Stack direction={{ base: "column", md: "row" }} align="center" spacing={6}>
+            <VStack align="start" flex="1" gap={1}>
+              <Text fontSize={{ base: "xl", md: "2xl" }} color={accentColor} fontWeight="bold">
+                {t("lead.title") || "Download the 3-Step Halal Trading Checklist"}
+              </Text>
+              <Text opacity={0.9}>
+                {t("lead.subtitle") || "Plus: get an instant free lesson and weekly setups."}
+              </Text>
+            </VStack>
+            <Box as="form" onSubmit={submitLead} w={{ base: "100%", md: "auto" }}>
+              <Stack direction={{ base: "column", md: "row" }} gap={3}>
+                <Input
+                  placeholder={t("lead.name") || "Your name"}
+                  value={lead.name}
+                  onChange={(e) => setLead((s) => ({ ...s, name: e.target.value }))}
+                />
+                <FormControl isInvalid={lead.email.length > 0 && !emailValid}>
+                  <Input
+                    type="email"
+                    placeholder={t("lead.email") || "Email address"}
+                    value={lead.email}
+                    onChange={(e) => setLead((s) => ({ ...s, email: e.target.value }))}
+                    required
+                  />
+                  <FormErrorMessage>
+                    {t("lead.email_invalid") || "Please enter a valid email."}
+                  </FormErrorMessage>
+                </FormControl>
+                <Button variant="solid" isLoading={submitting} bg={accentColor}>
+                  {t("lead.cta") || "Get it free"}
+                </Button>
+              </Stack>
+            </Box>
+          </Stack>
         </Box>
       </Container>
     </Box>

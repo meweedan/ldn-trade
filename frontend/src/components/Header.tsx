@@ -26,6 +26,7 @@ import {
   MessageSquare,
   Settings,
   BookOpen,
+  Globe,
   LayoutDashboard,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -44,6 +45,37 @@ const Header: React.FC = () => {
   const MotionBox = motion(Box);
   const MotionButton = motion(Button);
   const isAR = (i18n.language || "en").startsWith("ar");
+  const [langOpen, setLangOpen] = React.useState(false);
+  const langRef = React.useRef<HTMLDivElement | null>(null);
+
+  // Close on outside click
+  React.useEffect(() => {
+    if (!langOpen) return;
+    const onDoc = (e: MouseEvent) => {
+      if (!langRef.current) return;
+      if (!langRef.current.contains(e.target as Node)) setLangOpen(false);
+    };
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, [langOpen]);
+
+  // Close language sheet if the hamburger menu opens (avoid overlap)
+  React.useEffect(() => {
+    if (menuOpen) setLangOpen(false);
+  }, [menuOpen]);
+
+  React.useEffect(() => {
+    if (!langOpen) return;
+    const onScroll = () => setLangOpen(false);
+    const onResize = () => setLangOpen(false);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onResize);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onResize);
+    };
+  }, [langOpen]);
+
 
   // SOLID colors (no translucency/blur)
   const gold = "#b7a27d";
@@ -261,7 +293,7 @@ const Header: React.FC = () => {
         <Flex as="header" py={3} minH="64px" align="center" ref={headerRef}>
           <RouterLink to="/">
             <HStack gap={3} ps={{ base: 2, md: 0 }}>
-              <Logo h={12} />
+              <Logo h={14} />
             </HStack>
           </RouterLink>
 
@@ -324,8 +356,31 @@ const Header: React.FC = () => {
           {/* Mobile controls */}
           <Box display={{ base: "block", md: "none" }} ps={{ base: 2, md: 0 }}>
             <HStack gap={2}>
-              {/* Settings (language + theme) */}
-              <SettingsMenu />
+              {/* Theme toggle (quick) */}
+              <Button
+                aria-label={
+                  mode === "dark"
+                    ? t("tooltip.lightMode") || "Light mode"
+                    : t("tooltip.darkMode") || "Dark mode"
+                }
+                variant="ghost"
+                color={headerFg}
+                borderRadius="full"
+                onClick={toggle}
+              >
+                <Icon as={mode === "dark" ? Sun : Moon} />
+              </Button>
+
+              {/* Language sheet trigger (mobile) */}
+              <Button
+                aria-label={t("dashboard.language") || "Language"}
+                variant="ghost"
+                color={headerFg}
+                borderRadius="full"
+                onClick={() => setLangOpen((v) => !v)}
+              >
+                <Icon as={Globe} />
+              </Button>
 
               {/* Hamburger */}
               <Button
@@ -340,6 +395,70 @@ const Header: React.FC = () => {
               </Button>
             </HStack>
           </Box>
+          {/* Mobile language sheet — horizontal, like the main mobile menu */}
+          <AnimatePresence initial={false}>
+            {langOpen && (
+              <Portal>
+                <MotionBox
+                  key="mobile-lang"
+                  ref={langRef}
+                  initial={{ opacity: 0, y: -18 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  position="fixed"
+                  top={`${headerBottom}px`}
+                  left={0}
+                  right={0}
+                  zIndex={1300}
+                  bg={headerBg}
+                  color={gold} // match the main mobile menu’s gold text
+                  borderTop="1px solid"
+                  borderBottom="1px solid"
+                  borderColor={mode === "dark" ? "whiteAlpha.200" : "blackAlpha.200"}
+                  px={3}
+                  py={2}
+                >
+                  <Box position="relative" zIndex={1}>
+                    <HStack justify="center" gap={2} wrap="wrap">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        color="inherit"
+                        onClick={() => {
+                          i18n.changeLanguage("en");
+                          setLangOpen(false);
+                        }}
+                      >
+                        English
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        color="inherit"
+                        onClick={() => {
+                          i18n.changeLanguage("ar");
+                          setLangOpen(false);
+                        }}
+                      >
+                        العربية
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        color="inherit"
+                        onClick={() => {
+                          i18n.changeLanguage("fr");
+                          setLangOpen(false);
+                        }}
+                      >
+                        Français
+                      </Button>
+                    </HStack>
+                  </Box>
+                </MotionBox>
+              </Portal>
+            )}
+          </AnimatePresence>
         </Flex>
       </Container>
 
