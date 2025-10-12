@@ -80,3 +80,25 @@ export const deletePromo = [requireAdmin, async (req: Request, res: Response) =>
     res.status(500).json({ message: 'Failed to delete promo' });
   }
 }];
+
+// Public: GET /promos/cohort
+// Returns a currently valid percent promo with value <= 10, if any.
+export const getCohortPromo = async (_req: Request, res: Response) => {
+  try {
+    const now = new Date();
+    const promo = await prisma.promoCode.findFirst({
+      where: {
+        active: true,
+        discountType: 'PERCENT' as any,
+        value: { lte: 10, gt: 0 } as any,
+        OR: [{ startsAt: null }, { startsAt: { lte: now } }],
+        AND: [{ OR: [{ endsAt: null }, { endsAt: { gte: now } }] }],
+      },
+      orderBy: [{ endsAt: 'asc' as any }, { createdAt: 'desc' }],
+    });
+    if (!promo) return res.status(204).send();
+    return res.json({ code: promo.code, discountType: promo.discountType, value: promo.value });
+  } catch {
+    return res.status(500).json({ message: 'Failed to fetch cohort promo' });
+  }
+};

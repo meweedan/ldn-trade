@@ -465,7 +465,13 @@ const Home: React.FC = () => {
     const [open, setOpen] = React.useState(false);
 
     return (
-      <Box border="1px solid" borderColor={accentColor} borderRadius="lg" overflow="hidden">
+      <Box
+        border="1px solid"
+        borderColor={accentColor}
+        borderRadius="lg"
+        overflow="hidden"
+        bg={mode === "dark" ? "black" : "white"}
+      >
         <Button
           onClick={() => setOpen((v) => !v)}
           variant="ghost"
@@ -529,7 +535,17 @@ const Home: React.FC = () => {
           </Heading>
           <SimpleGrid columns={{ base: 2, md: 4 }} gap={8}>
             {featureHighlights.map((feature, idx) => (
-              <Box key={idx} overflow="hidden" boxShadow="xl" h="100%" backdropFilter="blur(6px)">
+              <Box
+                key={idx}
+                overflow="hidden"
+                boxShadow="xl"
+                h="100%"
+                backdropFilter="blur(6px)"
+                borderRadius="24px"
+                bg={mode === "dark" ? "black" : "white"}
+                borderWidth={0.1}
+                borderColor={accentColor}
+              >
                 <Grid
                   templateColumns={{ base: "1fr", md: "70px 1fr" }}
                   templateAreas={{ base: `"img" "content"`, md: `"img content"` }}
@@ -593,6 +609,10 @@ const Home: React.FC = () => {
                 whileInView="visible"
                 viewport={{ once: true }}
                 variants={fadeIn}
+                 borderRadius="24px"
+                bg={mode === "dark" ? "black" : "white"}
+                borderWidth={0.1}
+                borderColor={accentColor}
               >
                 <Box p={6} h="full">
                   <VStack align="center" gap={4}>
@@ -638,6 +658,7 @@ const Home: React.FC = () => {
                     overflow="hidden"
                     boxShadow="2xl"
                     border="1px solid"
+                    bg={mode === "dark" ? "black" : "white"}
                     borderColor="#b7a27d"
                   >
                     <Box p={4} textAlign="center">
@@ -702,6 +723,7 @@ const Home: React.FC = () => {
                     overflow="hidden"
                     boxShadow="2xl"
                     border="1px solid"
+                    bg={mode === "dark" ? "black" : "white"}
                     borderColor="#b7a27d"
                   >
                     <Box p={8} textAlign="center">
@@ -869,6 +891,7 @@ const Home: React.FC = () => {
             borderWidth="1px"
             borderColor={accentColor}
             borderRadius="2xl"
+            bg={mode === "dark" ? "black" : "white"}
             px={{ base: 2, md: 4 }}
             py={{ base: 4, md: 6 }}
           >
@@ -1016,7 +1039,7 @@ const Home: React.FC = () => {
           border="1px solid"
           borderRadius="2xl"
           borderColor={accentColor}
-          bg="rgba(183,162,125,0.05)"
+          bg={mode === "dark" ? "black" : "white"}
         >
           <Stack direction={{ base: "column", md: "row" }} align="center" spacing={6}>
             <VStack align="start" flex="1" gap={1}>
@@ -1099,7 +1122,13 @@ const Home: React.FC = () => {
                   </FormControl>
                 )}
 
-                <Button type="submit" minW="70px" variant="solid" isLoading={submitting} bg={accentColor}>
+                <Button
+                  type="submit"
+                  minW="70px"
+                  variant="solid"
+                  isLoading={submitting}
+                  bg={accentColor}
+                >
                   {t("lead.cta") || "Get it free"}
                 </Button>
               </Stack>

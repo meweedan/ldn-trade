@@ -169,6 +169,7 @@ const resources = {
         select_image: 'Select image…',
         preview: 'preview',
         forbidden: 'Forbidden', // used as fallback in ContentAdmin
+        copied: 'Copied',
       },
       instructor: {
         name: 'Instructor Name',
@@ -448,9 +449,14 @@ const resources = {
           cta_secondary: 'View Course Details',
         },
         urgency: {
-          kicker: "Cohort enrollment closes in",
+          kicker: "Course enrollment closes in",
           enroll: "Enroll Now",
           talk: "Talk to an Advisor"
+        },
+        promo: {
+          kicker: "Limited-time course promo:",
+          copy: "Copy",
+          details: "Save up to 10% — apply this code at checkout before the timer ends."
         },
         trustpilot: {
           title: "Verified by learners — and it shows",
@@ -717,6 +723,7 @@ const resources = {
         select_image: "Sélectionner une image…",
         preview: "aperçu",
         forbidden: 'Interdit',
+        copied: 'Copié',
       },
       instructor: {
         name: "Nom du formateur",
@@ -947,9 +954,14 @@ const resources = {
           cta_secondary: 'Voir le programme',
         },
         urgency: {
-          kicker: "Les inscriptions à la cohorte se terminent dans",
+          kicker: "Les inscriptions au cours se terminent dans",
           enroll: "S’inscrire maintenant",
           talk: "Parler à un conseiller"
+        },
+        promo: {
+          kicker: "Promo cours limitée :",
+          copy: "Copier",
+          details: "Économisez jusqu’à 10 % — appliquez ce code au paiement avant la fin du temps."
         },
         trustpilot: {
           title: "Vérifié par les apprenants — et ça se voit",
@@ -1288,6 +1300,7 @@ const resources = {
         select_image: 'اختر صورة…',
         preview: 'معاينة',
         forbidden: 'ممنوع',
+        copied: 'تم النسخ',
       },
       instructor: {
         name: 'اسم المدرّس',
@@ -1612,9 +1625,14 @@ const resources = {
           cta_secondary: 'عرض تفاصيل الكورس',
         },
         urgency: {
-          kicker: "التسجيل في المجموعة تنتهي في",
+          kicker: "التسجيل في الكورس ينتهي خلال",
           enroll: "التسجيل الآن",
           talk: "تحدث مع مستشار",
+        },
+        promo: {
+          kicker: "عرض خصم للكورس لفترة محدودة:",
+          copy: "نسخ",
+          details: "وفّر حتى 10% — استخدم هذا الكود عند الدفع قبل انتهاء الوقت."
         },
         trustpilot: {
           title: "موثوق من المتعلمين — والنتائج واضحة",

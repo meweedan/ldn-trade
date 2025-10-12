@@ -1,12 +1,14 @@
 import React from "react";
 import { Box, Container, Heading, Text, VStack, HStack, Badge, Link } from "@chakra-ui/react";
 import { useTranslation } from "react-i18next";
+import { useThemeMode } from "../../themeProvider";
 
 const GOLD = "#b7a27d";
 
 export default function Terms() {
   const { t, i18n } = useTranslation("translation") as any; // ensure correct ns
   const isRTL = i18n?.language?.startsWith("ar");
+  const { mode } = useThemeMode();
 
   const Section: React.FC<{ title: string; k?: string; children: React.ReactNode }> = ({
     title,
@@ -19,7 +21,7 @@ export default function Terms() {
       borderColor={GOLD}
       borderRadius="xl"
       p={{ base: 4, md: 6 }}
-      bg="transparent"
+      bg={mode === "dark" ? "black" : "white"}
     >
       <Heading size="md" mb={3} color={GOLD}>
         {title}

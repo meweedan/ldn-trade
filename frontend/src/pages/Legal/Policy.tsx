@@ -1,12 +1,13 @@
 import React from "react";
 import { Box, Container, Heading, Text, VStack, HStack, Link, Badge, Code } from "@chakra-ui/react";
 import { useTranslation } from "react-i18next";
-
+import { useThemeMode } from "../../themeProvider";
 const GOLD = "#b7a27d";
 
 export default function PrivacyRefundPolicy() {
   const { t, i18n } = useTranslation() as any;
   const isRTL = i18n?.language?.startsWith("ar");
+  const { mode } = useThemeMode();
 
   const Bullets: React.FC<{ children: React.ReactNode }> = ({ children }) => (
     <Box as="ul" listStyleType="disc" ps={5} display="grid" rowGap={2}>
@@ -31,7 +32,7 @@ export default function PrivacyRefundPolicy() {
       borderColor={GOLD}
       borderRadius="xl"
       p={{ base: 4, md: 6 }}
-      bg="transparent"
+      bg={mode === "dark" ? "black" : "white"}
     >
       <Heading size="md" mb={3} color={GOLD}>
         {title}

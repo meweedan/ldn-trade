@@ -13,6 +13,7 @@ import analyticsRoutes from './analytics.routes';
 import contactRoutes from './contact.routes';
 import communicationsRoutes from './communications.routes';
 import careersRoutes from './careers.routes';
+import promosRoutes from './promos.routes';
 
 const router = Router();
 
@@ -31,5 +32,6 @@ router.use('/broker', brokerRoutes);
 router.use('/analytics', analyticsRoutes);
 router.use('/contact', contactRoutes);
 router.use('/communications', communicationsRoutes);
+router.use('/promos', promosRoutes);
 
 export default router;

@@ -52,9 +52,21 @@ const styles = {
     "html, body, #root": {
       height: "100%",
       background: "bg.canvas",
+      // Subtle dotted background (light: blackish dots, dark: brand gold dots)
+      backgroundImage: "radial-gradient(rgba(0,0,0,0.06) 1px, transparent 1.5px)",
+      backgroundSize: "14px 14px",
+      backgroundPosition: "0 0",
       color: "text.primary",
       WebkitFontSmoothing: "antialiased",
       MozOsxFontSmoothing: "grayscale",
+    },
+
+    // Dark mode override for dotted pattern (use brand gold dots)
+    // Target html, body, and #root across Chakra's class and data-theme mechanisms
+    "html.chakra-ui-dark, body.chakra-ui-dark, #root.chakra-ui-dark, html[data-theme='dark'], body[data-theme='dark'], [data-theme='dark'] #root": {
+      backgroundImage: "radial-gradient(rgba(183,162,125,0.22) 1px, transparent 1.5px) !important",
+      backgroundSize: "14px 14px",
+      backgroundPosition: "0 0",
     },
 
     /* === Dir-aware base font === */

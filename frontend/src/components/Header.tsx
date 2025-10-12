@@ -318,13 +318,13 @@ const Header: React.FC = () => {
 
             {!user && (
               <>
-                <RouterLink to="/auth/register">
+                <RouterLink to="/register">
                   <Button {...navButtonProps}>
                     <Icon as={Users} mr={2} />
                     {t("auth.register")}
                   </Button>
                 </RouterLink>
-                <RouterLink to="/auth/login">
+                <RouterLink to="/login">
                   <Button {...navButtonProps}>
                     <Icon as={FormInput} mr={2} />
                     {t("auth.login")}
@@ -512,7 +512,7 @@ const Header: React.FC = () => {
                     </>
                   ) : (
                     <>
-                      <RouterLink to="/auth/login" onClick={() => setMenuOpen(false)}>
+                      <RouterLink to="/login" onClick={() => setMenuOpen(false)}>
                         <MotionButton
                           variant="ghost"
                           w="full"
@@ -523,7 +523,7 @@ const Header: React.FC = () => {
                           {t("auth.login") || t("nav.signIn")}
                         </MotionButton>
                       </RouterLink>
-                      <RouterLink to="/auth/register" onClick={() => setMenuOpen(false)}>
+                      <RouterLink to="/register" onClick={() => setMenuOpen(false)}>
                         <MotionButton
                           variant="ghost"
                           w="full"
