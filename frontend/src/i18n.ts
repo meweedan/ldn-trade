@@ -2009,10 +2009,10 @@ const NEW_PAGE_STRINGS = {
       company: {
         about: {
           title: "From one desk to a movement",
-          body: "In 2020, a single trader began sharing notes and trade reviews—teaching sharpened execution and revealed a bigger purpose. By 2021, a small team of developers, analysts, and mentors formed, replacing improvisation with systems. In 2022, the first structured curriculum was born, blending technical precision with the rhythm of real markets. 2023 proved the method’s power as consistency and data spoke louder than claims. By 2024, our own ecosystem united education, analytics, and mentorship under one roof. Today, in 2025, what began as one desk has grown into a global network—a movement helping traders pursue freedom through structure, discipline, and conviction.",
+          body: "Our journey started back in 2020, 5 years later; we are changing the game.",
           more: {
             title: "…and the story continues",
-            subtitle: "Every year brings new tools, stronger mentorship, and a growing community of disciplined traders building real results."
+            subtitle: "Every year brings new opportunities, and a growing community of disciplined traders building real results."
           },
           cta: {
             title: "Join the next chapter",
@@ -2370,11 +2370,11 @@ const NEW_PAGE_STRINGS = {
           }
         },
         about: {
-          title: "من مكتب واحد إلى حركة عالمية",
-          body: "في عام 2020، بدأ متداول واحد بمشاركة ملاحظاته ومراجعاته اليومية—فأصبح التعليم وسيلة لصقل المهارة وكشف هدف أعمق. في عام 2021، تكوّن فريق صغير من المطورين والمحللين والموجهين، ليستبدل العشوائية بالنظام. في عام 2022، وُلد أول منهج تدريبي منظم يجمع بين الدقة التقنية وإيقاع الأسواق الحقيقية. في عام 2023، أثبتت النتائج فعالية النظام حيث تحدثت البيانات والاتساق بأعلى صوت. في عام 2024، أطلقنا منظومة متكاملة تجمع التعليم والتحليل والإرشاد تحت سقف واحد. واليوم، في عام 2025، ما بدأ كمكتب واحد أصبح شبكة عالمية—حركة تساعد المتداولين على تحقيق الحرية من خلال الهيكل والانضباط والالتزام.",
+          title: "من مكتب واحد إلى حركة كاملة",
+          body: "بدأت رحلتنا في عام 2020، وبعد خمس سنوات أصبحنا نغيّر قواعد اللعبة.",
           more: {
-            title: "…والقصة مستمرة",
-            subtitle: "كل عام يجلب أدوات جديدة، وتوجيهاً أعمق، ومجتمعاً متنامياً من المتداولين المنضبطين الذين يحققون نتائج حقيقية."
+            title: "…والقصة ما زالت مستمرة",
+            subtitle: "كل عام يجلب فرصًا جديدة، ومجتمعًا متناميًا من المتداولين المنضبطين الذين يحققون نتائج حقيقية."
           },
           cta: {
             title: "انضم إلى الفصل التالي",
@@ -2414,10 +2414,10 @@ const NEW_PAGE_STRINGS = {
         },
         about: {
           title: "D’un simple bureau à un mouvement",
-          body: "En 2020, un seul trader commence à partager ses notes et analyses de marché—enseigner affine sa discipline et révèle une mission plus grande. En 2021, une petite équipe de développeurs, d’analystes et de mentors se forme, remplaçant l’improvisation par des systèmes. En 2022, naît le premier programme structuré, alliant précision technique et rythme réel des marchés. En 2023, les résultats parlent d’eux-mêmes : cohérence, données, crédibilité. En 2024, notre propre écosystème réunit éducation, analyses et mentorat sous un même toit. Aujourd’hui, en 2025, ce qui n’était qu’un bureau est devenu un réseau mondial—un mouvement qui aide les traders à atteindre la liberté grâce à la structure, la discipline et la conviction.",
+          body: "Notre aventure a commencé en 2020, cinq ans plus tard, nous changeons la donne.",
           more: {
             title: "…et l’histoire continue",
-            subtitle: "Chaque année apporte de nouveaux outils, un mentorat renforcé et une communauté croissante de traders disciplinés aux résultats concrets."
+            subtitle: "Chaque année apporte de nouvelles opportunités et une communauté grandissante de traders disciplinés qui obtiennent de vrais résultats."
           },
           cta: {
             title: "Rejoignez le prochain chapitre",
