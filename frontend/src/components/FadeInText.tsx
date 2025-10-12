@@ -13,8 +13,8 @@ type Props = {
   as?: "h1" | "p";
   children: React.ReactNode;
   fontSize?: any;
-  fontWeight?: any;
-  color?: any;
+  fontWeight?: "bold";
+  color?: "#b7a27d";
   align?: any;
   dir?: "ltr" | "rtl";
   mode?: "dark" | "light";
@@ -36,7 +36,7 @@ export default function FadeInText({
       as={as === "h1" ? "h1" : undefined}
       fontSize={fontSize}
       fontWeight={fontWeight}
-      // color={color}
+      color={color}
       textAlign={align}
       dir={dir}
       lang={dir === "rtl" ? "ar" : undefined}

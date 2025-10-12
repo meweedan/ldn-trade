@@ -231,8 +231,8 @@ export default function Hero() {
               as="h1"
               dir={dir}
               fontSize={{ base: "2xl", md: "5xl", lg: "6xl" }}
-              fontWeight="extrabold"
-              color={mode === "dark" ? "white" : "black"}
+              fontWeight="bold"
+              color={mode === "dark" ? "#b7a27d" : "#b7a27d"}
             >
               {t("home.hero.title")}
             </FadeInText>
@@ -244,8 +244,8 @@ export default function Hero() {
               as="p"
               dir={dir}
               fontSize={{ base: "md", md: "xl" }}
-              fontWeight="medium"
-              color={mode === "dark" ? "white" : "black"}
+              fontWeight="bold"
+              color={mode === "dark" ? "#b7a27d" : "#b7a27d"}
             >
               {t("home.hero.subtitle")}
             </FadeInText>
@@ -261,8 +261,8 @@ export default function Hero() {
                 initial="initial"
                 animate="animate"
                 alignSelf="center"
-                bg={mode === "dark" ? "blackAlpha.600" : "whiteAlpha.700"}
-                color={mode === "dark" ? "whiteAlpha.900" : "blackAlpha.900"}
+                bg={mode === "dark" ? "black" : "white"}
+                color={mode === "dark" ? "white" : "black"}
                 border="1px solid"
                 borderColor={GOLD}
                 boxShadow={shadowLg}
@@ -326,8 +326,8 @@ export default function Hero() {
                 initial={{ opacity: 0, y: -4 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
-                bg={mode === "dark" ? "blackAlpha.600" : "whiteAlpha.700"}
-                color={mode === "dark" ? "whiteAlpha.900" : "blackAlpha.900"}
+                bg={mode === "dark" ? "black" : "white"}
+                color={mode === "dark" ? "white" : "black"}
                 border="1px solid"
                 borderColor={GOLD}
                 boxShadow={shadowLg}
@@ -387,8 +387,8 @@ export default function Hero() {
                   variants={pulse}
                   initial="initial"
                   animate="animate"
-                  bg={mode === "dark" ? "blackAlpha.600" : "whiteAlpha.7"}
-                  color={mode === "dark" ? "whiteAlpha.900" : "blackAlpha.900"}
+                  bg={mode === "dark" ? "black" : "white"}
+                  color={mode === "dark" ? "white" : "black"}
                   border="1px solid"
                   borderColor={GOLD}
                   boxShadow="0 16px 40px rgba(0,0,0,0.18)"
@@ -454,8 +454,8 @@ export default function Hero() {
                   initial={{ opacity: 0, y: -4 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3 }}
-                  bg={mode === "dark" ? "blackAlpha.600" : "whiteAlpha.700"}
-                  color={mode === "dark" ? "whiteAlpha.900" : "blackAlpha.900"}
+                  bg={mode === "dark" ? "black" : "white"}
+                  color={mode === "dark" ? "white" : "black"}
                   border="1px solid"
                   borderColor={GOLD}
                   boxShadow="0 12px 28px rgba(0,0,0,0.18)"
