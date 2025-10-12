@@ -26,8 +26,7 @@ function GradientPill({
   const padding = size === "lg" ? { px: 4, py: 2.5 } : { px: 3, py: 1.5 };
   return (
     <Box
-      bg={mode === "dark" ? "blackAlpha.600" : "whiteAlpha.700"}
-      color={mode === "dark" ? "whiteAlpha.900" : "blackAlpha.900"}
+      bg={mode === "dark" ? "black" : "white"}
       border="1px solid"
       borderColor={GOLD}
       borderRadius="24px"
