@@ -36,7 +36,7 @@ export default function FadeInText({
       as={as === "h1" ? "h1" : undefined}
       fontSize={fontSize}
       fontWeight={fontWeight}
-      color={color}
+      // color={color}
       textAlign={align}
       dir={dir}
       lang={dir === "rtl" ? "ar" : undefined}
@@ -52,7 +52,7 @@ export default function FadeInText({
           inset: "-6px -10px",
           borderRadius: "6px",
           backdropFilter: "blur(20px)",
-          background: mode === "dark" ? "rgba(255, 255, 255, 0.85)" : "rgba(0, 0, 0, 0.85)",
+          // background: mode === "dark" ? "rgba(255, 255, 255, 0.85)" : "rgba(0, 0, 0, 0.85)",
           zIndex: -1,
         },
       }}

@@ -32,7 +32,7 @@ import { motion } from "framer-motion";
 import api from "../api/client";
 import BannerCarousel from "../components/BannerCarousel";
 import { useThemeMode } from "../themeProvider";
-import { ChevronLeft, ChevronRight, Star, ChevronDown } from "lucide-react";
+import { ChevronLeft, ChevronRight, Star } from "lucide-react";
 import Hero from "../components/Hero";
 import { useSessionMemory } from "../hooks/useSessionMemory";
 
@@ -484,6 +484,7 @@ const Home: React.FC = () => {
             as="span"
             transition="transform 0.2s"
             style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)" }}
+            color={accentColor}
           >
             ▾
           </Box>
@@ -1098,7 +1099,7 @@ const Home: React.FC = () => {
                   </FormControl>
                 )}
 
-                <Button type="submit" variant="solid" isLoading={submitting} bg={accentColor}>
+                <Button type="submit" minW="70px" variant="solid" isLoading={submitting} bg={accentColor}>
                   {t("lead.cta") || "Get it free"}
                 </Button>
               </Stack>

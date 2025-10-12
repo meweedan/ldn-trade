@@ -537,6 +537,13 @@ const Header: React.FC = () => {
                     </>
                   )}
 
+                  <RouterLink to="/contact" onClick={() => setMenuOpen(false)}>
+                    <MotionButton variant="ghost" w="full" justifyContent="center" color="inherit">
+                      <Icon as={MessageSquare} mr={2} color="inherit" />
+                      {t("footer.contact")}
+                    </MotionButton>
+                  </RouterLink>
+                  
                   <RouterLink
                     to={user ? "/enrolled" : "/courses"}
                     onClick={() => setMenuOpen(false)}

@@ -6,7 +6,6 @@ import {
   VStack,
   HStack,
   Button,
-  useBreakpointValue,
   Text,
   useToken,
 } from "@chakra-ui/react";
@@ -22,10 +21,40 @@ const GOLD = "#b7a27d";
 const MotionBox = motion(Box);
 const MotionHStack = motion(HStack);
 
+function GradientPill({
+  children,
+  size = "lg",
+  mode = "dark",
+}: {
+  children: React.ReactNode;
+  size?: "sm" | "lg";
+  mode?: "light" | "dark" | string;
+}) {
+  const padding = size === "lg" ? { px: 4, py: 2.5 } : { px: 3, py: 1.5 };
+
+  return (
+    <Box
+      bg={mode === "dark" ? "blackAlpha.600" : "whiteAlpha.700"}
+      color={mode === "dark" ? "whiteAlpha.900" : "blackAlpha.900"}
+      border="1px solid"
+      borderColor={mode === "dark" ? "whiteAlpha.300" : "blackAlpha.200"}
+      borderRadius="24px"
+      textAlign={{ base: "center", md: "center" }}
+      boxShadow="0 12px 28px rgba(0,0,0,0.18)"
+      backdropFilter="blur(10px) saturate(1.08)"
+      {...padding}
+      display="inline-flex"
+      alignItems="center"
+      gap={2}
+    >
+      {children}
+    </Box>
+  );
+}
+
 export default function Hero() {
   const { t, i18n } = useTranslation() as any;
   const navigate = useNavigate();
-  const isMobile = useBreakpointValue({ base: true, md: false });
   const dir: "ltr" | "rtl" = i18n.dir?.() || (i18n.language?.startsWith("ar") ? "rtl" : "ltr");
   const isRTL = dir === "rtl";
   const { mode } = useThemeMode();
@@ -166,31 +195,61 @@ export default function Hero() {
               : { base: "translateX(-50%)", md: "translateY(-50%)" }
           }
           maxW={{ base: "92%", md: "520px", lg: "540px" }}
-          textAlign={{ base: "center", md: isRTL ? "right" : "left" }}
         >
           <VStack align="center" gap={5}>
-            <FadeInText
-              as="h1"
-              dir={dir}
-              fontSize={{ base: "2xl", md: "5xl", lg: "6xl" }}
-              fontWeight="extrabold"
-              color={isMobile ? GOLD : "#b7a27d"}
-              align={{ base: "center", md: isRTL ? "right" : "left" }}
-            >
-              {t("home.hero.title")}
-            </FadeInText>
+            {/* Title pill */}
+            <GradientPill mode={mode} size="lg">
+              <FadeInText
+                as="h1"
+                dir={dir}
+                fontSize={{ base: "2xl", md: "5xl", lg: "6xl" }}
+                fontWeight="extrabold"
+                color={mode === "dark" ? "white" : "black"}
+                align={{ base: "center", md: isRTL ? "right" : "left" }}
+              >
+                {t("home.hero.title")}
+              </FadeInText>
+            </GradientPill>
 
-            <FadeInText
-              as="p"
-              dir={dir}
-              fontSize={{ base: "md", md: "xl" }}
-              fontWeight="medium"
-              color={isMobile ? (mode === "dark" ? "white" : "white") : "whiteAlpha.900"}
-              align={{ base: "center", md: isRTL ? "right" : "left" }}
-            >
-              {t("home.hero.subtitle")}
-            </FadeInText>
+            {/* Subtitle pill */}
+            <GradientPill mode={mode} size="sm">
+              <FadeInText
+                as="p"
+                dir={dir}
+                fontSize={{ base: "md", md: "xl" }}
+                fontWeight="medium"
+                color={mode === "dark" ? "white" : "black"}
+                align={{ base: "center", md: isRTL ? "right" : "left" }}
+              >
+                {t("home.hero.subtitle")}
+              </FadeInText>
+            </GradientPill>
 
+            <HStack justify="center" spacing={3} pt={1}>
+              <Button
+                bg={GOLD}
+                color={mode === "dark" ? "white" : "black"}
+                borderColor={GOLD}
+                borderWidth="1px"
+                _hover={{ bg: "blackAlpha.300" }}
+                onClick={() => navigate("/courses")}
+                borderRadius="xl"
+              >
+                {t("home.hero.cta_primary")}
+              </Button>
+
+              <Button
+                variant="solid"
+                bg={GOLD}
+                borderColor={GOLD}
+                color={mode === "dark" ? "white" : "black"}
+                _hover={{ bg: "blackAlpha.300" }}
+                onClick={() => navigate("/company/about")}
+                borderRadius="xl"
+              >
+                {t("footer.about", { defaultValue: "About Us" })}
+              </Button>
+            </HStack>
             {/* Mobile inline countdown chip (centered) */}
             <Box display={{ base: "block", md: "none" }}>
               <MotionBox
@@ -205,7 +264,7 @@ export default function Hero() {
                 border="1px solid"
                 borderColor={mode === "dark" ? "whiteAlpha.300" : "blackAlpha.200"}
                 boxShadow={shadowLg}
-                borderRadius="md"
+                borderRadius="24px"
                 px={3}
                 py={2}
                 backdropFilter="blur(8px)"
@@ -248,32 +307,6 @@ export default function Hero() {
                 </HStack>
               </MotionBox>
             </Box>
-
-            <HStack justify="center" spacing={3} pt={1}>
-              <Button
-                bg={GOLD}
-                color="black"
-                borderColor={GOLD}
-                borderWidth="1px"
-                _hover={{ bg: "blackAlpha.300" }}
-                onClick={() => navigate("/courses")}
-                borderRadius="xl"
-              >
-                {t("home.hero.cta_primary")}
-              </Button>
-
-              <Button
-                variant="solid"
-                bg={GOLD}
-                borderColor={GOLD}
-                color={isMobile ? (mode === "dark" ? "whiteAlpha.900" : "black") : "white"}
-                _hover={{ bg: "blackAlpha.300" }}
-                onClick={() => navigate("/company/about")}
-                borderRadius="xl"
-              >
-                {t("footer.about", { defaultValue: "About Us" })}
-              </Button>
-            </HStack>
           </VStack>
         </Box>
 

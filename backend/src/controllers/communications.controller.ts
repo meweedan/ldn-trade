@@ -77,6 +77,35 @@ function previewOf(s: string, n = 120) {
   return txt.length > n ? txt.slice(0, n) + '…' : txt;
 }
 
+// Round a Date to the next 30-min boundary (server-side safety)
+function roundToStep(d: Date, minutes = 30) {
+  const ms = minutes * 60 * 1000;
+  return new Date(Math.ceil(d.getTime() / ms) * ms);
+}
+
+// Treat incoming YYYY-MM-DD as a UTC day window for slot lookup
+function dayRangeUtc(dateStr: string) {
+  const start = new Date(`${dateStr}T00:00:00.000Z`);
+  const end = new Date(`${dateStr}T23:59:59.999Z`);
+  return { start, end };
+}
+
+// Generate 30-min slots within a UTC window. Adjust hours if you prefer.
+const SLOT_MINUTES = 30;
+const WORK_START_HOUR_UTC = 8;   // 08:00 UTC
+const WORK_END_HOUR_UTC = 16;    // 16:00 UTC
+
+function generateSlotsUtc(dateStr: string) {
+  const d0 = new Date(`${dateStr}T00:00:00.000Z`);
+  const slots: Date[] = [];
+  for (let h = WORK_START_HOUR_UTC; h < WORK_END_HOUR_UTC; h++) {
+    for (let m = 0; m < 60; m += SLOT_MINUTES) {
+      slots.push(new Date(Date.UTC(d0.getUTCFullYear(), d0.getUTCMonth(), d0.getUTCDate(), h, m)));
+    }
+  }
+  return slots;
+}
+
 /* ------------------------------- Public APIs ------------------------------ */
 
 // POST /communications
@@ -181,6 +210,114 @@ export const getMyCommunications = async (req: Request, res: Response) => {
     });
   } catch {
     return res.status(500).json({ message: 'Failed to fetch tickets' });
+  }
+};
+
+// GET /communications/availability?date=YYYY-MM-DD
+export const getAvailability = async (req: Request, res: Response) => {
+  try {
+    const date = String(req.query.date || '').trim();
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      return res.status(400).json({ message: 'date (YYYY-MM-DD) is required' });
+    }
+
+    const { start, end } = dayRangeUtc(date);
+
+    // Already booked at that exact slot timestamp
+    const booked = await prisma.communication.findMany({
+      where: {
+        scheduledAt: { gte: start, lte: end },
+        scheduleStatus: { in: ['REQUESTED', 'CONFIRMED'] as any },
+      },
+      select: { scheduledAt: true },
+    });
+
+    const taken = new Set(
+      booked
+        .map(b => b.scheduledAt)
+        .filter(Boolean)
+        .map(d => new Date(d as Date).toISOString())
+    );
+
+    const now = Date.now();
+    const slots = generateSlotsUtc(date).map(d => {
+      const iso = d.toISOString();
+      const isFuture = d.getTime() > now;
+      return { iso, available: isFuture && !taken.has(iso) };
+    });
+
+    return res.json({ date, slotMinutes: SLOT_MINUTES, slots });
+  } catch {
+    return res.status(500).json({ message: 'Failed to load availability' });
+  }
+};
+
+// POST /communications/schedule
+// Body: { name, email?, phone?, courseId?, courseName?, message?, whenIso, tz, durationMinutes, url?, utm? }
+export const scheduleCall = async (req: Request, res: Response) => {
+  try {
+    const { name, email, phone, courseId, courseName, message, whenIso, tz, durationMinutes, url, utm } =
+      req.body || {};
+
+    if (!name || !whenIso || !(email || phone)) {
+      return res.status(400).json({ message: 'name, whenIso, and (email or phone) are required' });
+    }
+
+    const when = roundToStep(new Date(whenIso), SLOT_MINUTES);
+    if (isNaN(when.getTime())) return res.status(400).json({ message: 'Invalid whenIso' });
+    if (when.getTime() <= Date.now()) return res.status(400).json({ message: 'Time is in the past' });
+
+    // prevent double booking
+    const exists = await prisma.communication.findFirst({
+      where: {
+        scheduledAt: when,
+        scheduleStatus: { in: ['REQUESTED', 'CONFIRMED'] as any },
+      },
+      select: { id: true },
+    });
+    if (exists) return res.status(409).json({ message: 'Slot already booked' });
+
+    // Create ticket with scheduling fields
+    const now = new Date();
+    const ticketId = await generateUniqueTicketId({
+      name,
+      email: email || undefined,
+      createdAt: now,
+      courseId: courseId || undefined,
+    });
+
+    const record = await prisma.communication.create({
+      data: {
+        ticketId,
+        name: String(name),
+        email: email ? String(email) : '',
+        phone: phone ? String(phone) : '',
+        message: message ? String(message) : 'Scheduled WhatsApp call request',
+        courseId: courseId ? String(courseId) : undefined,
+        courseName: courseName ? String(courseName) : undefined,
+        locale: (req as any).locale || undefined,
+        url: url ? String(url) : undefined,
+        utm: utm ? (utm as any) : undefined,
+        scheduleChannel: 'whatsapp_call',
+        scheduleStatus: 'REQUESTED' as any,
+        scheduleTz: tz ? String(tz) : undefined,
+        scheduleDuration: Number(durationMinutes) || SLOT_MINUTES,
+        scheduledAt: when,
+      },
+    });
+
+    // Optional: notify ops
+    try {
+      await sendMail({
+        to: process.env.LEADS_INBOX || 'leads@tradeprofitab.ly',
+        subject: `[Schedule] ${record.name} — ${record.ticketId}`,
+        text: `New call request at ${when.toISOString()} (tz: ${tz || 'n/a'})\n\nTicket: ${record.ticketId}`,
+      });
+    } catch {}
+
+    return res.status(201).json(record);
+  } catch {
+    return res.status(500).json({ message: 'Failed to schedule call' });
   }
 };
 
