@@ -52,12 +52,14 @@ const Header: React.FC = () => {
   React.useEffect(() => {
     if (!langOpen) return;
     const onDoc = (e: MouseEvent) => {
-      if (!langRef.current) return;
-      if (!langRef.current.contains(e.target as Node)) setLangOpen(false);
+      const target = e.target as Node;
+      const inMenu = !!langRef.current && langRef.current.contains(target);
+      const inTrigger = !!triggerRef.current && triggerRef.current.contains(target);
+      if (!inMenu && !inTrigger) setLangOpen(false);
     };
     document.addEventListener("mousedown", onDoc);
     return () => document.removeEventListener("mousedown", onDoc);
-  }, [langOpen]);
+  }, [langOpen]);  
 
   // Close language sheet if the hamburger menu opens (avoid overlap)
   React.useEffect(() => {
@@ -81,6 +83,7 @@ const Header: React.FC = () => {
   const gold = "#b7a27d";
   const headerBg = mode === "dark" ? "#000000" : "#f9f6f2";
   const headerFg = "#b7a27d";
+  const triggerRef = React.useRef<HTMLButtonElement | null>(null);
 
   // ---- measure header height to place mobile dropdown flush to it ----
   const headerRef = React.useRef<HTMLDivElement | null>(null);
@@ -373,6 +376,7 @@ const Header: React.FC = () => {
 
               {/* Language sheet trigger (mobile) */}
               <Button
+                ref={triggerRef} // <— add this
                 aria-label={t("dashboard.language") || "Language"}
                 variant="ghost"
                 color={headerFg}
@@ -543,7 +547,7 @@ const Header: React.FC = () => {
                       {t("footer.contact")}
                     </MotionButton>
                   </RouterLink>
-                  
+
                   <RouterLink
                     to={user ? "/enrolled" : "/courses"}
                     onClick={() => setMenuOpen(false)}
