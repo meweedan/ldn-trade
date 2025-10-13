@@ -183,8 +183,7 @@ export default function Hero() {
         width="150% auto"
         inset={0}
         style={{
-          backgroundImage:
-            mode === "dark" ? "url('/candlesticks.gif')" : "url('/inverted_candlesticks.gif')",
+          backgroundImage:"url('/candlesticks.gif')",
           backgroundRepeat: "no-repeat",
           backgroundSize: "cover",
           backgroundPosition: "center",
@@ -197,13 +196,11 @@ export default function Hero() {
         position="absolute"
         inset={0}
         zIndex={0}
-        bg={mode === "dark" ? "black" : "white"}
         _before={{
           content: '""',
           position: "absolute",
           inset: 0,
-          bgImage:
-            mode === "dark" ? "url('/candlesticks.gif')" : "url('/inverted_candlesticks.gif')",
+          bgImage:"url('/candlesticks.gif')",
           bgSize: "cover",
           bgRepeat: "no-repeat",
           bgPosition: "center",
