@@ -17,6 +17,7 @@ import {
   Divider,
 } from "@chakra-ui/react";
 import GlassCard from "../components/GlassCard";
+import { useColorMode } from "@chakra-ui/react";
 
 const CSelect = chakra("select");
 const whatsappNumber = process.env.REACT_APP_WHATSAPP_NUMBER || "";
@@ -26,8 +27,8 @@ type Country = { name: string; cca2: string; iddRoots: string[]; iddSuffixes: st
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
-  const i18n = useTranslation();
-  const t = i18n.t as unknown as (key: string) => string;
+  const { t } = useTranslation() as any;
+  const { colorMode } = useColorMode();
 
   // Common fields
   const [role] = useState<Role>("user");
@@ -219,7 +220,7 @@ const Register: React.FC = () => {
                     {t("auth.basic_info") || "Basic information"}
                   </Heading>
                   <SimpleGrid columns={{ base: 1, md: 2 }} spacing={{ base: 4, md: 6 }}>
-                    <GridItem>
+                    <GridItem borderRadius="md" px={3} py={2} borderColor="#b7a27d">
                       <Text fontSize="sm" mb={1} color="text.muted">
                         {t("auth.name")}
                       </Text>
@@ -231,7 +232,7 @@ const Register: React.FC = () => {
                       />
                     </GridItem>
 
-                    <GridItem>
+                    <GridItem borderRadius="md" px={3} py={2} borderColor="#b7a27d">
                       <Text fontSize="sm" mb={1} color="text.muted">
                         {t("auth.email")}
                       </Text>
@@ -255,9 +256,12 @@ const Register: React.FC = () => {
                           onChange={(e) => setPassword(e.target.value)}
                           placeholder={(t("auth.password_placeholder") as string) || "••••••••"}
                           required
+                          borderRadius="md"
+                          px={3}
+                          py={2}
+                          borderColor="#b7a27d"
                         />
                         <Button
-                          size="sm"
                           variant="solid"
                           bg="#b7a27d"
                           onClick={() => setShowPassword((v) => !v)}
@@ -279,8 +283,8 @@ const Register: React.FC = () => {
                   </Heading>
 
                   <SimpleGrid columns={{ base: 1, md: 2 }} spacing={{ base: 4, md: 6 }}>
-                    <GridItem>
-                      <Text fontSize="sm" mb={1} color="text.muted">
+                    <GridItem borderRadius="md" px={3} py={2} borderColor="#b7a27d">
+                      <Text fontSize="sm" mb={1}>
                         {t("auth.nationality") || "Nationality"}
                       </Text>
                       <CSelect
@@ -291,9 +295,10 @@ const Register: React.FC = () => {
                         borderRadius="md"
                         px={3}
                         py={2}
-                        bg="bg.surface"
-                        color="black"
-                        borderColor="border.default"
+                        maxW="250px"
+                        bg={colorMode === "dark" ? "black" : "white"}
+                        color={colorMode === "dark" ? "white" : "black"}
+                        borderColor="#b7a27d"
                       >
                         <option value="">
                           {t("auth.nationality_placeholder") || "Select a country"}
@@ -306,8 +311,8 @@ const Register: React.FC = () => {
                       </CSelect>
                     </GridItem>
 
-                    <GridItem>
-                      <Text fontSize="sm" mb={1} color="text.muted">
+                    <GridItem borderRadius="md" px={3} py={2} borderColor="#b7a27d">
+                      <Text fontSize="sm" mb={1}>
                         {t("auth.phone") || "Phone"}
                       </Text>
                       <HStack>
@@ -320,9 +325,9 @@ const Register: React.FC = () => {
                           borderRadius="md"
                           px={3}
                           py={2}
-                          bg="bg.surface"
-                          color="black"
-                          borderColor="border.default"
+                          borderColor="#b7a27d"
+                          bg={colorMode === "dark" ? "black" : "white"}
+                          color={colorMode === "dark" ? "white" : "black"}
                         >
                           {(() => {
                             const c = countries.find((x) => x.cca2 === selectedCountry);
@@ -345,15 +350,12 @@ const Register: React.FC = () => {
                           borderRadius="md"
                           px={3}
                           py={2}
-                          bg="bg.surface"
-                          color="black"
-                          borderColor="border.default"
+                          borderColor="#b7a27d"
                         />
                       </HStack>
 
                       <HStack mt={2} gap={2} flexWrap="wrap">
                         <Button
-                          size="sm"
                           variant="solid"
                           bg="#b7a27d"
                           onClick={sendOtp}
@@ -368,14 +370,9 @@ const Register: React.FC = () => {
                           placeholder={(t("auth.otp_placeholder") as string) || "Enter OTP"}
                           maxW="200px"
                           borderRadius="md"
-                          px={3}
-                          py={2}
-                          bg="bg.surface"
-                          color="black"
-                          borderColor="border.default"
+                          borderColor="#b7a27d"
                         />
                         <Button
-                          size="sm"
                           onClick={verifyOtp}
                           isLoading={otpVerifying}
                           bg="#b7a27d"
@@ -386,7 +383,6 @@ const Register: React.FC = () => {
                             : t("auth.verify") || "Verify"}
                         </Button>
                         <Button
-                          size="sm"
                           variant="solid"
                           bg="green"
                           onClick={() => window.open(waLink, "_blank", "noreferrer")}
@@ -422,7 +418,7 @@ const Register: React.FC = () => {
                       {t("auth.additional_info") || "Additional details"}
                     </Heading>
                     <SimpleGrid columns={{ base: 1, md: 2 }} spacing={{ base: 4, md: 6 }}>
-                      <GridItem>
+                      <GridItem borderRadius="md" px={3} py={2} borderColor="#b7a27d">
                         <Text fontSize="sm" mb={1} color="text.muted">
                           {t("auth.dob") || "Date of birth"}
                         </Text>
@@ -433,7 +429,7 @@ const Register: React.FC = () => {
                           placeholder={t("auth.dob_placeholder") || "Date of birth"}
                         />
                       </GridItem>
-                      <GridItem>
+                      <GridItem borderRadius="md" px={3} py={2} borderColor="#b7a27d">
                         <Text fontSize="sm" mb={1} color="text.muted">
                           {t("auth.gender") || "Gender"}
                         </Text>
@@ -445,9 +441,9 @@ const Register: React.FC = () => {
                           borderRadius="md"
                           px={3}
                           py={2}
-                          bg="bg.surface"
-                          color="black"
-                          borderColor="border.default"
+                          bg={colorMode === "dark" ? "black" : "white"}
+                          color={colorMode === "dark" ? "white" : "black"}
+                          borderColor="#b7a27d"
                         >
                           <option value="">{t("common.select") || "Select"}</option>
                           <option value="male">{t("auth.gender_male") || "Male"}</option>
@@ -459,15 +455,13 @@ const Register: React.FC = () => {
                 )}
 
                 {/* Submit button */}
-                <HStack pt={2}>
+                <HStack pt={2} justifyContent="center">
                   <Button
-                    type="submit"
                     variant="solid"
-                    size="lg"
                     bg="#b7a27d"
+                    minW="200px"
                     color="black"
                     _hover={{ opacity: 0.9 }}
-                    alignSelf="flex-start"
                     isDisabled={loading}
                     isLoading={loading}
                   >

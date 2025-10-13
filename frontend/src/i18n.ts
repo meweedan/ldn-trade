@@ -974,7 +974,7 @@ const resources = {
           ratingText2: "4,9/5 Note moyenne des formateurs",
           reviewsCount2: "Top 1 % de la catégorie",
           proofText2: "Avis vérifiés de manière indépendante.",
-          headline3: "Fiable au Moyen-Orient, en Afrique du Nord et au-delà",
+          headline3: "Fiable au Moyen-Orient",
           ratingText3: "Communauté mondiale d’apprenants",
           reviewsCount3: "En croissance chaque semaine",
           proofText3: "Une transparence sur laquelle vous pouvez compter."

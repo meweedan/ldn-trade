@@ -21,7 +21,7 @@ import {
   ChevronUp,
   ChevronDown,
   Disc,
-  HelpCircle,
+  HeadsetIcon,
 } from "lucide-react";
 import { Link as ChakraLink, LinkProps as ChakraLinkProps } from "@chakra-ui/react";
 import { Link as RouterLink, LinkProps as RouterLinkProps, useLocation } from "react-router-dom";
@@ -118,7 +118,7 @@ const FooterInner: React.FC = () => {
       {/* Help FAB (desktop only) */}
       <Box
         position="fixed"
-        right="16px"
+        right="6px"
         bottom="16px"
         zIndex={1100}
         display={{ base: "none", md: "block" }}
@@ -126,15 +126,15 @@ const FooterInner: React.FC = () => {
         <Button
           aria-label={t("footer.help") || "Help"}
           rounded="full"
-          w="44px"
-          h="44px"
+          w="54px"
+          h="54px"
           p={0}
           bg={accent}
           color="black"
           _hover={{ opacity: 0.95 }}
           onClick={() => setHelpOpen((v) => !v)}
         >
-          <Icon as={HelpCircle} boxSize={5} />
+          <Icon as={HeadsetIcon} boxSize={5} />
         </Button>
 
         <SmallCollapse in={helpOpen}>
@@ -183,27 +183,17 @@ const FooterInner: React.FC = () => {
       </Box>
 
       {/* Real footer */}
-      <Box py={{ base: 6, md: 12 }} ref={sentinelRef}>
-        <Container px={{ base: 5, md: 8 }} maxW="container.xl">
+      <Box ref={sentinelRef}>
+        <Container maxW="container.xl">
           <SimpleGrid
             columns={{ base: 1, md: 3 }}
-            gap={{ base: 6, md: 12 }}
             mb={{ base: 6, md: 12 }}
           >
             {/* Brand */}
-            <VStack align={{ base: "center", md: "flex-start" }} gap={3}>
-              <Image src="/logo.png" alt="Logo" w="94px" h="94px" objectFit="contain" />
-              <Text
-                fontSize={{ base: "sm", md: "md" }}
-                opacity={0.8}
-                textAlign={{ base: "center", md: "left" }}
-                maxW="sm"
-              >
-                {t("footer.tagline") || "Premium education for traders & investors."}
-              </Text>
+            <VStack align={{ base: "center", md: "flex-start" }}>
+              <Image src="/logo.png" alt="Logo" w="160px" h="160px" objectFit="contain" />
             </VStack>
 
-            {/* Sections */}
             {/* Sections */}
             {sections.map((section, idx) => {
               const isOpen = openIdx === idx;
@@ -215,7 +205,6 @@ const FooterInner: React.FC = () => {
                     variant="ghost"
                     justifyContent="space-between"
                     px={0}
-                    py={3}
                     color={accent}
                     onClick={() => toggleSection(idx)}
                     display={{ base: "flex", md: "none" }}
@@ -288,7 +277,7 @@ const FooterInner: React.FC = () => {
           </SimpleGrid>
 
           {/* Bottom row */}
-          <HStack justify="center">
+          <HStack justify="center" pb={6}>
             <Text fontSize={{ base: "sm", md: "sm" }} textAlign="center" opacity={0.8}>
               © {new Date().getFullYear()} {t("brand")}. {t("footer.rights")}
             </Text>
@@ -442,7 +431,7 @@ const FooterInner: React.FC = () => {
             _active={{ transform: "translateY(0)" }}
           >
             {/* Use the Help icon; looks like a question mark bubble */}
-            <Icon as={HelpCircle} boxSize={6} />
+            <Icon as={HeadsetIcon} boxSize={6} />
           </Button>
         </Box>
       )}

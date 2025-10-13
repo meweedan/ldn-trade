@@ -9,7 +9,7 @@ const CCheckbox = chakra('input');
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
-  const { t } = useTranslation() as unknown as { t: (key: string) => string };
+  const { t } = useTranslation() as any;
   const { refresh, setUser } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
