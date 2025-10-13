@@ -5,7 +5,7 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 const resources = {
   en: {
     translation: {
-      brand: 'InfiniProfits',
+      brand: 'Infinily',
       nav: {
         search: 'Search',
         enrolled: 'Enrolled',
@@ -562,7 +562,7 @@ const resources = {
         login_subtitle: 'Access premium courses, curated signals and dedicated support',
         login_cta: 'Sign in',
         no_account: 'Don\'t have an account?',
-        join_us: 'Join InfiniProfits',
+        join_us: 'Join Infinily',
         login_loading: 'Signing you in…',
         login_error: 'Login failed',
         forgot_password: 'Forgot password?',
@@ -631,7 +631,7 @@ const resources = {
 
   fr: {
     translation: {
-      brand: 'InfiniProfits',
+      brand: 'Infinily',
       nav: {
         search: 'Rechercher',
         enrolled: 'Enrolled',
@@ -949,9 +949,9 @@ const resources = {
       home: {
         hero: {
           title: 'Devenez un trader expert avec les meilleurs.',
-          subtitle: 'Rejoignez des +4,200 d’apprenants qui gagnent déjà grâce à nos formations intensives.',
+          subtitle: 'Rejoignez des +4,200 d’apprenants.',
           cta_primary: 'Commencer la formation',
-          cta_secondary: 'Voir le programme',
+          cta_secondary: 'Voir',
         },
         urgency: {
           kicker: "Les inscriptions au cours se terminent dans",
@@ -1013,8 +1013,8 @@ const resources = {
         },
         courses: {
           title: 'Cours à la une',
-          cta: 'Voir le programme',
-          view: 'Voir le programme',
+          cta: 'Voir',
+          view: 'Voir',
         },
         cta: {
           kicker: 'Prêt à apprendre ?',
@@ -1143,7 +1143,7 @@ const resources = {
         login_subtitle: 'Accédez à des cours premium, à des signaux sélectionnés et à un support dédié',
         login_cta: 'Se connecter',
          no_account: 'Vous n\'avez pas de compte ?',
-        join_us: 'Rejoignez InfiniProfits',
+        join_us: 'Rejoignez Infinily',
         login_loading: 'Connexion…',
         login_error: 'Échec de la connexion',
         verify: 'Vérifier',
@@ -1211,7 +1211,7 @@ const resources = {
 
   ar: {
     translation: {
-      brand: 'InfiniProfits',
+      brand: 'Infinily',
       nav: {
         search: 'بحث',
         enrolled: 'كورساتي',
@@ -1758,7 +1758,7 @@ const resources = {
         login_subtitle: 'ادخل للوصول إلى أفضل الكورسات، اشارات تداول ممتازة ودعم مخصص',
         login_cta: 'تسجيل الدخول',
         no_account: 'ليس لديك حساب؟',
-        join_us: 'انضم إلى InfiniProfits',
+        join_us: 'انضم إلى Infinily',
         login_loading: 'جارٍ تسجيل الدخول…',
         login_error: 'فشل تسجيل الدخول',
         verify: 'تحقق',
