@@ -400,7 +400,7 @@ const Contact: React.FC = () => {
   };
 
   return (
-    <Box color="text.primary" bg="bg.primary" py={{ base: 8, md: 12 }}>
+    <Box color="text.primary" py={{ base: 8, md: 12 }}>
       <Container maxW="8xl">
         <VStack align="stretch" gap={{ base: 6, md: 10 }}>
           {/* Page title */}
@@ -421,6 +421,7 @@ const Contact: React.FC = () => {
             borderColor={brand}
             borderRadius="lg"
             p={{ base: 4, md: 6 }}
+            bg="bg.surface"
           >
             <VStack align="stretch" gap={{ base: 6, md: 8 }}>
               {/* Section: Basic info */}
@@ -474,6 +475,7 @@ const Contact: React.FC = () => {
                         setSelectedCountry(e.target.value)
                       }
                       borderRadius="md"
+                      maxW="200px"
                       px={3}
                       py={2}
                       borderWidth={1}

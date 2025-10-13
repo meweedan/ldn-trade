@@ -8,12 +8,18 @@ interface LogoProps {
 
 const Logo: React.FC<LogoProps> = ({ h }) => {
   const isRTL = i18n.dir() === "rtl";
-  const isDesktop = useBreakpointValue({ base: false, md: true });
-  const src = isDesktop
-    ? (isRTL ? process.env.PUBLIC_URL + "/text-logo.png" : process.env.PUBLIC_URL + "/text-logo.png")
-    : (isRTL ? process.env.PUBLIC_URL + "/text-logo.png" : process.env.PUBLIC_URL + "/text-logo.png");
 
-  // Default responsive height if not provided (mobile -> desktop)
+  // Choose the actual image URL per breakpoint
+  const src = useBreakpointValue({
+    base: isRTL
+      ? process.env.PUBLIC_URL + "/logo.png"
+      : process.env.PUBLIC_URL + "/logo.png",
+    md: isRTL
+      ? process.env.PUBLIC_URL + "/text-logo.png"
+      : process.env.PUBLIC_URL + "/text-logo.png",
+  });
+
+  // Default responsive height (base, md, lg)
   const responsiveHeight = h || [28, 32, 36];
 
   return (
@@ -22,7 +28,7 @@ const Logo: React.FC<LogoProps> = ({ h }) => {
       height={responsiveHeight}
       width="auto"
       objectFit="contain"
-      alt="Trade Profitably"
+      alt="InfiniProfits"
     />
   );
 };

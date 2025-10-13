@@ -1,14 +1,14 @@
 {
-  "short_name": "Trade Profitably",
-  "name": "Trade Profitably",
+  "short_name": "InfiniProfits",
+  "name": "InfiniProfits",
   "icons": [
     {
-      "src": "logo-ar.png",
+      "src": "logo.png",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "logo-ar.png",
+      "src": "logo.png",
       "type": "image/png",
       "sizes": "512x512"
     }

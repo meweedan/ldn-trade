@@ -5,7 +5,7 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 const resources = {
   en: {
     translation: {
-      brand: 'Trade Profitably',
+      brand: 'InfiniProfits',
       nav: {
         search: 'Search',
         enrolled: 'Enrolled',
@@ -562,7 +562,7 @@ const resources = {
         login_subtitle: 'Access premium courses, curated signals and dedicated support',
         login_cta: 'Sign in',
         no_account: 'Don\'t have an account?',
-        join_us: 'Join Trade Profitably',
+        join_us: 'Join InfiniProfits',
         login_loading: 'Signing you in…',
         login_error: 'Login failed',
         forgot_password: 'Forgot password?',
@@ -631,7 +631,7 @@ const resources = {
 
   fr: {
     translation: {
-      brand: 'Trade Profitably',
+      brand: 'InfiniProfits',
       nav: {
         search: 'Rechercher',
         enrolled: 'Enrolled',
@@ -1143,7 +1143,7 @@ const resources = {
         login_subtitle: 'Accédez à des cours premium, à des signaux sélectionnés et à un support dédié',
         login_cta: 'Se connecter',
          no_account: 'Vous n\'avez pas de compte ?',
-        join_us: 'Rejoignez Trade Profitably',
+        join_us: 'Rejoignez InfiniProfits',
         login_loading: 'Connexion…',
         login_error: 'Échec de la connexion',
         verify: 'Vérifier',
@@ -1211,7 +1211,7 @@ const resources = {
 
   ar: {
     translation: {
-      brand: 'Trade Profitably',
+      brand: 'InfiniProfits',
       nav: {
         search: 'بحث',
         enrolled: 'كورساتي',
@@ -1758,7 +1758,7 @@ const resources = {
         login_subtitle: 'ادخل للوصول إلى أفضل الكورسات، اشارات تداول ممتازة ودعم مخصص',
         login_cta: 'تسجيل الدخول',
         no_account: 'ليس لديك حساب؟',
-        join_us: 'انضم إلى Trade Profitably',
+        join_us: 'انضم إلى InfiniProfits',
         login_loading: 'جارٍ تسجيل الدخول…',
         login_error: 'فشل تسجيل الدخول',
         verify: 'تحقق',

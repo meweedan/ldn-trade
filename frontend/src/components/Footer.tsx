@@ -192,7 +192,7 @@ const FooterInner: React.FC = () => {
           >
             {/* Brand */}
             <VStack align={{ base: "center", md: "flex-start" }} gap={3}>
-              <Image src="/text-logo.png" alt="Logo" w="94px" h="94px" objectFit="contain" />
+              <Image src="/logo.png" alt="Logo" w="94px" h="94px" objectFit="contain" />
               <Text
                 fontSize={{ base: "sm", md: "md" }}
                 opacity={0.8}
