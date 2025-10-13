@@ -386,7 +386,7 @@ const Header: React.FC = () => {
                 <Icon as={Globe} />
               </Button>
 
-              {/* Hamburger */}
+              {/* Hamburger Icon */}
               <Button
                 size="lg"
                 variant="ghost"
