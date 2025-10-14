@@ -5,7 +5,7 @@ export async function listTiers(_req: Request, res: Response) {
   const tiers = await prisma.courseTier.findMany({ orderBy: { price_stripe: 'asc' } });
   // Enrich with aggregates (confirmed purchases, ratings)
   const enriched = await Promise.all(
-    tiers.map(async (tier) => {
+    tiers.map(async (tier: any) => {
       const [purchases_count, ratingAgg, latestReviews] = await Promise.all([
         prisma.purchase.count({ where: { tierId: tier.id, status: 'CONFIRMED' as any } }),
         prisma.courseReview.aggregate({ where: { tierId: tier.id }, _avg: { rating: true }, _count: { _all: true } }),
@@ -21,7 +21,7 @@ export async function listTiers(_req: Request, res: Response) {
         purchases_count,
         rating_avg: ratingAgg._avg.rating || 0,
         rating_count: ratingAgg._count._all || 0,
-        latestReviews: latestReviews.map((r) => ({
+        latestReviews: latestReviews.map((r: any) => ({
           id: r.id,
           rating: r.rating,
           comment: r.comment,
@@ -91,7 +91,7 @@ export async function getTier(req: Request, res: Response) {
     purchases_count,
     rating_avg: ratingAgg._avg.rating || 0,
     rating_count: ratingAgg._count._all || 0,
-    reviews: reviews.map((r) => ({
+    reviews: reviews.map((r: any) => ({
       id: r.id,
       userId: r.userId,
       rating: r.rating,

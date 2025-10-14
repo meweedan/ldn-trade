@@ -196,7 +196,7 @@ export const getMyCommunications = async (req: Request, res: Response) => {
     });
 
     return res.json({
-      items: items.map((it) => ({
+      items: items.map((it: any) => ({
         id: it.id,
         ticketId: it.ticketId,
         status: it.status,
@@ -234,13 +234,13 @@ export const getAvailability = async (req: Request, res: Response) => {
 
     const taken = new Set(
       booked
-        .map(b => b.scheduledAt)
+        .map((b: { scheduledAt: Date | null }) => b.scheduledAt)
         .filter(Boolean)
-        .map(d => new Date(d as Date).toISOString())
+        .map((d: Date | string) => new Date(d as Date).toISOString())
     );
 
     const now = Date.now();
-    const slots = generateSlotsUtc(date).map(d => {
+    const slots = generateSlotsUtc(date).map((d: Date) => {
       const iso = d.toISOString();
       const isFuture = d.getTime() > now;
       return { iso, available: isFuture && !taken.has(iso) };

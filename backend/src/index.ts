@@ -58,8 +58,23 @@ app.use((req, res, next) => {
 });
 
 app.use(cors(corsOptions));
-// Catch-all preflight handler (some hosts/proxies strip OPTIONS by default)
-app.options("*", cors(corsOptions));
+// Catch-all preflight handler without path pattern (Express 5 path-to-regexp doesn't accept "*")
+app.use((req, res, next) => {
+  if (req.method === "OPTIONS") {
+    // Mirror CORS success for generic preflight
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+    const origin = (req.headers.origin as string) || "";
+    if (origin) res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Access-Control-Allow-Methods", "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS");
+    res.setHeader(
+      "Access-Control-Allow-Headers",
+      "Content-Type,Authorization,X-Requested-With,sentry-trace,baggage,x-client"
+    );
+    res.setHeader("Access-Control-Max-Age", "86400");
+    return res.status(204).end();
+  }
+  return next();
+});
 
 /* ---------------- Body/cookies/logs ---------------- */
 app.use(express.json({ limit: "20mb" }));
