@@ -45,4 +45,7 @@ export default async function vercelHandler(req: VercelRequest, res: VercelRespo
 }
 
 // Optional but useful on Vercel Node functions
-export const maxDuration = 60;
+export const config = {
+  maxDuration: 60,
+  runtime: "nodejs20.x",
+};
