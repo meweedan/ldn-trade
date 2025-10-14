@@ -35,7 +35,13 @@ app.use(
 );
 
 if (process.env.NODE_ENV !== "test" && process.env.DISABLE_RATE_LIMIT !== "1") {
-  app.use(rateLimit({ windowMs: 15 * 60 * 1000, limit: 300 }));
+  const limiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 300 });
+  app.use((req, res, next) => {
+    // Skip limiting for monitoring/analytics and preflight
+    if (req.method === "OPTIONS") return next();
+    if (req.path === "/monitoring" || req.path === "/analytics/track") return next();
+    return limiter(req, res, next);
+  });
 }
 
 /* ---------------- CORS (permissive to unblock) ---------------- */
@@ -52,6 +58,8 @@ app.use((req, res, next) => {
 });
 
 app.use(cors(corsOptions));
+// Catch-all preflight handler (some hosts/proxies strip OPTIONS by default)
+app.options("*", cors(corsOptions));
 
 /* ---------------- Body/cookies/logs ---------------- */
 app.use(express.json({ limit: "20mb" }));
