@@ -22,7 +22,7 @@ import PromoAdminPanel from "../components/admin/PromoAdminPanel";
 import CommunicationsAdminPanel from "../components/admin/CommunicationsAdminPanel";
 import JobsAdminPanel from "../components/admin/JobsAdminPanel";
 import ApplicationsAdminPanel from "../components/admin/ApplicationsAdminPanel";
-import api from "../api/client";
+import api, { getMyPurchases } from "../api/client";
 
 // Charts
 import {
@@ -158,12 +158,12 @@ const Dashboard: React.FC = () => {
       try {
         // Load purchases and courses in parallel
         const [mine, coursesResp] = await Promise.allSettled([
-          api.get("/purchase/mine"),
+          getMyPurchases({ ttlMs: 10 * 60 * 1000 }),
           api.get("/courses"),
         ]);
 
         const myPurchases: Purchase[] =
-          mine.status === "fulfilled" && Array.isArray(mine.value.data) ? mine.value.data : [];
+          mine.status === "fulfilled" && Array.isArray(mine.value) ? mine.value : [];
         const tiersFromApi: Tier[] =
           coursesResp.status === "fulfilled" && Array.isArray(coursesResp.value.data)
             ? coursesResp.value.data

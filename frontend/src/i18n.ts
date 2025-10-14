@@ -194,7 +194,7 @@ const resources = {
         copy: 'Copy',
         download_qr: 'Download QR',
         email: 'Email',
-        only_unread: 'Only unread',
+        only_unread: 'Unread',
         show_all: 'Show all',
         export_csv: 'Export CSV',
         course: 'Course',

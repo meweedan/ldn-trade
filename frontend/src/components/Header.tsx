@@ -24,7 +24,6 @@ import {
   LogInIcon,
   UserPlus,
   MessageSquare,
-  Settings,
   BookOpen,
   Globe,
   LayoutDashboard,
@@ -128,158 +127,7 @@ const Header: React.FC = () => {
     _hover: { bg: "transparent", _after: { opacity: 1 } },
   };
 
-  const SettingsMenu: React.FC = () => {
-    const isDark = mode === "dark";
-    const [open, setOpen] = React.useState(false);
-    const [openTop, setOpenTop] = React.useState<number | null>(null); // snapshot top when opening
-    const ref = React.useRef<HTMLDivElement | null>(null);
-
-    React.useEffect(() => {
-      const onDoc = (e: MouseEvent) => {
-        if (!ref.current) return;
-        if (!ref.current.contains(e.target as Node)) setOpen(false);
-      };
-      document.addEventListener("mousedown", onDoc);
-      return () => document.removeEventListener("mousedown", onDoc);
-    }, []);
-
-    // Prevent body scroll when settings is open (mobile/desktop both fine)
-    React.useEffect(() => {
-      const prev = document.body.style.overflow;
-      document.body.style.overflow = open ? "hidden" : prev || "";
-      return () => {
-        document.body.style.overflow = prev;
-      };
-    }, [open]);
-
-    const onToggleOpen = () => {
-      // snapshot the header bottom ONCE so the dropdown doesn't mutate position while animating
-      if (!open) setOpenTop(headerBottom);
-      setOpen((v) => !v);
-    };
-
-    return (
-      <Box position="relative" ref={ref}>
-        <Button
-          aria-label={t("dashboard.settings") || "Settings"}
-          variant="ghost"
-          color={headerFg}
-          borderRadius="full"
-          size="lg"
-          p={2}
-          onClick={onToggleOpen}
-        >
-          <Icon as={Settings} />
-        </Button>
-
-        <AnimatePresence initial={false}>
-          {open && (
-            <MotionBox
-              key="settings-dd"
-              initial={{ opacity: 0, scaleY: 0.92 }}
-              animate={{ opacity: 1, scaleY: 1 }}
-              exit={{ opacity: 0, scaleY: 0.98 }}
-              transition={{ duration: 0.16, ease: "easeOut" }}
-              style={{ transformOrigin: "top center", willChange: "transform, opacity" }}
-              /* ALWAYS centered, independent of LTR/RTL */
-              position="fixed"
-              left={0}
-              right={0}
-              mx="auto"
-              /* Use the snapped header bottom so it won't shift while animating */
-              top={`${openTop ?? headerBottom}px`}
-              zIndex={1200}
-              bg={headerBg}
-              color={headerFg}
-              border="1px solid"
-              borderColor={mode === "dark" ? "whiteAlpha.200" : "blackAlpha.200"}
-              borderRadius="xl"
-              p={3}
-              /* Keep it neatly centered within the viewport */
-              w="min(92vw, 320px)"
-              maxW="420px"
-              textAlign="center"
-              boxShadow="xl"
-              /* Prevent overflow on short screens */
-              maxH="70vh"
-              overflowY="auto"
-            >
-              <VStack align="center" gap={2}>
-                <Box fontWeight="bold">{t("dashboard.settings") || "Settings"}</Box>
-
-                {/* Buttons always fit the frame; wrap if needed */}
-                <HStack justify="center" flexWrap="wrap" gap={2}>
-                  <Button
-                    size="sm"
-                    color="white"
-                    bg="#b7a27d"
-                    borderRadius="full"
-                    onClick={() => {
-                      i18n.changeLanguage("en");
-                      setOpen(false);
-                    }}
-                  >
-                    English
-                  </Button>
-                  <Button
-                    size="sm"
-                    color="white"
-                    bg="#b7a27d"
-                    borderRadius="full"
-                    onClick={() => {
-                      i18n.changeLanguage("ar");
-                      setOpen(false);
-                    }}
-                  >
-                    العربية
-                  </Button>
-                  <Button
-                    size="sm"
-                    color="white"
-                    bg="#b7a27d"
-                    borderRadius="full"
-                    onClick={() => {
-                      i18n.changeLanguage("fr");
-                      setOpen(false);
-                    }}
-                  >
-                    Français
-                  </Button>
-                </HStack>
-
-                <Box
-                  borderTop="1px solid"
-                  w="100%"
-                  borderColor={mode === "dark" ? "whiteAlpha.200" : "blackAlpha.200"}
-                  my={1}
-                />
-
-                <Button
-                  onClick={() => {
-                    toggle();
-                    setOpen(false);
-                  }}
-                  variant="solid"
-                  borderRadius="full"
-                  color={mode === "dark" ? "black" : "white"}
-                  bg={mode === "dark" ? "white" : "black"}
-                >
-                  <HStack>
-                    <Icon as={isDark ? Sun : Moon} />
-                    <Box as="span">
-                      {isDark
-                        ? t("tooltip.lightMode") || "Light mode"
-                        : t("tooltip.darkMode") || "Dark mode"}
-                    </Box>
-                  </HStack>
-                </Button>
-              </VStack>
-            </MotionBox>
-          )}
-        </AnimatePresence>
-      </Box>
-    );
-  };
+  
 
   return (
     <Box
@@ -302,7 +150,6 @@ const Header: React.FC = () => {
 
           <Spacer />
 
-          {/* Desktop nav */}
           <HStack gap={1} as="nav" display={{ base: "none", md: "flex" }}>
             <RouterLink to="/contact">
               <Button {...navButtonProps}>
@@ -351,9 +198,32 @@ const Header: React.FC = () => {
             )}
           </HStack>
 
-          {/* Desktop controls: unified Settings */}
+          <Spacer display={{ base: "none", md: "block" }} />
+
           <HStack gap={2} ms={3} display={{ base: "none", md: "flex" }}>
-            <SettingsMenu />
+            <Button
+              aria-label={
+                mode === "dark"
+                  ? t("tooltip.lightMode") || "Light mode"
+                  : t("tooltip.darkMode") || "Dark mode"
+              }
+              variant="ghost"
+              color={headerFg}
+              borderRadius="full"
+              onClick={toggle}
+            >
+              <Icon as={mode === "dark" ? Sun : Moon} />
+            </Button>
+            <Button
+              ref={triggerRef}
+              aria-label={t("dashboard.language") || "Language"}
+              variant="ghost"
+              color={headerFg}
+              borderRadius="full"
+              onClick={() => setLangOpen((v) => !v)}
+            >
+              <Icon as={Globe} />
+            </Button>
           </HStack>
 
           {/* Mobile controls */}

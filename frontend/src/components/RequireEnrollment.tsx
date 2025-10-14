@@ -1,5 +1,5 @@
 import React from 'react';
-import api from '../api/client';
+import { getMyPurchases } from '../api/client';
 
 type Props = {
   tierId: string;
@@ -21,8 +21,8 @@ const RequireEnrollment: React.FC<Props> = ({ tierId, fallback = null, children 
   React.useEffect(() => {
     (async () => {
       try {
-        const resp = await api.get('/purchase/mine');
-        const purchases: Purchase[] = Array.isArray(resp.data) ? resp.data : [];
+        const list = await getMyPurchases({ ttlMs: 10 * 60 * 1000 });
+        const purchases: Purchase[] = Array.isArray(list) ? list : [];
         const ok = purchases.some(p => (p.status === 'CONFIRMED') && ((p.tier && p.tier.id === tierId) || (p.tierId === tierId)));
         setAllowed(ok);
       } catch {

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Box, Heading, Text, VStack, HStack, Badge, Button, Spinner } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import api from '../api/client';
+import api, { getMyPurchases } from '../api/client';
 
 const Enrolled: React.FC = () => {
   const { t } = useTranslation() as any;
@@ -14,8 +14,8 @@ const Enrolled: React.FC = () => {
   useEffect(() => {
     (async () => {
       try {
-        const resp = await api.get('/purchase/mine');
-        setEnrollments(Array.isArray(resp.data) ? resp.data : []);
+        const list = await getMyPurchases({ ttlMs: 10 * 60 * 1000 });
+        setEnrollments(Array.isArray(list) ? list : []);
       } catch (e: any) {
         setError(e?.response?.data?.message || 'Failed to load enrollments');
         setEnrollments([]);

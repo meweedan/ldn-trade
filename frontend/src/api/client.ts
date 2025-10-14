@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: (process.env.NEXT_PUBLIC_BACKEND_URL || process.env.REACT_APP_BACKEND_URL) || 'http://localhost:3000',
+  baseURL: (process.env.NEXT_PUBLIC_BACKEND_URL || process.env.REACT_APP_BACKEND_URL) || 'http://localhost:4000',
 });
 
 // Attach access token if present
@@ -68,3 +68,33 @@ api.interceptors.response.use(
 );
 
 export default api;
+
+let myPurchasesCache: { data: any[]; expires: number } | null = null;
+let myPurchasesPromise: Promise<any[]> | null = null;
+
+export function invalidateMyPurchases() {
+  myPurchasesCache = null;
+}
+
+export async function getMyPurchases(options?: { force?: boolean; ttlMs?: number }): Promise<any[]> {
+  const force = Boolean(options?.force);
+  const ttl = typeof options?.ttlMs === 'number' ? Math.max(0, options!.ttlMs!) : 5 * 60 * 1000;
+  const now = Date.now();
+  if (!force && myPurchasesCache && myPurchasesCache.expires > now) {
+    return myPurchasesCache.data;
+  }
+  if (myPurchasesPromise) return myPurchasesPromise;
+  myPurchasesPromise = api
+    .get('/purchase/mine')
+    .then((resp) => {
+      const list = Array.isArray(resp.data) ? resp.data : [];
+      myPurchasesCache = { data: list, expires: now + ttl };
+      myPurchasesPromise = null;
+      return list;
+    })
+    .catch((err) => {
+      myPurchasesPromise = null;
+      throw err;
+    });
+  return myPurchasesPromise;
+}

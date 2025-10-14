@@ -18,7 +18,7 @@ import {
   GridItem,
   SimpleGrid,
 } from "@chakra-ui/react";
-import api from "../../api/client";
+import api, { getMyPurchases } from "../../api/client";
 import RequireEnrollment from "../../components/RequireEnrollment";
 import { Lock, Star, Award, Send, Headphones } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -95,12 +95,12 @@ const CourseDetail: React.FC = () => {
     if (!id) return;
     (async () => {
       try {
-        const [resp, mine] = await Promise.all([
+        const [resp, mineList] = await Promise.all([
           api.get(`/courses/${id}`),
-          api.get('/purchase/mine').catch(() => ({ data: [] })),
+          getMyPurchases({ ttlMs: 10 * 60 * 1000 }).catch(() => [] as any[]),
         ]);
-        setTier(resp.data || null);
-        const list: any[] = Array.isArray(mine.data) ? mine.data : [];
+        setTier((resp as any).data || null);
+        const list: any[] = Array.isArray(mineList) ? mineList : [];
         const enrolled = list.some((p: any) => String(p.status || '').toUpperCase() === 'CONFIRMED' && ((p.tier && p.tier.id === id) || p.tierId === id));
         setIsEnrolled(enrolled);
       } catch (e: any) {

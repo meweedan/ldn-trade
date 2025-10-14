@@ -4,7 +4,7 @@ import { Box, Container, VStack, HStack, Heading, Text, Button, Spinner, Icon } 
 import { Textarea } from "@chakra-ui/react";
 import { useAuth } from "../auth/AuthContext";
 import { useTranslation } from "react-i18next";
-import api from "../api/client";
+import api, { getMyPurchases } from "../api/client";
 import { ChevronLeft, ChevronRight, Eye, EyeOff, CheckCircle, GraduationCap, Star } from "lucide-react";
 import { useThemeMode } from "../themeProvider";
 
@@ -79,9 +79,9 @@ const Learn: React.FC = () => {
       setLoading(true);
       setError(null);
       try {
-        const mine = await api.get("/purchase/mine");
-        const list: any[] = Array.isArray(mine.data) ? mine.data : [];
-        const ok = list.some((p) => p?.tierId === id && p?.status === "CONFIRMED");
+        const list = await getMyPurchases({ ttlMs: 10 * 60 * 1000 });
+        const arr: any[] = Array.isArray(list) ? list : [];
+        const ok = arr.some((p) => p?.tierId === id && p?.status === "CONFIRMED");
         setAllowed(ok);
         if (!ok) {
           setError(t("learn.errors.access_denied"));

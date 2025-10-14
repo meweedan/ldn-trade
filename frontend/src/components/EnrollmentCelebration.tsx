@@ -2,7 +2,7 @@ import React from "react";
 import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, Text, useDisclosure, Box } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import api from "../api/client";
+import api, { getMyPurchases } from "../api/client";
 
 // LocalStorage helpers
 const getJson = <T,>(k: string, def: T): T => {
@@ -54,13 +54,17 @@ const EnrollmentCelebration: React.FC = () => {
           timer = setTimeout(poll, 15000);
           return;
         }
-        const { data } = await api.get("/purchase/mine");
+        const watch = new Set(getJson<string[]>(WATCH_KEY, []));
+        if (!watch.size) {
+          timer = setTimeout(poll, 60000);
+          return;
+        }
+        const data = await getMyPurchases({ force: true });
         if (!mounted || !Array.isArray(data)) {
           timer = setTimeout(poll, 15000);
           return;
         }
         const celebrated = new Set(getJson<string[]>(CELEBRATED_KEY, []));
-        const watch = new Set(getJson<string[]>(WATCH_KEY, []));
         // Prefer purchases in the watch list to avoid celebrating historical ones
         const confirmed = data.filter((p: any) => String(p.status || "").toUpperCase() === "CONFIRMED");
         const watchedConfirmed = confirmed.find((p: any) => watch.has(p.id) && !celebrated.has(p.id));

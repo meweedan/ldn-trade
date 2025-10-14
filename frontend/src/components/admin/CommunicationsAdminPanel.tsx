@@ -249,7 +249,7 @@ const CommunicationsAdminPanel: React.FC = () => {
 
   return (
     <Box>
-      <HStack justify="space-between" mb={3} flexWrap="wrap" gap={3}>
+      <HStack justify="space-between" mb={3} flexWrap="wrap" gap={2}>
         <HStack gap={2}>
           <Input
             placeholder={t("admin.comm.search_ph", {
@@ -257,26 +257,30 @@ const CommunicationsAdminPanel: React.FC = () => {
             })}
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            maxW="320px"
           />
-          <Button onClick={() => setOnlyUnread((v) => !v)} variant="outline" borderColor={brand}>
+          <Button
+            onClick={() => setOnlyUnread((v) => !v)}
+            variant="solid"
+            bg="#b7a27d"
+            borderColor={brand}
+          >
             {onlyUnread ? (
               <>
-                <Icon as={EyeOff} style={{ marginRight: 8 }} /> {t("common.showAll")}
+                <Icon as={EyeOff} />
               </>
             ) : (
               <>
-                <Icon as={Eye} style={{ marginRight: 8 }} /> {t("common.only_unread")}
+                <Icon as={Eye} />
               </>
             )}
           </Button>
-          <Button onClick={fetchItems} variant="outline" isLoading={loading}>
-            <Icon as={RefreshCcw} style={{ marginRight: 8 }} />
+          <Button onClick={fetchItems} variant="solid" bg="#b7a27d" isLoading={loading}>
+            <Icon as={RefreshCcw} />
             {t("common.refresh")}
           </Button>
         </HStack>
         <Button onClick={exportCsv}>
-          <Icon as={Download} style={{ marginRight: 8 }} />
+          <Icon as={Download} />
           {t("common.export_csv")}
         </Button>
       </HStack>
@@ -521,8 +525,8 @@ const CommunicationsAdminPanel: React.FC = () => {
 
                 <HStack gap={2} pt={2}>
                   <Button
-                    size="sm"
-                    variant="outline"
+                    variant="solid"
+                    bg="#b7a27d"
                     onClick={() => toggleRead(it.id, !it.read)}
                     isLoading={!!saving[it.id]}
                   >
@@ -532,8 +536,8 @@ const CommunicationsAdminPanel: React.FC = () => {
                       : t("admin.comm.mark_read", { defaultValue: "Mark read" })}
                   </Button>
                   <Button
-                    size="sm"
-                    variant="outline"
+                    variant="solid"
+                    bg="#b7a27d"
                     onClick={() => window.open(`mailto:${it.email}`, "_blank", "noreferrer")}
                     title="Email"
                   >
@@ -541,8 +545,8 @@ const CommunicationsAdminPanel: React.FC = () => {
                     {t("common.reply")}
                   </Button>
                   <Button
-                    size="sm"
-                    variant="outline"
+                    variant="solid"
+                    bg="#b7a27d"
                     onClick={() => window.open(`https://wa.me/`, "_blank", "noreferrer")}
                     title="WhatsApp"
                   >

@@ -1,4 +1,5 @@
 import React, { forwardRef, HTMLAttributes } from 'react';
+import { Box } from '@chakra-ui/react';
 import './GlassCard.css';
 
 export type GlassCardProps = HTMLAttributes<HTMLDivElement> & {
@@ -8,9 +9,9 @@ export type GlassCardProps = HTMLAttributes<HTMLDivElement> & {
 const GlassCard = forwardRef<HTMLDivElement, GlassCardProps>(
   ({ className = '', children, ...rest }, ref) => {
     return (
-      <div ref={ref} className={`glass-card ${className}`} {...rest}>
-        <div className="glass-card__inner">{children}</div>
-      </div>
+      <Box ref={ref} bg="bg.surface" className={`glass-card ${className}`} {...rest}>
+        <Box className="glass-card__inner">{children}</Box>
+      </Box>
     );
   }
 );
