@@ -19,8 +19,10 @@
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^13.5.0",
     "@types/jest": "^27.5.2",
+    "@web3icons/react": "^4.0.26",
     "axios": "1.7.2",
     "class-variance-authority": "0.7.0",
+    "financial-flag-icons": "^1.0.5",
     "framer-motion": "10.18.0",
     "i18n-iso-countries": "^7.14.0",
     "i18next": "23.10.1",
@@ -28,6 +30,7 @@
     "lucide-react": "0.441.0",
     "qrcode": "^1.5.4",
     "react": "18.2.0",
+    "react-cryptocoins": "^1.0.11",
     "react-dom": "18.2.0",
     "react-i18next": "13.5.0",
     "react-icons": "^5.5.0",
@@ -35,6 +38,7 @@
     "react-scripts": "5.0.1",
     "recharts": "^3.2.1",
     "three": "^0.180.0",
+    "three.js": "^0.77.1",
     "web-vitals": "^2.1.4"
   },
   "scripts": {

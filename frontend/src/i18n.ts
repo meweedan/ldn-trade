@@ -128,6 +128,7 @@ const resources = {
         // aliases used in admin communications panel
         showAll: 'Show all',
         refresh: 'Refresh',
+        reviews: 'Reviews',
         noMessages: 'No messages found',
         no_messages: 'No messages found',
         phone: 'Phone',
@@ -392,7 +393,28 @@ const resources = {
           title: "Screenshot blocked",
           body: "For your privacy and to protect this course, screenshots and captures are restricted.",
           pfp_blocked: "Screenshot blocked"
-        }
+        },
+        forex: {
+          title: "What is Forex?",
+          subtitle: "Currencies trade in pairs. Buy one, sell the other — on the spot.",
+          points: {
+            spot: "Spot only: instant exchange (no delays).",
+            no_riba: "No interest/swaps (no riba).",
+            ecn: "Use ECN brokers — you own your position digitally.",
+            gharar: "Reduce uncertainty (gharar): learn basics and decide clearly."
+          }
+        },
+        crypto: {
+          title: "What is Crypto?",
+          subtitle: "Digital assets on blockchains. Trade and transfer peer-to-peer.",
+          points: {
+            ownership: "Buy the asset directly; avoid interest-bearing products.",
+            no_interest: "No interest (riba).",
+            education: "Limit gharar: understand risks and trade thoughtfully."
+          }
+        },
+        disclaimer: "Halal when: spot settlement, no riba, and speculation is minimized.",
+        disclaimer_short: "Permissible when avoiding riba/maysir and minimizing gharar.",
       },
       contact: {
         title: "Contact Us",
@@ -685,6 +707,7 @@ const resources = {
         showAll: 'Tous les messages',
         only_unread: 'Seulement les messages non lus',
         noMessages: 'Aucun message trouvé',
+        reviews: 'Aucun message trouvé',
         refresh: 'Actualiser',
         no_messages: 'Aucun message trouvé',
         show_all: 'Tous les messages',
@@ -867,6 +890,27 @@ const resources = {
           my_courses: "Mes cours",
           mark_completed: "J'ai fini"
         },
+        forex: {
+          title: "Qu’est-ce que le Forex ?",
+          subtitle: "Les devises se négocient par paires. Achat de l’une, vente de l’autre — au comptant.",
+          points: {
+            spot: "Au comptant uniquement : échange immédiat.",
+            no_riba: "Sans intérêt / swaps (pas de riba).",
+            ecn: "Courtier ECN : vous détenez votre position numériquement.",
+            gharar: "Réduisez l’incertitude (gharar) : base solide, décision claire."
+          }
+        },
+        crypto: {
+          title: "Qu’est-ce que la crypto ?",
+          subtitle: "Actifs numériques sur des blockchains. Échanges pair-à-pair.",
+          points: {
+            ownership: "Acheter l’actif directement ; éviter les produits porteurs d’intérêt.",
+            no_interest: "Sans intérêt (riba).",
+            education: "Limiter le gharar : comprendre les risques et agir avec mesure."
+          }
+        },
+        disclaimer: "Halal si au comptant, sans riba, et spéculation minimisée.",
+        disclaimer_short: "Permis en évitant riba/maysir et en minimisant le gharar.",
         completion: {
           marked: "Marqué comme terminé"
         },
@@ -1263,6 +1307,7 @@ const resources = {
         upload: 'رفع',
         loading: 'جارٍ التحميل...',
         confirm: 'تأكيد',
+        reviews: 'المراجعات',
         no_messages: 'لا توجد رسائل',
         phone: 'رقم الهاتف',
         email: 'البريد الإلكتروني',
@@ -1534,6 +1579,27 @@ const resources = {
           mark_completed: "اتممت الكورس",
           my_courses: "كورساتي"
         },
+        forex: {
+          title: "ما هو الفوركس؟",
+          subtitle: "تتداول العملات أزواجًا. تشتري عملة وتبيع الأخرى — بتنفيذ فوري.",
+          points: {
+            spot: "تنفيذ فوري فقط (بدون تأجيل).",
+            no_riba: "بدون فائدة/swap (لا ربا).",
+            ecn: "استخدم وسيط ECN — تمتلك الأصول رقميًا.",
+            gharar: "قلّل الغرر: تعلّم الأساسيات واتخذ قرارًا واضحًا."
+          }
+        },
+        crypto: {
+          title: "ما هي العملات الرقمية؟",
+          subtitle: "أصول رقمية على البلوكتشين. تداول وتحويل بين الأفراد.",
+          points: {
+            ownership: "اشترِ الأصل مباشرة وتجنّب المنتجات ذات الفائدة.",
+            no_interest: "بدون فائدة (لا ربا).",
+            education: "خفّف الغرر: افهم المخاطر وتداول بتروٍ."
+          }
+        },
+        disclaimer: "حلال مع التنفيذ الفوري، دون ربا، وتقليل المضاربة.",
+        disclaimer_short: "مباح مع تجنّب الربا/الميسر وتقليل الغرر.",
         completion: {
           marked: "تم الإنتهاء"
         },

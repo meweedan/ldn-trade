@@ -35,7 +35,10 @@ import { useThemeMode } from "../themeProvider";
 import { ChevronLeft, ChevronRight, Star } from "lucide-react";
 import Hero from "../components/Hero";
 import { useSessionMemory } from "../hooks/useSessionMemory";
+import CryptoMatrix from "../components/CryptoMatrix";
+import ForexMatrix from "../components/ForexMatrix";
 
+// ===== Three.js lightweight visualizers (no extra deps) =====
 const MotionBox = motion(Box);
 
 const Home: React.FC = () => {
@@ -167,17 +170,16 @@ const Home: React.FC = () => {
     return () => clearInterval(id);
   }, [trustSlides.length]);
 
-  // Reviews: pass real reviews via API -> 'realReviews' if you have them
-  // Structure shown here; replace sample entries with your API payload.
+  // Reviews demo
   type Review = {
     source: "Trustpilot" | "Forex Peace Army" | "CryptoCompare" | "Sitejabber" | "Other";
-    rating: number; // 1..5
+    rating: number;
     title: string;
     body: string;
     author: string;
-    date?: string; // ISO or human
-    url?: string; // link to original
-    locale?: string; // to filter per language if needed
+    date?: string;
+    url?: string;
+    locale?: string;
   };
 
   const sampleReviews: Review[] = [
@@ -219,14 +221,8 @@ const Home: React.FC = () => {
     },
   ];
 
-  // if you fetch real reviews: const [realReviews, setRealReviews] = React.useState<Review[]>([]);
-  // show API reviews if available; otherwise fall back to sample
-  const reviewsToShow: Review[] = React.useMemo(
-    () => /* realReviews.length ? realReviews :  */ sampleReviews,
-    [/* realReviews, */ i18n.language] // re-run when language changes for i18n text
-  );
+  const reviewsToShow: Review[] = React.useMemo(() => sampleReviews, [i18n.language]);
 
-  // marquee pause on hover
   const [paused, setPaused] = React.useState(false);
 
   // FAQ (localized)
@@ -257,74 +253,73 @@ const Home: React.FC = () => {
     },
   ];
 
-    // ===== Lead magnet form (moved to bottom) =====
-    const [lead, setLead] = React.useState({
-      name: "",
-      email: "",
-      phone: "",
-      method: "email", // default
-    });
-    const [submitting, setSubmitting] = React.useState(false);
-    const { session } = useSessionMemory();
+  // ===== Lead magnet form (moved to bottom) =====
+  const [lead, setLead] = React.useState({
+    name: "",
+    email: "",
+    phone: "",
+    method: "email",
+  });
+  const [submitting, setSubmitting] = React.useState(false);
+  const { session } = useSessionMemory();
 
-    const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(lead.email.trim());
-    const phoneValid = /^\+?[0-9\s\-]{7,15}$/.test(lead.phone.trim());
+  const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(lead.email.trim());
+  const phoneValid = /^\+?[0-9\s\-]{7,15}$/.test(lead.phone.trim());
 
-    async function submitLead(e: React.FormEvent) {
-      e.preventDefault();
-      if (!lead.name.trim()) {
-        toast({ status: "warning", title: t("lead.name_required") || "Please enter your name." });
-        return;
-      }
-      if (lead.method === "email" && !emailValid) {
-        toast({
-          status: "warning",
-          title: t("lead.email_invalid") || "Please enter a valid email.",
-        });
-        return;
-      }
-      if (lead.method === "phone" && !phoneValid) {
-        toast({
-          status: "warning",
-          title: t("lead.phone_invalid") || "Please enter a valid phone number.",
-        });
-        return;
-      }
-
-      setSubmitting(true);
-      try {
-        const message = [
-          "Lead Magnet Submission",
-          `Name: ${lead.name}`,
-          `Contact: ${lead.method === "email" ? lead.email : lead.phone}`,
-          `Locale: ${i18n.language}`,
-          session?.utm ? `UTM: ${JSON.stringify(session.utm)}` : null,
-        ]
-          .filter(Boolean)
-          .join("\n");
-
-        await api.post("/communications", {
-          name: lead.name,
-          email: lead.method === "email" ? lead.email : undefined,
-          phone: lead.method === "phone" ? lead.phone : undefined,
-          message,
-          locale: i18n.language,
-          url: window.location.href,
-          utm: session?.utm || undefined,
-        });
-
-        toast({ status: "success", title: t("lead.success") || "Thank you for your interest!" });
-        setLead({ name: "", email: "", phone: "", method: "email" });
-      } catch (err) {
-        toast({
-          status: "error",
-          title: t("lead.error") || "Something went wrong. Please try again.",
-        });
-      } finally {
-        setSubmitting(false);
-      }
+  async function submitLead(e: React.FormEvent) {
+    e.preventDefault();
+    if (!lead.name.trim()) {
+      toast({ status: "warning", title: t("lead.name_required") || "Please enter your name." });
+      return;
+    }
+    if (lead.method === "email" && !emailValid) {
+      toast({
+        status: "warning",
+        title: t("lead.email_invalid") || "Please enter a valid email.",
+      });
+      return;
+    }
+    if (lead.method === "phone" && !phoneValid) {
+      toast({
+        status: "warning",
+        title: t("lead.phone_invalid") || "Please enter a valid phone number.",
+      });
+      return;
     }
 
+    setSubmitting(true);
+    try {
+      const message = [
+        "Lead Magnet Submission",
+        `Name: ${lead.name}`,
+        `Contact: ${lead.method === "email" ? lead.email : lead.phone}`,
+        `Locale: ${i18n.language}`,
+        session?.utm ? `UTM: ${JSON.stringify(session.utm)}` : null,
+      ]
+        .filter(Boolean)
+        .join("\n");
+
+      await api.post("/communications", {
+        name: lead.name,
+        email: lead.method === "email" ? lead.email : undefined,
+        phone: lead.method === "phone" ? lead.phone : undefined,
+        message,
+        locale: i18n.language,
+        url: window.location.href,
+        utm: session?.utm || undefined,
+      });
+
+      toast({ status: "success", title: t("lead.success") || "Thank you for your interest!" });
+      setLead({ name: "", email: "", phone: "", method: "email" });
+    } catch (err) {
+      toast({
+        status: "error",
+        title: t("lead.error") || "Something went wrong. Please try again.",
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  }
 
   const ReviewCard: React.FC<{ review: Review; accentColor: string }> = ({
     review,
@@ -414,12 +409,10 @@ const Home: React.FC = () => {
 
   // --- ratings & reviews helpers ---
   const getAvgRating = (tier: any): { avg: number; count: number } => {
-    // explicit numeric rating on the tier takes precedence
     const explicit = Number(tier?.rating);
     const lr = Array.isArray(tier?.latestReviews) ? tier.latestReviews : [];
     const count = lr.length;
 
-    // average from latestReviews if present
     const fromReviews =
       count > 0 ? lr.reduce((s: number, r: any) => s + (Number(r?.rating) || 0), 0) / count : NaN;
 
@@ -432,10 +425,8 @@ const Home: React.FC = () => {
     return { avg, count };
   };
 
-  // keep only positive (4★+) comments with non-empty text
   const getPositiveComments = (tier: any, limit = 3): any[] => {
     const lr = Array.isArray(tier?.latestReviews) ? tier.latestReviews : [];
-    // Score = rating, tie-break: newer first, then longer useful text
     const scored = lr
       .filter(
         (r: any) => (Number(r?.rating) || 0) >= 4 && String(r?.comment || "").trim().length > 0
@@ -444,15 +435,14 @@ const Home: React.FC = () => {
         ...r,
         __score:
           (Number(r?.rating) || 0) * 1000 +
-          (r?.created_at ? new Date(r.created_at).getTime() / 1e11 : 0) + // tiny tilt toward recency
-          Math.min(String(r?.comment || "").length, 180) / 180, // small bonus for substance
+          (r?.created_at ? new Date(r.created_at).getTime() / 1e11 : 0) +
+          Math.min(String(r?.comment || "").length, 180) / 180,
       }))
       .sort((a: any, b: any) => b.__score - a.__score);
 
     return scored.slice(0, limit);
   };
 
-  // pretty print average to one decimal (e.g., 4.7)
   const fmtAvg = (n: number) => (n ? (Math.round(n * 10) / 10).toFixed(1) : "0.0");
 
   type FaqRowProps = {
@@ -485,7 +475,6 @@ const Home: React.FC = () => {
           <Box textAlign="start" fontWeight="semibold" flex="1" pr={3} color={accentColor}>
             {q}
           </Box>
-          {/* caret */}
           <Box
             as="span"
             transition="transform 0.2s"
@@ -496,7 +485,6 @@ const Home: React.FC = () => {
           </Box>
         </Button>
 
-        {/* animated content (no Chakra Collapse needed) */}
         {open && (
           <MotionBox
             initial={{ height: 0, opacity: 0 }}
@@ -580,19 +568,112 @@ const Home: React.FC = () => {
           </SimpleGrid>
         </Box>
 
+        {/* ===== What is Forex / Crypto (with lightweight Three.js animations) ===== */}
+        <Container maxW="container.xl" pt={{ base: 6, md: 10 }}>
+          <SimpleGrid columns={{ base: 1, md: 2 }} spacing={8} alignItems="center">
+            {/* What is Forex */}
+            <MotionBox
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={fadeIn}
+            >
+              <Heading
+                color={accentColor}
+                mb={2}
+                fontSize={{ base: "2xl", md: "3xl" }}
+                textAlign={{ base: "center", md: "center" }}
+              >
+                {t("learn.forex.title") || "What is Forex?"}
+              </Heading>
+              <Text opacity={0.9} mb={4} textAlign={{ base: "center", md: "center" }}>
+                {t("learn.forex.subtitle") ||
+                  "Currencies move in pairs. You can buy one, sell the other—on the spot."}
+              </Text>
+              <ForexMatrix />
+              <VStack
+                align={{ base: "center", md: "center" }}
+                mt={4}
+                fontSize={{ base: "lg", md: "xl" }}
+                spacing={2}
+                color={accentColor}
+              >
+                <Text>
+                  •{" "}
+                  {t("learn.forex.points.gharar") ||
+                    "Cut uncertainty (gharar): learn basics, decide clearly."}
+                </Text>
+                <Text>• {t("learn.forex.points.no_riba") || "No interest/swaps (no riba)."}</Text>
+                <Text>
+                  • {t("learn.forex.points.ecn") || "Use ECN brokers—own your position digitally."}
+                </Text>
+              </VStack>
+              <Text fontSize="lg" opacity={0.7} mt={3} textAlign={{ base: "center", md: "center" }}>
+                {t("learn.disclaimer") ||
+                  "Halal when: spot settlement, no riba, and speculation minimized."}
+              </Text>
+            </MotionBox>
+
+            {/* What is Crypto */}
+            <MotionBox
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={fadeIn}
+            >
+              <Heading
+                color={accentColor}
+                mb={2}
+                fontSize={{ base: "2xl", md: "3xl" }}
+                textAlign={{ base: "center", md: "center" }}
+              >
+                {t("learn.crypto.title") || "What is Crypto?"}
+              </Heading>
+              <Text opacity={0.9} mb={4} textAlign={{ base: "center", md: "center" }}>
+                {t("learn.crypto.subtitle") ||
+                  "Digital assets on blockchains. Trade and transfer peer‑to‑peer."}
+              </Text>
+              <CryptoMatrix />
+              <VStack
+                align={{ base: "center", md: "center" }}
+                mt={4}
+                fontSize={{ base: "lg", md: "xl" }}
+                spacing={2}
+                color={accentColor}
+              >
+                <Text>
+                  •{" "}
+                  {t("learn.crypto.points.ownership") ||
+                    "Buy the asset directly; avoid interest‑bearing products."}
+                </Text>
+                <Text>• {t("learn.crypto.points.no_interest") || "No interest (riba)."}</Text>
+                <Text>
+                  •{" "}
+                  {t("learn.crypto.points.education") ||
+                    "Reduce gharar: learn risk basics and trade thoughtfully."}
+                </Text>
+              </VStack>
+              <Text fontSize="lg" opacity={0.7} mt={3} textAlign={{ base: "center", md: "center" }}>
+                {t("learn.disclaimer_short") ||
+                  "Permissible when avoiding riba/maysir and minimizing gharar."}
+              </Text>
+            </MotionBox>
+          </SimpleGrid>
+        </Container>
+
         {/* Image for iPhones with charts */}
-        <Box mb={{ base: 8, md: 12 }} px={{ base: 4, md: 0 }}>
+        <Box px={{ base: 4, md: 0 }} mt={{ base: 6, md: 12 }}>
           <Image
             src="/images/rand/iphones-chart.webp"
-            w="70%"
             maxW="container.lg"
+            w="100%"
             mx="auto"
             loading="lazy"
           />
         </Box>
 
         {/* Program Highlights */}
-        <Box py={{ base: 12, md: 20 }}>
+        <Box py={{ base: 6, md: 10 }}>
           <Heading
             textAlign="center"
             mb={10}
@@ -609,7 +690,7 @@ const Home: React.FC = () => {
                 whileInView="visible"
                 viewport={{ once: true }}
                 variants={fadeIn}
-                 borderRadius="24px"
+                borderRadius="24px"
                 bg={mode === "dark" ? "black" : "white"}
                 borderWidth={0.1}
                 borderColor={accentColor}
@@ -730,7 +811,6 @@ const Home: React.FC = () => {
                       <VStack gap={4}>
                         <Heading size="lg">{tier.name}</Heading>
                         <Text fontSize="sm">{tier.description}</Text>
-                        {/* Average summary */}
                         {(() => {
                           const { avg, count } = getAvgRating(tier);
                           if (!avg) return null;
@@ -757,7 +837,7 @@ const Home: React.FC = () => {
                       </VStack>
                     </Box>
                     {(() => {
-                      const positives = getPositiveComments(tier, 3); // top 3 positive comments
+                      const positives = getPositiveComments(tier, 3);
                       if (positives.length === 0) return null;
 
                       return (
@@ -787,7 +867,6 @@ const Home: React.FC = () => {
                                   </Text>
                                 </HStack>
 
-                                {/* positive comment body */}
                                 <Text
                                   fontSize="sm"
                                   style={{
@@ -895,7 +974,6 @@ const Home: React.FC = () => {
             px={{ base: 2, md: 4 }}
             py={{ base: 4, md: 6 }}
           >
-            {/* edge fades */}
             <Box
               position="absolute"
               left={0}
@@ -917,28 +995,18 @@ const Home: React.FC = () => {
               pointerEvents="none"
             />
 
-            {/* marquee rail */}
             <MotionBox
               role="list"
               display="flex"
-              gap={4} // remove extra spacing
+              gap={4}
               onHoverStart={() => setPaused(true)}
               onHoverEnd={() => setPaused(false)}
               animate={{ x: paused ? 0 : ["0%", "-50%"] }}
               transition={{ duration: 30, ease: "linear", repeat: Infinity }}
-              style={{
-                direction: "ltr", // ensures consistent left-to-right layout for all content
-                whiteSpace: "nowrap", // keeps items on one line
-              }}
+              style={{ direction: "ltr", whiteSpace: "nowrap" }}
             >
               {[...reviewsToShow, ...reviewsToShow].map((r, i) => (
-                <Box
-                  key={i}
-                  style={{
-                    display: "inline-block", // prevents line breaks between items
-                    direction: "ltr", // ensures AR text doesn't reverse layout
-                  }}
-                >
+                <Box key={i} style={{ display: "inline-block", direction: "ltr" }}>
                   <ReviewCard review={r} accentColor={accentColor} />
                 </Box>
               ))}
@@ -975,7 +1043,6 @@ const Home: React.FC = () => {
 
         {/* Closing CTA */}
         <Box>
-          {/* New image above CTA */}
           <Box mb={{ base: 8, md: 12 }} px={{ base: 4, md: 0 }}>
             <Image
               src={
@@ -1051,7 +1118,6 @@ const Home: React.FC = () => {
               </Text>
             </VStack>
 
-            {/* === Lead form === */}
             <Box as="form" onSubmit={submitLead} w={{ base: "100%", md: "auto" }}>
               <Stack direction={{ base: "column", md: "row" }} gap={3}>
                 <Input
@@ -1061,7 +1127,6 @@ const Home: React.FC = () => {
                   required
                 />
 
-                {/* Contact method switcher */}
                 <Stack direction="row" spacing={1} align="center" justify="center">
                   <Button
                     size="sm"
@@ -1093,7 +1158,6 @@ const Home: React.FC = () => {
                   </Button>
                 </Stack>
 
-                {/* Conditional input */}
                 {lead.method === "email" ? (
                   <FormControl isInvalid={lead.email.length > 0 && !emailValid}>
                     <Input
