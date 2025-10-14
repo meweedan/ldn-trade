@@ -11,15 +11,17 @@ import {
   SimpleGrid,
   Stack,
   Icon,
+  Alert,
+  AlertIcon,
+  Spacer,
 } from "@chakra-ui/react";
 import { Link as RouterLink } from "react-router-dom";
 import api from "../../api/client";
 import { useTranslation } from "react-i18next";
 import { Star } from "lucide-react";
+import { TokenUSDT } from "@web3icons/react";
 
-type Review = {
-  rating: number;
-};
+type Review = { rating: number };
 
 type CourseTier = {
   id: string;
@@ -54,7 +56,9 @@ const CoursesList: React.FC = () => {
         const resp = await api.get("/courses");
         setTiers(resp.data || []);
       } catch (e: any) {
-        setError(e?.response?.data?.message || t("errors.load_failed"));
+        setError(
+          e?.response?.data?.message || t("errors.load_failed", { defaultValue: "Failed to load." })
+        );
       } finally {
         setLoading(false);
       }
@@ -72,7 +76,7 @@ const CoursesList: React.FC = () => {
 
     if (!avg || Number.isNaN(avg)) return null;
 
-    const full = Math.round(avg); // match your snippet: round to nearest integer
+    const full = Math.round(avg); // round to nearest integer
     return (
       <HStack justify="center" gap={1}>
         {Array.from({ length: 5 }).map((_, k) => (
@@ -92,13 +96,40 @@ const CoursesList: React.FC = () => {
     <Box py={{ base: 4, md: 10 }}>
       <Container maxW="7xl">
         <VStack align="stretch" gap={6}>
-          <Heading mb={6} fontSize="2xl" fontWeight="bold" textAlign="center">
-            {t("title")}
-          </Heading>
+          <HStack align="center">
+            <Heading mb={2} fontSize="2xl" fontWeight="bold" textAlign="center" w="full">
+              {t("title", { defaultValue: "Courses" })}
+            </Heading>
+          </HStack>
 
-          {loading && <Text>{t("states.loading")}</Text>}
+          {/* Global crypto note + CTA */}
+          <Alert status="info" variant="left-accent" borderRadius="md">
+            <AlertIcon />
+            <HStack w="full" gap={3} flexWrap="wrap">
+              <Text>
+                {t("notes.usdt_trc20", {
+                  defaultValue: "All USDT deposits must be sent via the TRC20 (TRON) network.",
+                })}
+              </Text>
+              <Spacer />
+              <Button
+                as={RouterLink}
+                to="/guide/crypto"
+                size="sm"
+                variant="outline"
+                borderColor={GOLD}
+                color={GOLD}
+              >
+                {t("actions.crypto_guide", { defaultValue: "Guide to crypto" })}
+              </Button>
+            </HStack>
+          </Alert>
+
+          {loading && <Text>{t("states.loading", { defaultValue: "Loading..." })}</Text>}
           {error && <Text color="red.500">{error}</Text>}
-          {!loading && !error && tiers.length === 0 && <Text>{t("states.empty")}</Text>}
+          {!loading && !error && tiers.length === 0 && (
+            <Text>{t("states.empty", { defaultValue: "No courses available yet." })}</Text>
+          )}
 
           {!loading && !error && tiers.length > 0 && (
             <SimpleGrid columns={{ base: 1, sm: 2, lg: 2 }} gap={{ base: 4, md: 6 }}>
@@ -107,19 +138,24 @@ const CoursesList: React.FC = () => {
                   key={tier.id}
                   border="1px solid"
                   borderColor={GOLD}
-                  borderRadius="xl"
+                  borderRadius="lg"
                   p={{ base: 4, md: 5 }}
                   _hover={{ boxShadow: "lg", transform: "translateY(-2px)" }}
                   transition="all 200ms ease"
-                  bg="transparent"
+                  bg="bg.surface"
                 >
                   <Stack gap={4}>
                     {/* Header: Title + Level */}
                     <HStack justify="space-between" align="start">
-                      <Heading size="2xl" noOfLines={2}>
+                      <Heading size={{ base: "md", md: "lg" }} noOfLines={2}>
                         {tier.name}
                       </Heading>
-                      <Badge colorScheme="yellow" variant="subtle" borderRadius="full">
+                      <Badge
+                        color={GOLD}
+                        variant="subtle"
+                        borderRadius="md"
+                        border={`1px solid ${GOLD}`}
+                      >
                         {t(levelKey(tier.level))}
                       </Badge>
                     </HStack>
@@ -132,39 +168,58 @@ const CoursesList: React.FC = () => {
                     {/* Reviews (snippet style) */}
                     {renderSnippetStyleStars(tier)}
 
-                    {/* Prices */}
-                    <HStack justify="space-between" align="start">
-                      {/* USDT pill in gold with rounded-xl */}
-                      <HStack>
-                        <Box
-                          bg={GOLD}
-                          color="black"
-                          px={3}
-                          py={2}
-                          borderRadius="xl"
-                          fontWeight="bold"
-                          fontSize="md"
-                        >
+                    {/* Prices + Actions */}
+                    <HStack justify="space-between" align="center" flexWrap="wrap" gap={3}>
+                      {/* USDT pill with icon + amount */}
+                      <HStack
+                        px={3}
+                        py={1}
+                        borderRadius="lg"
+                        border="1px solid"
+                        borderColor={GOLD}
+                        bg="transparent"
+                        gap={2}
+                      >
+                        <Icon as={TokenUSDT} boxSize={5} />
+                        <Text fontWeight="bold">
                           {(tier.price_usdt ?? 0) <= 0
                             ? t("price.free", { defaultValue: "Free" })
-                            : t("price.usdt", { value: tier.price_usdt })}
-                        </Box>
+                            : t("price.usdt", {
+                                value: tier.price_usdt,
+                                defaultValue: `${tier.price_usdt} USDT`,
+                              })}
+                        </Text>
                       </HStack>
 
                       {/* Actions */}
-                      <HStack pt={1} gap={3}>
-                        <RouterLink to={`/courses/${tier.id}`}>
-                          <Button variant="outline" borderColor={GOLD} color={GOLD}>
-                            {t("actions.view_details")}
-                          </Button>
-                        </RouterLink>
-                        <RouterLink to={`/checkout?tierId=${tier.id}`}>
-                          <Button bg={GOLD} _hover={{ opacity: 0.9 }} color="black">
-                            {t("actions.enroll")}
-                          </Button>
-                        </RouterLink>
+                      <HStack gap={3}>
+                        <Button
+                          as={RouterLink}
+                          to={`/courses/${tier.id}`}
+                          variant="outline"
+                          borderColor={GOLD}
+                          color={GOLD}
+                        >
+                          {t("actions.view_details", { defaultValue: "View details" })}
+                        </Button>
+                        <Button
+                          as={RouterLink}
+                          to={`/checkout?tierId=${tier.id}`}
+                          bg={GOLD}
+                          _hover={{ opacity: 0.9 }}
+                          color="black"
+                        >
+                          {t("actions.enroll", { defaultValue: "Enroll" })}
+                        </Button>
                       </HStack>
                     </HStack>
+
+                    {/* Per-card network reminder (subtle) */}
+                    <Text fontSize="xs" opacity={0.7} textAlign="center">
+                      {t("notes.network_reminder", {
+                        defaultValue: "Use TRC20 network for USDT payments.",
+                      })}
+                    </Text>
                   </Stack>
                 </Box>
               ))}

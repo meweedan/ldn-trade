@@ -363,18 +363,18 @@ export default function About() {
         <MotionBox
           aria-hidden
           position="absolute"
-          left="50%"
+          left="70%"
           top="50%"
           transform="translate(-50%, -50%)"
           fontSize={{ base: "96px", md: "160px" }}
           lineHeight="1"
           color={GOLD}
-          initial={{ opacity: 0, scale: 0.8 }}
-          whileInView={{ opacity: 0.18, scale: 1 }}
+          initial={{ opacity: 0.9, scale: 1 }}
+          whileInView={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1, ease: "easeOut" }}
           style={{ userSelect: "none", pointerEvents: "none" }}
         >
-          +
+          ♾️
         </MotionBox>
 
         <Container maxW="5xl">
@@ -399,7 +399,7 @@ export default function About() {
       {/* Closing CTA (footer shows when this is in view) */}
       <Box
         ref={ctaRef}
-        minH="75svh"
+        minH="100svh"
         scrollSnapAlign="start"
         display="grid"
         placeItems="center"

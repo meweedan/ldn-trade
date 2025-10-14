@@ -31,8 +31,8 @@ const CryptoMatrix: React.FC<CryptoMatrixProps> = ({
   columns = 5,
   spacing = 1,
   duration = 4,
-  iconSize = 36,
-  cardSize = 20,
+  iconSize = 46,
+  cardSize = 10,
 }) => {
   // Deterministic per-item delay
   const delays = React.useMemo(() => CRYPTO_ITEMS.map((_, i) => (i * 0.35) % 1.5), []);
@@ -56,7 +56,6 @@ const CryptoMatrix: React.FC<CryptoMatrixProps> = ({
             borderRadius="2xl"
             boxShadow="md"
             bg="bg.surface"
-            _dark={{ bg: "blackAlpha.400" }}
             display="flex"
             alignItems="center"
             justifyContent="center"

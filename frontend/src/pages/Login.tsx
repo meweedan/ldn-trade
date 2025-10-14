@@ -79,7 +79,7 @@ const Login: React.FC = () => {
                   </RouterLink>
                 </HStack>
 
-                <Button variant="solid" minW="20rem" bg="#b7a27d" alignSelf="center" disabled={loading}>
+                <Button type="submit" variant="solid" minW="20rem" bg="#b7a27d" alignSelf="center" disabled={loading}>
                   {loading ? (t('auth.login_loading') || 'Signing you in…') : (t('auth.login_cta') || 'Sign in')}
                 </Button>
               </VStack>

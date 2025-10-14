@@ -14,9 +14,7 @@ import {
   GridItem,
   Input,
   Badge,
-  Link,
 } from "@chakra-ui/react";
-import { Link as RouterLink } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import api from "../api/client";
 import { getAllCountries, getDeviceCountryCode } from "../utils/countries";
@@ -43,6 +41,7 @@ const Checkout: React.FC = () => {
   const [courseLanguage, setCourseLanguage] = React.useState("en");
   const [promoCode, setPromoCode] = React.useState<string>("");
   const [refCode, setRefCode] = React.useState<string>("");
+  const [alreadyEnrolled, setAlreadyEnrolled] = React.useState(false);
 
   // Preview pricing
   const [previewAmount, setPreviewAmount] = React.useState<number | null>(null);
@@ -103,12 +102,18 @@ const Checkout: React.FC = () => {
   React.useEffect(() => {
     (async () => {
       try {
-        const [me, tResp] = await Promise.all([
+        const [me, tResp, mine] = await Promise.all([
           api.get("/users/me").catch(() => ({ data: null })),
           tierId ? api.get(`/courses/${tierId}`) : Promise.resolve({ data: null }),
+          api.get("/purchase/mine").catch(() => ({ data: [] })),
         ]);
         setUser(me.data);
         setTier(tResp.data);
+        const list: any[] = Array.isArray(mine.data) ? mine.data : [];
+        const enrolled = list.some(
+          (p) => String(p.status || "").toUpperCase() === "CONFIRMED" && ((p.tier && p.tier.id === tierId) || p.tierId === tierId)
+        );
+        setAlreadyEnrolled(enrolled);
       } catch {}
     })();
   }, [tierId]);
@@ -167,6 +172,17 @@ const Checkout: React.FC = () => {
 
       if (resp.data?.purchaseId && !purchaseId) {
         setPurchaseId(resp.data.purchaseId as string);
+        // Mark this purchase to be watched by celebration overlay
+        try {
+          const k = "watchPurchaseIds";
+          const arr = JSON.parse(localStorage.getItem(k) || "[]");
+          if (Array.isArray(arr)) {
+            if (!arr.includes(resp.data.purchaseId)) arr.push(resp.data.purchaseId);
+            localStorage.setItem(k, JSON.stringify(arr));
+          } else {
+            localStorage.setItem(k, JSON.stringify([resp.data.purchaseId]));
+          }
+        } catch {}
       }
 
       if (provider === "usdt") {
@@ -191,6 +207,17 @@ const Checkout: React.FC = () => {
       } else if (provider === "libyana" || provider === "madar") {
         openPaymentModal(); // starts 30min too
       } else if (provider === "free") {
+        // Immediately watch and navigate; overlay will celebrate on next poll
+        try {
+          const k = "watchPurchaseIds";
+          const arr = JSON.parse(localStorage.getItem(k) || "[]");
+          if (Array.isArray(arr)) {
+            if (!arr.includes(resp.data.purchaseId)) arr.push(resp.data.purchaseId);
+            localStorage.setItem(k, JSON.stringify(arr));
+          } else {
+            localStorage.setItem(k, JSON.stringify([resp.data.purchaseId]));
+          }
+        } catch {}
         navigate("/enrolled");
       }
     } catch (e: any) {
@@ -339,6 +366,20 @@ const Checkout: React.FC = () => {
       if (ok) {
         setProofSubmitted(true);
         startPollingStatus();
+        // Watch this purchase for celebration when confirmed
+        try {
+          const idToWatch = pid;
+          if (idToWatch) {
+            const k = "watchPurchaseIds";
+            const arr = JSON.parse(localStorage.getItem(k) || "[]");
+            if (Array.isArray(arr)) {
+              if (!arr.includes(idToWatch)) arr.push(idToWatch);
+              localStorage.setItem(k, JSON.stringify(arr));
+            } else {
+              localStorage.setItem(k, JSON.stringify([idToWatch]));
+            }
+          }
+        } catch {}
       }
     } catch (e: any) {
       setProofError(
@@ -421,7 +462,7 @@ const Checkout: React.FC = () => {
         <Box
           border="1px solid"
           borderColor={cardBorder}
-          bg={cardBg}
+          bg="bg.surface"
           borderRadius="2xl"
           px={{ base: 4, md: 8 }}
           py={{ base: 5, md: 7 }}
@@ -446,12 +487,20 @@ const Checkout: React.FC = () => {
         </Box>
 
         {!tierId && (
-          <Box p={3} border="1px solid" borderColor={brand} borderRadius="md" mb={6} bg={cardBg}>
+          <Box p={3} border="1px solid" borderColor={brand} borderRadius="md" mb={6} bg="bg.surface">
             <Text>
               {t("checkout.no_tier", {
                 defaultValue: "No course tier selected. Go back and choose a course.",
               })}
             </Text>
+          </Box>
+        )}
+        {alreadyEnrolled && (
+          <Box p={3} border="1px solid" borderColor="green.300" borderRadius="md" mb={6} bg="bg.surface" color="green.700">
+            {t("checkout.already_enrolled", { defaultValue: "You already own this course. Enjoy learning!" })}
+            <Button ml={3} size="sm" onClick={() => navigate("/enrolled")}>
+              {t("celebration.cta", { defaultValue: "Go to My Courses" })}
+            </Button>
           </Box>
         )}
 
@@ -461,7 +510,7 @@ const Checkout: React.FC = () => {
             border="1px solid"
             borderColor="red.300"
             borderRadius="md"
-            bg={cardBg}
+            bg="bg.surface"
             color="red.700"
             mb={6}
           >
@@ -481,7 +530,7 @@ const Checkout: React.FC = () => {
               <Box
                 borderWidth={1}
                 borderColor={cardBorder}
-                bg={cardBg}
+                bg="bg.surface"
                 borderRadius="xl"
                 p={{ base: 4, md: 5 }}
                 boxShadow="md"
@@ -519,7 +568,7 @@ const Checkout: React.FC = () => {
                         setCountry(e.target.value)
                       }
                       style={{ padding: "10px", borderRadius: 10 }}
-                      bg={selectBg}
+                      bg="bg.surface"
                       border="1px solid"
                       borderColor={selectBorder}
                       _focus={{ outline: "none", boxShadow: `0 0 0 1px ${selectFocus}` }}
@@ -546,7 +595,7 @@ const Checkout: React.FC = () => {
                         setCourseLanguage(e.target.value)
                       }
                       style={{ padding: "10px", borderRadius: 10 }}
-                      bg={selectBg}
+                      bg="bg.surface"
                       border="1px solid"
                       borderColor={selectBorder}
                       _focus={{ outline: "none", boxShadow: `0 0 0 1px ${selectFocus}` }}
@@ -570,7 +619,7 @@ const Checkout: React.FC = () => {
                 <Box
                   borderWidth={1}
                   borderColor={cardBorder}
-                  bg={cardBg}
+                  bg="bg.surface"
                   borderRadius="xl"
                   p={{ base: 4, md: 5 }}
                   boxShadow="md"
@@ -720,7 +769,7 @@ const Checkout: React.FC = () => {
                     <Button
                       onClick={startCheckout}
                       isLoading={loading}
-                      disabled={!tierId}
+                      disabled={!tierId || alreadyEnrolled}
                       variant="solid"
                       bg="#b7a27d"
                       w={{ base: "100%", sm: "auto" }}
@@ -747,7 +796,7 @@ const Checkout: React.FC = () => {
                   <Button
                     onClick={enrollFree}
                     isLoading={loading}
-                    disabled={!tierId}
+                    disabled={!tierId || alreadyEnrolled}
                     variant="solid"
                     bg={brand}
                     color="white"
@@ -776,7 +825,7 @@ const Checkout: React.FC = () => {
             <Box
               borderWidth={1}
               borderColor={cardBorder}
-              bg={cardBg}
+              bg="bg.surface"
               borderRadius="xl"
               p={{ base: 4, md: 5 }}
               boxShadow="md"
@@ -817,7 +866,7 @@ const Checkout: React.FC = () => {
                   </Text>
                 </HStack>
 
-                <Box h="1px" bg={cardBorder} />
+                <Box h="1px" bg="bg.surface" />
 
                 {/* Benefits */}
                 <VStack align="start" gap={1}>
@@ -850,7 +899,7 @@ const Checkout: React.FC = () => {
                   </Text>
                 </VStack>
 
-                <Box h="1px" bg={cardBorder} />
+                <Box h="1px" bg="bg.surface" />
 
                 <HStack justify="space-between">
                   <Text>{t("checkout.summary.subtotal", { defaultValue: "Subtotal" })}</Text>
@@ -866,7 +915,7 @@ const Checkout: React.FC = () => {
                   <Text>{t("checkout.summary.taxes", { defaultValue: "Taxes" })}</Text>
                   <Text fontWeight={700}>{isFree ? freeLabel : "$0"}</Text>
                 </HStack>
-                <Box h="1px" bg={cardBorder} />
+                <Box h="1px" bg="bg.surface" />
                 <HStack justify="space-between">
                   <Text>{t("checkout.summary.total", { defaultValue: "Total" })}</Text>
                   <Text fontWeight={800}>
@@ -894,14 +943,13 @@ const Checkout: React.FC = () => {
             px={4}
           >
             <Box
-              bg="#b7a27d"
-              color="white"
+              bg="bg.surface"
               p={{ base: 4, md: 6 }}
               borderRadius="lg"
               maxW="lg"
               w="full"
               border="1px solid"
-              borderColor={cardBorder}
+              borderColor="bg.surface"
               boxShadow="xl"
             >
               <Heading size="md" mb={4}>
@@ -922,7 +970,7 @@ const Checkout: React.FC = () => {
                       <Text fontSize="sm">
                         {t("checkout.modal.send_to", { defaultValue: "Send USDT (TRC20) to:" })}
                       </Text>
-                      <HStack gap={2} flexWrap="wrap" mt={1}>
+                      <HStack gap={2} align="center" mt={1}>
                         <Code
                           p={2}
                           borderRadius="md"
@@ -932,11 +980,10 @@ const Checkout: React.FC = () => {
                           {address}
                         </Code>
                         </HStack>
-                        <HStack gap={2} flexWrap="wrap" align="center" mt={1}>
+                        <HStack gap={2} align="center" mt={1}>
                         <Button
                           variant="solid"
                           bg={brand}
-                          color="white"
                           _hover={{ opacity: 0.9 }}
                           onClick={() => copy(address)}
                           w={{ base: "100%", sm: "auto" }}
@@ -1057,7 +1104,8 @@ const Checkout: React.FC = () => {
 
               <HStack justify="flex-end" mt={6} gap={3} flexWrap="wrap">
                 <Button
-                  variant="outline"
+                  variant="solid"
+                  bg="red"
                   onClick={() => setPaymentOpen(false)}
                   borderColor={brand}
                   color="inherit"
@@ -1068,8 +1116,7 @@ const Checkout: React.FC = () => {
                 </Button>
                 <Button
                   variant="solid"
-                  bg={brand}
-                  color="white"
+                  bg="green"
                   _hover={{ opacity: 0.9 }}
                   onClick={submitProof}
                   isLoading={!!proofSubmitting}

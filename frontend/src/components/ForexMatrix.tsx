@@ -26,10 +26,10 @@ const FOREX_ITEMS: FiatItem[] = [
 
 const ForexMatrix: React.FC<ForexMatrixProps> = ({
   columns = 5,
-  spacing = 3,
+  spacing = 1,
   duration = 4,
-  iconSize = 36,
-  cardSize = 20,
+  iconSize = 46,
+  cardSize = 10,
 }) => {
   // Deterministic, per-item delay
   const delays = React.useMemo(() => FOREX_ITEMS.map((_, i) => (i * 0.35) % 1.5), []);

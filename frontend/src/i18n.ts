@@ -13,13 +13,56 @@ const resources = {
         signOut: 'Sign Out',
         contact: 'Contact',
       },
+      
+      crypto: {
+        title: "Guide to Crypto & USDT (TRC20)",
+        subtitle: "Learn what USDT is, how to buy it, and how to send it safely using the TRC20 network.",
+        what_is_usdt: {
+          title: "What is USDT?",
+          desc: "USDT (Tether) is a stablecoin that’s always equal to 1 US dollar. It’s used for fast, cheap, and stable digital payments around the world."
+        },
+        chains: {
+          title: "Understanding the Chains",
+          desc: "USDT exists on multiple blockchains. Each has different speeds and fees.",
+          erc20: "Runs on Ethereum. Reliable but can be expensive with high gas fees.",
+          bep20: "Runs on Binance Smart Chain. Faster and cheaper than Ethereum.",
+          trc20: "Runs on TRON. It's the cheapest and fastest, which is why we use TRC20 for deposits."
+        },
+        buy: {
+          title: "Where to Buy USDT",
+          desc: "You can buy USDT on global exchanges or locally in Libya.",
+          libya_title: "Buying in Libya",
+          libya_desc: "If you’re in Libya, you can visit these trusted locations that offer crypto exchange services:"
+        },
+        send: {
+          title: "How to Send USDT (TRC20)",
+          desc: "Once you have USDT, you can send it to our deposit wallet. Always use the TRC20 network!",
+          steps: {
+            1: "Open your crypto wallet or exchange app.",
+            2: "Select 'Send' and choose USDT.",
+            3: "Paste our TRC20 wallet address carefully.",
+            4: "Confirm the network is TRC20 before sending."
+          }
+        },
+        txn: {
+          title: "Transaction Hash (TxID)",
+          desc: "After sending, your wallet or exchange will show a transaction hash — a long unique ID proving the transfer.",
+          note: "Always save or screenshot the transaction hash; it helps verify your payment quickly."
+        },
+        cta_enroll: "Continue to Enrollment"
+      },
       actions: {
         refresh: "Refresh",
         view_details: "View details",
         enroll: "Enroll",
         confirm: "Confirm",
         fail: "Fail",
-        verify: "Verify"
+        verify: "Verify",
+        crypto_guide: "Guide to crypto",
+      },
+      notes: {
+        usdt_trc20: "All USDT deposits must be sent via the TRC20 (TRON) network.",
+        network_reminder: "Use TRC20 network for USDT payments."
       },
       sections: {
         pending_payments: "Pending Payments",
@@ -56,6 +99,7 @@ const resources = {
         subtitle: "Secure your seat with fast, flexible payment methods.",
         free: "Free",
         no_tier: "No course tier selected. Go back and choose a course.",
+        already_enrolled: "You already own this course. Enjoy learning!",
         customer: {
           details: "Customer Details",
           full_name: "Full Name",
@@ -115,11 +159,26 @@ const resources = {
           close: "Close",
           paid: "I've Paid"
         },
+        promo : {
+          not_applied: "This promo didn’t apply (invalid, expired, not applicable, or per-user limit).",
+          applied: "This promo was applied successfully.",
+          label: "Promo Code",
+          placeholder: "Enter code (optional)",
+          confirm: "Confirm Promo",
+          due: "You pay:",
+          saved: "saved"
+        },
         errors: {
           txid_required: "Please enter the transaction hash",
           phone_required: "Please enter the sender phone number",
           proof_failed: "Failed to submit proof"
         }
+      },
+      celebration: {
+        title: "Enrollment Confirmed!",
+        body: "Congratulations, you're enrolled into {{course_name}} successfully.",
+        cta_hint: "Click below to get started on your path to mastering trading.",
+        cta: "Go to My Courses"
       },
       // NEW: unified keys referenced by ContentAdmin
       common: {
@@ -132,6 +191,8 @@ const resources = {
         noMessages: 'No messages found',
         no_messages: 'No messages found',
         phone: 'Phone',
+        copy: 'Copy',
+        download_qr: 'Download QR',
         email: 'Email',
         only_unread: 'Only unread',
         show_all: 'Show all',
@@ -479,6 +540,7 @@ const resources = {
           kicker: "Limited-time course promo:",
           copy: "Copy",
           details: "Save up to 10% — apply this code at checkout before the timer ends."
+
         },
         trustpilot: {
           title: "Verified by learners — and it shows",
@@ -661,13 +723,55 @@ const resources = {
         signOut: 'Se déconnecter',
         contact: 'Contact',
       },
+      crypto: {
+      title: "Guide sur la crypto et USDT (TRC20)",
+      subtitle: "Apprenez ce qu’est l’USDT, comment l’acheter et l’envoyer en toute sécurité via le réseau TRC20.",
+      what_is_usdt: {
+        title: "Qu’est-ce que l’USDT ?",
+        desc: "USDT (Tether) est une cryptomonnaie stable équivalente à 1 dollar américain. Elle permet des paiements rapides et bon marché dans le monde entier."
+      },
+      chains: {
+        title: "Comprendre les réseaux",
+        desc: "USDT existe sur plusieurs blockchains, chacune ayant ses coûts et vitesses.",
+        erc20: "Basé sur Ethereum — fiable mais souvent coûteux.",
+        bep20: "Basé sur BNB Smart Chain — plus rapide et moins cher qu’Ethereum.",
+        trc20: "Basé sur TRON — le plus rapide et le moins cher, c’est pourquoi nous utilisons TRC20 pour les dépôts."
+      },
+      buy: {
+        title: "Où acheter de l’USDT",
+        desc: "Vous pouvez acheter de l’USDT sur des plateformes internationales ou localement en Libye.",
+        libya_title: "Acheter en Libye",
+        libya_desc: "En Libye, vous pouvez visiter ces établissements fiables offrant des services d’échange de crypto :"
+      },
+      send: {
+        title: "Comment envoyer l’USDT (TRC20)",
+        desc: "Une fois vos USDT obtenus, envoyez-les à notre portefeuille TRC20. Vérifiez toujours le réseau avant l’envoi !",
+        steps: {
+          1: "Ouvrez votre portefeuille crypto ou application d’échange.",
+          2: "Sélectionnez « Envoyer » et choisissez USDT.",
+          3: "Collez notre adresse de portefeuille TRC20 avec soin.",
+          4: "Assurez-vous que le réseau sélectionné est TRC20 avant de confirmer."
+        }
+      },
+      txn: {
+        title: "Hash de transaction (TxID)",
+        desc: "Après l’envoi, votre portefeuille affichera un hash unique prouvant la transaction.",
+        note: "Conservez ce hash ou faites-en une capture d’écran pour accélérer la vérification."
+      },
+      cta_enroll: "Continuer l'inscription",
+    },
       actions: {
         refresh: "Actualiser",
         confirm: "Confirmer",
         view_details: "Voir les détails",
         enroll: "S’inscrire",
         fail: "Échouer",
+        crypto_guide: "Guide des cryptos",
         verify: "Vérifier"
+      },
+      notes: {
+        usdt_trc20: "Tous les dépôts USDT doivent être envoyés via le réseau TRC20 (TRON).",
+        network_reminder: "Utilisez le réseau TRC20 pour les paiements USDT."
       },
       sections: {
         pending_payments: "Paiements en attente",
@@ -708,6 +812,8 @@ const resources = {
         only_unread: 'Seulement les messages non lus',
         noMessages: 'Aucun message trouvé',
         reviews: 'Aucun message trouvé',
+        copy: 'Copier',
+        download_qr: 'Télécharger QR',
         refresh: 'Actualiser',
         no_messages: 'Aucun message trouvé',
         show_all: 'Tous les messages',
@@ -1263,13 +1369,55 @@ const resources = {
         signOut: 'تسجيل الخروج',
         contact: 'اتصل بنا',
       },
+      crypto: {
+        title: "دليل العملات الرقمية وUSDT (شبكة TRC20)",
+        subtitle: "تعرف على عملة USDT، كيفية شرائها، وإرسالها بأمان باستخدام شبكة TRC20.",
+        what_is_usdt: {
+          title: "ما هو USDT؟",
+          desc: "عملة USDT (تيذر) هي عملة رقمية مستقرة تعادل دائمًا 1 دولار أمريكي، وتُستخدم للدفع بسرعة وسهولة حول العالم."
+        },
+        chains: {
+          title: "فهم الشبكات المختلفة",
+          desc: "عملة USDT تعمل على شبكات بلوكشين متعددة. كل شبكة تختلف في السرعة والرسوم.",
+          erc20: "تعمل على شبكة الإيثيريوم، لكنها مكلفة عند ازدحام الشبكة.",
+          bep20: "تعمل على شبكة بينانس الذكية، أسرع وأرخص من الإيثيريوم.",
+          trc20: "تعمل على شبكة ترون، وهي الأرخص والأسرع، ولهذا نستخدمها في الإيداع."
+        },
+        buy: {
+          title: "كيفية شراء USDT",
+          desc: "يمكنك شراء USDT من منصات التداول العالمية أو من مواقع محلية في ليبيا.",
+          libya_title: "الشراء داخل ليبيا",
+          libya_desc: "في ليبيا، يمكنك زيارة هذه المواقع الموثوقة التي تقدم خدمات تبادل العملات الرقمية:"
+        },
+        send: {
+          title: "كيفية إرسال USDT (شبكة TRC20)",
+          desc: "بعد شراء USDT يمكنك إرساله إلى محفظة الإيداع الخاصة بنا. تأكد دائمًا أنك تستخدم شبكة TRC20!",
+          steps: {
+            1: "افتح محفظتك الرقمية أو تطبيق المنصة.",
+            2: "اختر خيار (إرسال) وحدد USDT.",
+            3: "ألصق عنوان محفظتنا على شبكة TRC20 بعناية.",
+            4: "تأكد أن الشبكة المحددة هي TRC20 قبل الإرسال."
+          }
+        },
+        txn: {
+          title: "معرّف المعاملة (TxID)",
+          desc: "بعد الإرسال، سيظهر لك معرّف فريد طويل يمثل إثبات التحويل.",
+          note: "احفظ أو التقط صورة للمعاملة لتسريع عملية التحقق من الدفع."
+        },
+        cta_enroll: "متابعة التسجيل"
+      },
       actions: {
         refresh: "تحديث",
         confirm: "تأكيد",
         view_details: "عرض التفاصيل",
         enroll: "اشترك",
         fail: "فشل",
-        verify: "تحقق"
+        verify: "تحقق",
+        crypto_guide: "دليل العملات الرقمية",
+      },
+      notes: {
+        usdt_trc20: "يجب إرسال جميع إيداعات USDT عبر شبكة TRC20 (ترون).",
+        network_reminder: "استخدم شبكة TRC20 لمدفوعات USDT."
       },
       sections: {
         pending_payments: "المدفوعات المعلّقة",
@@ -1309,6 +1457,8 @@ const resources = {
         confirm: 'تأكيد',
         reviews: 'المراجعات',
         no_messages: 'لا توجد رسائل',
+        copy: 'نسخ',
+        download_qr: 'تحميل QR',
         phone: 'رقم الهاتف',
         email: 'البريد الإلكتروني',
         refresh: 'تحديث',

@@ -1,6 +1,6 @@
 // Simple analytics tracker for pageviews and sessions
 
-const API_BASE = (process.env.NEXT_PUBLIC_BACKEND_URL || process.env.REACT_APP_BACKEND_URL) || 'http://localhost:4000';
+const API_BASE = (process.env.NEXT_PUBLIC_BACKEND_URL || process.env.REACT_APP_BACKEND_URL) || 'http://localhost:3000';
 
 function uuidv4() {
   // RFC4122-ish UUID

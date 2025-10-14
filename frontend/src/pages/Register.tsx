@@ -461,6 +461,7 @@ const Register: React.FC = () => {
                     bg="#b7a27d"
                     minW="200px"
                     color="black"
+                    type="submit"
                     _hover={{ opacity: 0.9 }}
                     isDisabled={loading}
                     isLoading={loading}

@@ -28,6 +28,8 @@ import FAQ from './pages/Learn/FAQ';
 import Apply from './pages/Apply';
 import NotFound from "./pages/404";
 import ScrollToTop from "./components/ScrollToTop";
+import Crypto from './pages/Guide/Crypto';
+import EnrollmentCelebration from './components/EnrollmentCelebration';
 
 function App() {
   return (
@@ -79,10 +81,12 @@ function App() {
           <Route path="/legal/terms" element={<Terms />} />
           <Route path="/company/about" element={<About />} />
           <Route path="/company/careers" element={<Careers />} />
+          <Route path="/guide/crypto" element={<Crypto />} />
           <Route path="/apply/:id" element={<Apply />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Box>
+      <EnrollmentCelebration />
       <Footer />
     </Box>
   );

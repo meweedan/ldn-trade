@@ -73,6 +73,7 @@ const CourseDetail: React.FC = () => {
   const [error, setError] = React.useState<string | null>(null);
   const isAdvancedTier = tier?.level === "ADVANCED";
   const { t, i18n } = useTranslation() as any;
+  const [isEnrolled, setIsEnrolled] = React.useState(false);
 
   const fmtDate = React.useCallback(
     (d?: string) => {
@@ -94,8 +95,14 @@ const CourseDetail: React.FC = () => {
     if (!id) return;
     (async () => {
       try {
-        const resp = await api.get(`/courses/${id}`);
+        const [resp, mine] = await Promise.all([
+          api.get(`/courses/${id}`),
+          api.get('/purchase/mine').catch(() => ({ data: [] })),
+        ]);
         setTier(resp.data || null);
+        const list: any[] = Array.isArray(mine.data) ? mine.data : [];
+        const enrolled = list.some((p: any) => String(p.status || '').toUpperCase() === 'CONFIRMED' && ((p.tier && p.tier.id === id) || p.tierId === id));
+        setIsEnrolled(enrolled);
       } catch (e: any) {
         setError(e?.response?.data?.message || t("errors.load_failed"));
       } finally {
@@ -352,18 +359,33 @@ const CourseDetail: React.FC = () => {
                   </SimpleGrid>
 
                   <HStack>
-                    <RouterLink to={`/checkout?tierId=${tier.id}`}>
-                      <Button
-                        w="full"
-                        size="lg"
-                        bg={GOLD}
-                        _hover={{ opacity: 0.9 }}
-                        color="black"
-                        borderRadius="xl"
-                      >
-                        {t("actions.enroll")}
-                      </Button>
-                    </RouterLink>
+                    {isEnrolled ? (
+                      <RouterLink to={`/learn/${tier.id}`}>
+                        <Button
+                          w="full"
+                          size="lg"
+                          bg={GOLD}
+                          _hover={{ opacity: 0.9 }}
+                          color="black"
+                          borderRadius="xl"
+                        >
+                          {t("home.courses.view", { defaultValue: "View Course" })}
+                        </Button>
+                      </RouterLink>
+                    ) : (
+                      <RouterLink to={`/checkout?tierId=${tier.id}`}>
+                        <Button
+                          w="full"
+                          size="lg"
+                          bg={GOLD}
+                          _hover={{ opacity: 0.9 }}
+                          color="black"
+                          borderRadius="xl"
+                        >
+                          {t("actions.enroll")}
+                        </Button>
+                      </RouterLink>
+                    )}
                   </HStack>
 
                   {/* Benefits / What you get */}
