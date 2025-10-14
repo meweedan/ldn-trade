@@ -1,7 +1,19 @@
 import axios from 'axios';
 
+const rawBase = (process.env.REACT_APP_BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_URL) || 'http://localhost:4000';
+let resolvedBase = rawBase;
+try {
+  if (typeof window !== 'undefined' && window.location && /^https:/i.test(window.location.protocol)) {
+    const u = new URL(resolvedBase);
+    if (u.protocol === 'http:' && u.hostname !== 'localhost') {
+      u.protocol = 'https:';
+      resolvedBase = u.toString();
+    }
+  }
+} catch {}
+
 const api = axios.create({
-  baseURL: (process.env.NEXT_PUBLIC_BACKEND_URL || process.env.REACT_APP_BACKEND_URL) || 'http://localhost:4000',
+  baseURL: resolvedBase,
 });
 
 // Attach access token if present

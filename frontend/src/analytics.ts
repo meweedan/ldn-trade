@@ -1,6 +1,16 @@
 // Simple analytics tracker for pageviews and sessions
 
-const API_BASE = (process.env.NEXT_PUBLIC_BACKEND_URL || process.env.REACT_APP_BACKEND_URL) || 'http://localhost:3000';
+const rawBase = (process.env.REACT_APP_BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_URL) || 'http://localhost:4000';
+let API_BASE = rawBase;
+try {
+  if (typeof window !== 'undefined' && window.location && /^https:/i.test(window.location.protocol)) {
+    const u = new URL(API_BASE);
+    if (u.protocol === 'http:' && u.hostname !== 'localhost') {
+      u.protocol = 'https:';
+      API_BASE = u.toString();
+    }
+  }
+} catch {}
 
 function uuidv4() {
   // RFC4122-ish UUID

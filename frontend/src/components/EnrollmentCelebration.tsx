@@ -2,7 +2,7 @@ import React from "react";
 import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, Text, useDisclosure, Box } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import api, { getMyPurchases } from "../api/client";
+import { getMyPurchases } from "../api/client";
 
 // LocalStorage helpers
 const getJson = <T,>(k: string, def: T): T => {

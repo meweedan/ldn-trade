@@ -16,7 +16,7 @@ import {
   Badge,
 } from "@chakra-ui/react";
 import { useTranslation } from "react-i18next";
-import api from "../api/client";
+import api, { getMyPurchases } from "../api/client";
 import { getAllCountries, getDeviceCountryCode } from "../utils/countries";
 
 type Method = "usdt" | "libyana" | "madar";
@@ -105,11 +105,11 @@ const Checkout: React.FC = () => {
         const [me, tResp, mine] = await Promise.all([
           api.get("/users/me").catch(() => ({ data: null })),
           tierId ? api.get(`/courses/${tierId}`) : Promise.resolve({ data: null }),
-          api.get("/purchase/mine").catch(() => ({ data: [] })),
+          getMyPurchases({ ttlMs: 10 * 60 * 1000 }).catch(() => [] as any[]),
         ]);
-        setUser(me.data);
-        setTier(tResp.data);
-        const list: any[] = Array.isArray(mine.data) ? mine.data : [];
+        setUser((me as any).data);
+        setTier((tResp as any).data);
+        const list: any[] = Array.isArray(mine) ? (mine as any[]) : [];
         const enrolled = list.some(
           (p) => String(p.status || "").toUpperCase() === "CONFIRMED" && ((p.tier && p.tier.id === tierId) || p.tierId === tierId)
         );
@@ -133,9 +133,9 @@ const Checkout: React.FC = () => {
   // Purchase status helper
   const fetchPurchaseStatus = React.useCallback(async (): Promise<string | null> => {
     try {
-      const r = await api.get("/purchase/mine");
-      const list: any[] = Array.isArray(r.data) ? r.data : [];
-      const found = list.find((p) => p.id === purchaseId);
+      const list = await getMyPurchases({ force: true });
+      const arr: any[] = Array.isArray(list) ? list : [];
+      const found = arr.find((p) => p.id === purchaseId);
       const status = found?.status || null;
       if (status) setPurchaseStatus(status);
       return status;

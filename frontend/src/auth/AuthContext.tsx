@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import api from '../api/client';
+import api, { getMyPurchases, invalidateMyPurchases } from '../api/client';
 
 export type AuthUser = {
   id: string;
@@ -37,6 +37,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode } > = ({ childre
       if (data) {
         setUser(data);
         try { localStorage.setItem('authUser', JSON.stringify(data)); } catch {}
+        try { await getMyPurchases({ force: true, ttlMs: 10 * 60 * 1000 }); } catch {}
       } else if (cached) {
         const u = JSON.parse(cached);
         setUser(u);
@@ -56,6 +57,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode } > = ({ childre
     try { await api.post('/auth/logout'); } catch {}
     localStorage.removeItem('token');
     setUser(null);
+    invalidateMyPurchases();
   };
 
   const ctx = useMemo<AuthContextValue>(

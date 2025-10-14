@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Box, Heading, Text, VStack, HStack, Badge, Button, Spinner } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import api, { getMyPurchases } from '../api/client';
+import { getMyPurchases } from '../api/client';
 
 const Enrolled: React.FC = () => {
   const { t } = useTranslation() as any;
