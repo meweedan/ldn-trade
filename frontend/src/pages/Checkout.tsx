@@ -45,8 +45,10 @@ const Checkout: React.FC = () => {
 
   // Preview pricing
   const [previewAmount, setPreviewAmount] = React.useState<number | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [previewDiscount, setPreviewDiscount] = React.useState<number | null>(null);
   const [previewBase, setPreviewBase] = React.useState<number | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [previewPath, setPreviewPath] = React.useState<string | null>(null);
   const [previewLoading, setPreviewLoading] = React.useState(false);
   const [previewError, setPreviewError] = React.useState<string | null>(null);
@@ -67,31 +69,10 @@ const Checkout: React.FC = () => {
 
   // Premium theming via tokens only (no hooks)
   const brand = "#b7a27d";
-  const cardBg = "bg.card";
   const cardBorder = "border.default";
   const subtleText = "text.muted";
-  const selectBg = "bg.input";
   const selectBorder = "border.default";
   const selectFocus = "border.focus";
-
-  // Brand button style that flips text color with color scheme (no hooks)
-  const brandBtnstyle = {
-    bg: brand,
-    // default (light)
-    color: "#b7a27d",
-    _hover: { opacity: 0.9 },
-    // dark mode override using media query
-    "@media (prefers-color-scheme: dark)": {
-      color: "white",
-    },
-  } as const;
-
-  // Solid outline button for consistency
-  const outlineBtnstyle = {
-    borderColor: brand,
-    color: "inherit",
-    _hover: { bg: "#b7a27d" },
-  } as const;
 
   const openPaymentModal = React.useCallback(() => {
     const expires = Date.now() + 30 * 60 * 1000;
@@ -235,6 +216,7 @@ const Checkout: React.FC = () => {
     refCode,
     openPaymentModal,
     navigate,
+    previewAmount,
   ]);
 
   // Promo preview
@@ -282,7 +264,7 @@ const Checkout: React.FC = () => {
     } finally {
       setPreviewLoading(false);
     }
-  }, [tierId, method, country, courseLanguage, promoCode, refCode]);
+  }, [tierId, method, country, courseLanguage, promoCode, refCode, t]);
 
   // Auto-preview when promo code changes (debounced)
   React.useEffect(() => {
@@ -402,7 +384,6 @@ const Checkout: React.FC = () => {
   const showLYD = isLibya && isWallet;
   const baseUsd = previewBase != null ? previewBase : usdPrice; // prefer server base after preview
   const baseLyd = Math.round(baseUsd * 8 * 100) / 100;
-  const lydPrice = Math.round(usdPrice * 8 * 100) / 100;
 
   // Effective price after a confirmed preview
   const effectiveUsd = previewAmount != null ? previewAmount : baseUsd;

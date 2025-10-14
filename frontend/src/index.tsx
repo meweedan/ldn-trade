@@ -29,19 +29,15 @@ try {
 
 const sentryTunnel =
   process.env.REACT_APP_SENTRY_TUNNEL ||
-  (process.env.NODE_ENV === 'development'
-    ? 'http://localhost:4000/monitoring'
-    : backendBase
-    ? `${backendBase.replace(/\/$/, '')}/monitoring`
-    : '/monitoring');
+  (process.env.NODE_ENV === 'development' ? 'http://localhost:4000/monitoring' : '');
 
 Sentry.init({
   dsn: process.env.REACT_APP_SENTRY_DSN,
   integrations: [Sentry.browserTracingIntegration(), Sentry.replayIntegration()],
-  tunnel: sentryTunnel,
-  tracesSampleRate: 1.0,
-  replaysSessionSampleRate: 0.1,
-  replaysOnErrorSampleRate: 1.0,
+  tunnel: sentryTunnel || undefined,
+  tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.2 : 1.0,
+  replaysSessionSampleRate: process.env.NODE_ENV === 'production' ? 0 : 0.1,
+  replaysOnErrorSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
   sendDefaultPii: true,
 });
 

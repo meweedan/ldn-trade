@@ -1,5 +1,16 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React from "react";
-import { Box, Button, HStack, VStack, Heading, Input, Text, Icon, SimpleGrid } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  HStack,
+  VStack,
+  Heading,
+  Input,
+  Text,
+  Icon,
+  SimpleGrid,
+} from "@chakra-ui/react";
 import { Plus, RefreshCcw, Trash2, Save } from "lucide-react";
 import api from "../../api/client";
 
@@ -18,8 +29,8 @@ type Promo = {
   applicableTierIds?: string[] | null;
   active: boolean;
   createdAt: string;
-  usedCount?: number;                 // 👈 NEW
-  revenueFromPromoUsd?: number;       // 👈 optional, if you used it
+  usedCount?: number; // 👈 NEW
+  revenueFromPromoUsd?: number; // 👈 optional, if you used it
 };
 
 const PromoAdminPanel: React.FC = () => {

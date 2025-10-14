@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 // src/components/FadeInText.tsx
 import React from "react";
 import { Heading, Text, chakra, keyframes } from "@chakra-ui/react";
