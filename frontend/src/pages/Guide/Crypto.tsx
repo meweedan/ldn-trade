@@ -3,12 +3,14 @@ import {
   Box,
   Container,
   VStack,
+  HStack,
   Heading,
   Text,
   Divider,
   SimpleGrid,
   Card,
   CardBody,
+  CardHeader,
   Link,
   List,
   ListItem,
@@ -16,6 +18,14 @@ import {
   Image,
   Code,
   Button,
+  Alert,
+  AlertIcon,
+  Accordion,
+  AccordionItem,
+  AccordionButton,
+  AccordionPanel,
+  AccordionIcon,
+  Kbd,
 } from "@chakra-ui/react";
 import { useTranslation } from "react-i18next";
 import { ExternalLink } from "lucide-react";
@@ -28,135 +38,168 @@ export default function CryptoGuide() {
   const isRTL = i18n?.language?.startsWith("ar");
 
   return (
-    <Box py={{ base: 6, md: 10 }} dir={isRTL ? "rtl" : "ltr"}>
-      <Container maxW="5xl">
+    <Box py={{ base: 6, md: 10 }} dir={isRTL ? "rtl" : "ltr"} overflowX="hidden">
+      <Container maxW="6xl">
         <VStack align="stretch" spacing={8}>
           {/* Hero */}
           <VStack spacing={2} textAlign="center">
-            <Heading fontSize={{ base: "2xl", md: "3xl" }} color={GOLD}>
+            <Heading fontSize={{ base: "2xl", md: "3xl" }} color={GOLD} letterSpacing="0.3px">
               {t("crypto.title")}
             </Heading>
-            <Text opacity={0.85} maxW="3xl">
+            <Text opacity={0.9} maxW="3xl">
               {t("crypto.subtitle")}
             </Text>
           </VStack>
 
-          <Divider />
+          {/* Primer */}
+          <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
+            <Card variant="outline" borderColor={GOLD} bg="bg.surface">
+              <CardHeader pb={0}>
+                <HStack justify="space-between">
+                  <Heading size="md">{t("crypto.what_is_usdt.title")}</Heading>
+                </HStack>
+              </CardHeader>
+              <CardBody>
+                <Text mb={4}>{t("crypto.what_is_usdt.desc")}</Text>
+                <Image
+                  src="/images/rand/usdt.png"
+                  alt="USDT example"
+                  borderRadius="lg"
+                  w="100%"
+                  maxW="420px"
+                  mx="auto"
+                  shadow="sm"
+                />
+                <Alert status="info" mt={4} borderRadius="md">
+                  <AlertIcon />
+                  {t("crypto.note_stablecoin") ??
+                    "USDT is a stablecoin designed to track the US dollar (1 USDT ≈ $1)."}
+                </Alert>
+              </CardBody>
+            </Card>
 
-          {/* What is USDT */}
-          <Card>
-            <CardBody bg="bg.surface" borderWidth="1px" borderColor="#b7a27d" borderRadius="md">
-              <Heading size="md" mb={2}>
-                {t("crypto.what_is_usdt.title")}
-              </Heading>
-              <Text mb={3}>{t("crypto.what_is_usdt.desc")}</Text>
-              <Image
-                src="/images/rand/usdt.png"
-                alt="USDT example"
-                borderRadius="md"
-                w="full"
-                maxW="400px"
-                mx="auto"
-              />
-            </CardBody>
-          </Card>
-
-          {/* Chain Comparison */}
-          <Card>
-            <CardBody bg="bg.surface" borderWidth="1px" borderColor="#b7a27d" borderRadius="md">
-              <Heading size="md" mb={2}>
-                {t("crypto.chains.title")}
-              </Heading>
-              <Text mb={4}>{t("crypto.chains.desc")}</Text>
-              <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4}>
-                <Box p={4} border="1px solid" borderColor="gray.300" borderRadius="md">
-                  <Heading size="sm" color="blue.400">
-                    Ethereum (ERC20)
-                  </Heading>
-                  <Text fontSize="sm">{t("crypto.chains.erc20")}</Text>
-                </Box>
-                <Box p={4} border="1px solid" borderColor="gray.300" borderRadius="md">
-                  <Heading size="sm" color="purple.400">
-                    BNB Smart Chain (BEP20)
-                  </Heading>
-                  <Text fontSize="sm">{t("crypto.chains.bep20")}</Text>
-                </Box>
-                <Box p={4} border="1px solid" borderColor="gray.300" borderRadius="md">
-                  <Heading size="sm" color="green.400">
-                    TRON (TRC20)
-                  </Heading>
-                  <Text fontSize="sm" fontWeight="bold" color={GOLD}>
-                    {t("crypto.chains.trc20")}
-                  </Text>
-                </Box>
-              </SimpleGrid>
-            </CardBody>
-          </Card>
+            {/* Chain Comparison */}
+            <Card variant="outline" borderColor={GOLD} bg="bg.surface">
+              <CardHeader pb={2}>
+                <Heading size="md">{t("crypto.chains.title")}</Heading>
+                <Text opacity={0.85} mt={1}>
+                  {t("crypto.chains.desc")}
+                </Text>
+              </CardHeader>
+              <CardBody pt={0}>
+                <SimpleGrid columns={{ base: 1, md: 1 }} spacing={3}>
+                  <Box p={4} borderRadius="md">
+                    <Heading size="md" color="blue.400" textAlign="center">
+                      Ethereum (ERC20)
+                    </Heading>
+                    <Text fontSize="md" mt={1} textAlign="center">
+                      {t("crypto.chains.erc20")}
+                    </Text>
+                  </Box>
+                  <Box p={4} borderRadius="md">
+                    <Heading size="md" color="purple.400" textAlign="center">
+                      BNB Smart Chain (BEP20)
+                    </Heading>
+                    <Text fontSize="md" mt={1} textAlign="center">
+                      {t("crypto.chains.bep20")}
+                    </Text>
+                  </Box>
+                  <Box p={4} borderRadius="md">
+                    <Heading size="md" color="green.500" textAlign="center">
+                      TRON (TRC20)
+                    </Heading>
+                    <Text fontSize="md" mt={1} fontWeight="semibold" textAlign="center">
+                      {t("crypto.chains.trc20")}
+                    </Text>
+                  </Box>
+                </SimpleGrid>
+                <Text fontSize="md" opacity={0.8} mt={3}>
+                  ✅{" "}
+                  {t("crypto.fees_tip") ??
+                    "Tip: TRC20 is usually the cheapest and fastest for USDT transfers."}
+                </Text>
+              </CardBody>
+            </Card>
+          </SimpleGrid>
 
           {/* How to Buy */}
-          <Card>
-            <CardBody bg="bg.surface" borderWidth="1px" borderColor="#b7a27d" borderRadius="md">
-              <Heading size="md" mb={2}>
-                {t("crypto.buy.title")}
-              </Heading>
-              <Text mb={3}>{t("crypto.buy.desc")}</Text>
-              <List spacing={2}>
-                <ListItem>
-                  <Link href="https://www.binance.com" isExternal color={GOLD}>
-                    Binance <Icon as={ExternalLink} boxSize={4} ml={1} />
-                  </Link>
-                </ListItem>
-                <ListItem>
-                  <Link href="https://www.okx.com" isExternal color={GOLD}>
-                    OKX <Icon as={ExternalLink} boxSize={4} ml={1} />
-                  </Link>
-                </ListItem>
-                <ListItem>
-                  <Link href="https://www.bybit.com" isExternal color={GOLD}>
-                    Bybit <Icon as={ExternalLink} boxSize={4} ml={1} />
-                  </Link>
-                </ListItem>
-              </List>
+          <Card variant="outline" borderColor={GOLD} bg="bg.surface">
+            <CardHeader pb={2}>
+              <Heading size="md">{t("crypto.buy.title")}</Heading>
+              <Text opacity={0.85} mt={1}>
+                {t("crypto.buy.desc")}
+              </Text>
+            </CardHeader>
+            <CardBody pt={0}>
+              <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
+                <Box>
+                  <Heading size="md" mb={2}>
+                    {t("crypto.buy.global_title") ?? "Global exchanges"}
+                  </Heading>
+                  <List spacing={2}>
+                    <ListItem>
+                      <Link href="https://www.binance.com" isExternal color={GOLD}>
+                        Binance <Icon as={ExternalLink} boxSize={4} mx={1} />
+                      </Link>
+                    </ListItem>
+                    <ListItem>
+                      <Link href="https://www.okx.com" isExternal color={GOLD}>
+                        OKX <Icon as={ExternalLink} boxSize={4} mx={1} />
+                      </Link>
+                    </ListItem>
+                    <ListItem>
+                      <Link href="https://www.bybit.com" isExternal color={GOLD}>
+                        Bybit <Icon as={ExternalLink} boxSize={4} mx={1} />
+                      </Link>
+                    </ListItem>
+                  </List>
+                </Box>
 
-              <Divider my={4} />
+                <Box>
+                  <Heading size="md" mb={2}>
+                    {t("crypto.buy.libya_title")}
+                  </Heading>
+                  <Text mb={3}>{t("crypto.buy.libya_desc")}</Text>
+                  <List spacing={2}>
+                    <ListItem>
+                      <Link href="https://goo.gl/maps/dM6uUjNBa2N9eR4P6" isExternal color={GOLD}>
+                        Tripoli – Al-Siyahiya Exchange <Icon as={ExternalLink} boxSize={4} mx={1} />
+                      </Link>
+                    </ListItem>
+                    <ListItem>
+                      <Link href="https://goo.gl/maps/wLrLpKUcTcnzjAEz8" isExternal color={GOLD}>
+                        Benghazi – Souq Al-Jareed Exchange{" "}
+                        <Icon as={ExternalLink} boxSize={4} mx={1} />
+                      </Link>
+                    </ListItem>
+                    <ListItem>
+                      <Link href="https://goo.gl/maps/9LhGzAmLxwHbL6Ft7" isExternal color={GOLD}>
+                        Misrata – Downtown Financial Center{" "}
+                        <Icon as={ExternalLink} boxSize={4} mx={1} />
+                      </Link>
+                    </ListItem>
+                  </List>
+                </Box>
+              </SimpleGrid>
 
-              <Heading size="sm" mb={2}>
-                {t("crypto.buy.libya_title")}
-              </Heading>
-              <Text mb={3}>{t("crypto.buy.libya_desc")}</Text>
-
-              <List spacing={2}>
-                <ListItem>
-                  <Link href="https://goo.gl/maps/dM6uUjNBa2N9eR4P6" isExternal color={GOLD}>
-                    Tripoli – Al-Siyahiya Exchange
-                    <Icon as={ExternalLink} boxSize={4} ml={1} />
-                  </Link>
-                </ListItem>
-                <ListItem>
-                  <Link href="https://goo.gl/maps/wLrLpKUcTcnzjAEz8" isExternal color={GOLD}>
-                    Benghazi – Souq Al-Jareed Exchange
-                    <Icon as={ExternalLink} boxSize={4} ml={1} />
-                  </Link>
-                </ListItem>
-                <ListItem>
-                  <Link href="https://goo.gl/maps/9LhGzAmLxwHbL6Ft7" isExternal color={GOLD}>
-                    Misrata – Downtown Financial Center
-                    <Icon as={ExternalLink} boxSize={4} ml={1} />
-                  </Link>
-                </ListItem>
-              </List>
+              <Alert status="warning" mt={5} borderRadius="md">
+                <AlertIcon />
+                {t("crypto.kyc_warning") ??
+                  "Use verified vendors and complete KYC where required. Avoid P2P trades without escrow."}
+              </Alert>
             </CardBody>
           </Card>
 
           {/* How to Send */}
-          <Card>
-            <CardBody bg="bg.surface" borderWidth="1px" borderColor="#b7a27d" borderRadius="md">
-              <Heading size="md" mb={2}>
-                {t("crypto.send.title")}
-              </Heading>
-              <Text mb={3}>{t("crypto.send.desc")}</Text>
-
-              <List spacing={2} pl={4}>
+          <Card variant="outline" borderColor={GOLD} bg="bg.surface">
+            <CardHeader pb={2}>
+              <Heading size="md">{t("crypto.send.title")}</Heading>
+              <Text opacity={0.85} mt={1}>
+                {t("crypto.send.desc")}
+              </Text>
+            </CardHeader>
+            <CardBody pt={0}>
+              <List spacing={2} pl={1}>
                 <ListItem>✅ {t("crypto.send.steps.1")}</ListItem>
                 <ListItem>✅ {t("crypto.send.steps.2")}</ListItem>
                 <ListItem>✅ {t("crypto.send.steps.3")}</ListItem>
@@ -165,29 +208,141 @@ export default function CryptoGuide() {
 
               <Divider my={4} />
 
-              <Text fontWeight="bold">{t("crypto.txn.title")}</Text>
+              <Text fontWeight="bold" mb={1}>
+                {t("crypto.txn.title")}
+              </Text>
               <Text mb={2}>{t("crypto.txn.desc")}</Text>
 
-              <Code p={3} borderRadius="md" display="block" whiteSpace="nowrap">
+              {/* FIXED: wrap long hash on mobile without pushing layout */}
+              <Code
+                p={3}
+                borderRadius="md"
+                display="block"
+                w="100%"
+                fontSize={{ base: "xs", md: "sm" }}
+                whiteSpace="pre-wrap" // allow wrapping
+                wordBreak="break-all" // break long strings
+                overflowWrap="anywhere" // safer wrap across browsers
+                bg="gray"
+                color="green.200"
+              >
                 9d14db6a6e4e5e8adf07f1fbbbe23cb9d5b2a4bdfa7cbba532e38aabceabf9c9
               </Code>
 
               <Text fontSize="sm" opacity={0.8} mt={2}>
                 {t("crypto.txn.note")}
               </Text>
+
+              <Alert status="success" mt={4} borderRadius="md">
+                <AlertIcon />
+                {t("crypto.network_match_tip") ??
+                  "Always match the network on both sender and receiver (e.g., TRC20 ↔ TRC20)."}
+              </Alert>
             </CardBody>
           </Card>
 
+          {/* Quick How-To (polished, not “tutorial-ish”) */}
+          <Card variant="outline" borderColor={GOLD} bg="bg.surface">
+            <CardHeader pb={2}>
+              <Heading size="md">
+                {t("crypto.guide.quick.title") ?? "Quick guide: buy → send → confirm"}
+              </Heading>
+            </CardHeader>
+            <CardBody pt={0}>
+              <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4}>
+                <Box p={4} border="1px dashed" borderColor="gray.400" borderRadius="lg">
+                  <Heading size="sm" mb={2}>
+                    1) Buy USDT
+                  </Heading>
+                  <Text fontSize="sm" opacity={0.9}>
+                    {t("crypto.guide.quick.buy") ??
+                      "Purchase USDT on an exchange or from a verified local vendor."}
+                  </Text>
+                </Box>
+                <Box p={4} border="1px dashed" borderColor="gray.400" borderRadius="lg">
+                  <Heading size="sm" mb={2}>
+                    2) Set Network
+                  </Heading>
+                  <Text fontSize="sm" opacity={0.9}>
+                    {t("crypto.guide.quick.network") ??
+                      "Choose TRC20 unless you’re told otherwise for fees/speed."}
+                  </Text>
+                </Box>
+                <Box p={4} border="1px dashed" borderColor="gray.400" borderRadius="lg">
+                  <Heading size="sm" mb={2}>
+                    3) Send & Verify
+                  </Heading>
+                  <Text fontSize="sm" opacity={0.9}>
+                    {t("crypto.guide.quick.verify") ?? (
+                      <>
+                        Paste the address, double-check the first/last 4 chars, send a small test (
+                        <Kbd>$1</Kbd>), then full amount.
+                      </>
+                    )}
+                  </Text>
+                </Box>
+              </SimpleGrid>
+            </CardBody>
+          </Card>
+
+          {/* FAQ */}
+          <Card variant="outline" borderColor={GOLD} bg="bg.surface">
+            <CardHeader pb={2}>
+              <Heading size="md">{t("crypto.faq.title") ?? "FAQ"}</Heading>
+            </CardHeader>
+            <CardBody pt={0}>
+              <Accordion allowToggle>
+                <AccordionItem>
+                  <h2>
+                    <AccordionButton>
+                      <Box as="span" flex="1" textAlign="start">
+                        {t("crypto.faq.network_wrong.q") ?? "What if I pick the wrong network?"}
+                      </Box>
+                      <AccordionIcon />
+                    </AccordionButton>
+                  </h2>
+                  <AccordionPanel>
+                    {t("crypto.faq.network_wrong.a") ??
+                      "Funds may be lost. Always confirm the network with the receiver before sending."}
+                  </AccordionPanel>
+                </AccordionItem>
+                <AccordionItem>
+                  <h2>
+                    <AccordionButton>
+                      <Box as="span" flex="1" textAlign="start">
+                        {t("crypto.faq.fees.q") ?? "Why did I receive less?"}
+                      </Box>
+                      <AccordionIcon />
+                    </AccordionButton>
+                  </h2>
+                  <AccordionPanel>
+                    {t("crypto.faq.fees.a") ??
+                      "Exchanges and networks charge fees. Send slightly more or account for fees ahead of time."}
+                  </AccordionPanel>
+                </AccordionItem>
+              </Accordion>
+            </CardBody>
+          </Card>
+
+          {/* CTA */}
           <VStack>
             <Button
               as={RouterLink}
               to="/checkout"
               bg={GOLD}
               color="black"
-              _hover={{ opacity: 0.9 }}
+              px={8}
+              size="lg"
+              _hover={{ filter: "brightness(0.95)" }}
+              shadow="md"
+              borderRadius="xl"
             >
               {t("crypto.cta_enroll")}
             </Button>
+            <Text fontSize="sm" opacity={0.7}>
+              {t("crypto.cta_disclaimer") ??
+                "Educational content only. This is not financial advice."}
+            </Text>
           </VStack>
         </VStack>
       </Container>

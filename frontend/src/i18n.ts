@@ -15,41 +15,66 @@ const resources = {
       },
       
       crypto: {
-        title: "Guide to Crypto & USDT (TRC20)",
-        subtitle: "Learn what USDT is, how to buy it, and how to send it safely using the TRC20 network.",
+        title: "USDT Guide",
+        subtitle: "A concise, trustworthy walkthrough for buying, sending, and verifying USDT safely.",
         what_is_usdt: {
           title: "What is USDT?",
-          desc: "USDT (Tether) is a stablecoin that’s always equal to 1 US dollar. It’s used for fast, cheap, and stable digital payments around the world."
+          desc: "USDT (Tether) is a stablecoin designed to mirror the value of the US dollar across multiple blockchains."
         },
+        note_stablecoin: "USDT is a stablecoin designed to track the US dollar (1 USDT ≈ $1).",
         chains: {
-          title: "Understanding the Chains",
-          desc: "USDT exists on multiple blockchains. Each has different speeds and fees.",
-          erc20: "Runs on Ethereum. Reliable but can be expensive with high gas fees.",
-          bep20: "Runs on Binance Smart Chain. Faster and cheaper than Ethereum.",
-          trc20: "Runs on TRON. It's the cheapest and fastest, which is why we use TRC20 for deposits."
+          title: "Networks that support USDT",
+          desc: "USDT exists on several blockchains. Fees and speeds differ by network.",
+          erc20: "Widely supported, higher fees during congestion.",
+          bep20: "Lower fees than ERC20; compatible with BNB Smart Chain wallets.",
+          trc20: "Usually the cheapest and fastest for USDT transfers."
         },
+        fees_tip: "Tip: TRC20 is usually the cheapest and fastest for USDT transfers.",
         buy: {
-          title: "Where to Buy USDT",
-          desc: "You can buy USDT on global exchanges or locally in Libya.",
+          title: "How to buy USDT",
+          desc: "Choose a reputable exchange or a verified local vendor.",
+          global_title: "Global exchanges",
           libya_title: "Buying in Libya",
-          libya_desc: "If you’re in Libya, you can visit these trusted locations that offer crypto exchange services:"
+          libya_desc: "Use trusted exchanges or well-reviewed local exchange offices."
         },
+        kyc_warning: "Use verified vendors and complete KYC where required. Avoid P2P trades without escrow.",
         send: {
-          title: "How to Send USDT (TRC20)",
-          desc: "Once you have USDT, you can send it to our deposit wallet. Always use the TRC20 network!",
+          title: "How to send USDT",
+          desc: "Always verify the wallet address and network before sending.",
           steps: {
-            1: "Open your crypto wallet or exchange app.",
-            2: "Select 'Send' and choose USDT.",
-            3: "Paste our TRC20 wallet address carefully.",
-            4: "Confirm the network is TRC20 before sending."
+            1: "Copy the receiver’s wallet address exactly.",
+            2: "Select the correct network (e.g., TRC20).",
+            3: "Send a small test first to confirm.",
+            4: "Send the full amount once confirmed."
           }
         },
         txn: {
-          title: "Transaction Hash (TxID)",
-          desc: "After sending, your wallet or exchange will show a transaction hash — a long unique ID proving the transfer.",
-          note: "Always save or screenshot the transaction hash; it helps verify your payment quickly."
+          title: "Sample transaction hash",
+          desc: "This is what a blockchain transaction ID (hash) can look like.",
+          note: "You can track this hash on a public blockchain explorer."
         },
-        cta_enroll: "Continue to Enrollment"
+        network_match_tip: "Always match the network on both sender and receiver (e.g., TRC20 ↔ TRC20).",
+        guide: {
+          quick: {
+            title: "Quick guide: buy → set network → send → confirm",
+            buy: "Purchase USDT on an exchange or from a verified local vendor.",
+            network: "Choose TRC20 unless instructed otherwise for fees/speed.",
+            verify: "Paste the address, check first/last 4 chars, send a $1 test, then the full amount."
+          }
+        },
+        faq: {
+          title: "FAQ",
+          network_wrong: {
+            q: "What if I pick the wrong network?",
+            a: "Funds may be lost. Always confirm the network with the receiver before sending."
+          },
+          fees: {
+            q: "Why did I receive less?",
+            a: "Exchanges and networks charge fees. Send slightly more or account for fees ahead of time."
+          }
+        },
+        cta_enroll: "Enroll now",
+        cta_disclaimer: "Educational content only. This is not financial advice."
       },
       actions: {
         refresh: "Refresh",
@@ -727,42 +752,67 @@ const resources = {
         contact: 'Contact',
       },
       crypto: {
-      title: "Guide sur la crypto et USDT (TRC20)",
-      subtitle: "Apprenez ce qu’est l’USDT, comment l’acheter et l’envoyer en toute sécurité via le réseau TRC20.",
-      what_is_usdt: {
-        title: "Qu’est-ce que l’USDT ?",
-        desc: "USDT (Tether) est une cryptomonnaie stable équivalente à 1 dollar américain. Elle permet des paiements rapides et bon marché dans le monde entier."
+        title: "Guide USDT",
+        subtitle: "Un guide concis et fiable pour acheter, envoyer et vérifier l’USDT en toute sécurité.",
+        what_is_usdt: {
+          title: "Qu’est-ce que l’USDT ?",
+          desc: "USDT (Tether) est une cryptomonnaie stable conçue pour refléter la valeur du dollar américain sur plusieurs blockchains."
+        },
+        note_stablecoin: "L’USDT est un stablecoin conçu pour suivre le dollar américain (1 USDT ≈ 1 $).",
+        chains: {
+          title: "Réseaux compatibles avec l’USDT",
+          desc: "USDT existe sur plusieurs blockchains. Les frais et vitesses varient selon le réseau.",
+          erc20: "Largement supporté, mais frais élevés en période de congestion.",
+          bep20: "Frais inférieurs à ERC20 ; compatible avec les portefeuilles BNB Smart Chain.",
+          trc20: "Généralement le plus économique et le plus rapide pour les transferts d’USDT."
+        },
+        fees_tip: "Astuce : TRC20 est généralement le plus économique et le plus rapide pour les transferts USDT.",
+        buy: {
+          title: "Comment acheter de l’USDT",
+          desc: "Choisissez une plateforme réputée ou un vendeur local vérifié.",
+          global_title: "Plateformes mondiales",
+          libya_title: "Acheter en Libye",
+          libya_desc: "Utilisez des plateformes fiables ou des bureaux de change bien notés."
+        },
+        kyc_warning: "Utilisez des vendeurs vérifiés et complétez la vérification d’identité (KYC) si nécessaire. Évitez le P2P sans escrow.",
+        send: {
+          title: "Comment envoyer de l’USDT",
+          desc: "Vérifiez toujours l’adresse du portefeuille et le réseau avant l’envoi.",
+          steps: {
+            1: "Copiez exactement l’adresse du destinataire.",
+            2: "Sélectionnez le bon réseau (p. ex., TRC20).",
+            3: "Envoyez d’abord un petit test pour confirmer.",
+            4: "Envoyez le montant total une fois confirmé."
+          }
+        },
+        txn: {
+          title: "Exemple de hash de transaction",
+          desc: "Voici à quoi peut ressembler l’identifiant (hash) d’une transaction blockchain.",
+          note: "Vous pouvez suivre ce hash sur un explorateur blockchain public."
+        },
+        network_match_tip: "Faites toujours correspondre le réseau côté expéditeur et destinataire (ex. TRC20 ↔ TRC20).",
+        guide: {
+          quick: {
+            title: "Guide rapide : acheter → définir le réseau → envoyer → confirmer",
+            buy: "Achetez de l’USDT sur une plateforme ou auprès d’un vendeur vérifié.",
+            network: "Choisissez TRC20 sauf indication contraire pour les frais/la vitesse.",
+            verify: "Collez l’adresse, vérifiez les 4 premiers/derniers caractères, envoyez un test de 1 $ puis le montant total."
+          }
+        },
+        faq: {
+          title: "FAQ",
+          network_wrong: {
+            q: "Et si je choisis le mauvais réseau ?",
+            a: "Les fonds peuvent être perdus. Confirmez toujours le réseau avec le destinataire avant l’envoi."
+          },
+          fees: {
+            q: "Pourquoi ai-je reçu moins ?",
+            a: "Les plateformes et réseaux facturent des frais. Envoyez un peu plus ou anticipez les frais."
+          }
+        },
+        cta_enroll: "S’inscrire maintenant",
+        cta_disclaimer: "Contenu éducatif uniquement. Ceci n’est pas un conseil financier."
       },
-      chains: {
-        title: "Comprendre les réseaux",
-        desc: "USDT existe sur plusieurs blockchains, chacune ayant ses coûts et vitesses.",
-        erc20: "Basé sur Ethereum — fiable mais souvent coûteux.",
-        bep20: "Basé sur BNB Smart Chain — plus rapide et moins cher qu’Ethereum.",
-        trc20: "Basé sur TRON — le plus rapide et le moins cher, c’est pourquoi nous utilisons TRC20 pour les dépôts."
-      },
-      buy: {
-        title: "Où acheter de l’USDT",
-        desc: "Vous pouvez acheter de l’USDT sur des plateformes internationales ou localement en Libye.",
-        libya_title: "Acheter en Libye",
-        libya_desc: "En Libye, vous pouvez visiter ces établissements fiables offrant des services d’échange de crypto :"
-      },
-      send: {
-        title: "Comment envoyer l’USDT (TRC20)",
-        desc: "Une fois vos USDT obtenus, envoyez-les à notre portefeuille TRC20. Vérifiez toujours le réseau avant l’envoi !",
-        steps: {
-          1: "Ouvrez votre portefeuille crypto ou application d’échange.",
-          2: "Sélectionnez « Envoyer » et choisissez USDT.",
-          3: "Collez notre adresse de portefeuille TRC20 avec soin.",
-          4: "Assurez-vous que le réseau sélectionné est TRC20 avant de confirmer."
-        }
-      },
-      txn: {
-        title: "Hash de transaction (TxID)",
-        desc: "Après l’envoi, votre portefeuille affichera un hash unique prouvant la transaction.",
-        note: "Conservez ce hash ou faites-en une capture d’écran pour accélérer la vérification."
-      },
-      cta_enroll: "Continuer l'inscription",
-    },
       actions: {
         refresh: "Actualiser",
         confirm: "Confirmer",
@@ -1399,41 +1449,66 @@ const resources = {
         contact: 'اتصل بنا',
       },
       crypto: {
-        title: "دليل العملات الرقمية وUSDT (شبكة TRC20)",
-        subtitle: "تعرف على عملة USDT، كيفية شرائها، وإرسالها بأمان باستخدام شبكة TRC20.",
+        title: "دليل USDT",
+        subtitle: "دليل موجز وموثوق لشراء وإرسال والتحقق من USDT بأمان.",
         what_is_usdt: {
           title: "ما هو USDT؟",
-          desc: "عملة USDT (تيذر) هي عملة رقمية مستقرة تعادل دائمًا 1 دولار أمريكي، وتُستخدم للدفع بسرعة وسهولة حول العالم."
+          desc: "USDT (تيثر) عملة مستقرة صمّمت لتعكس قيمة الدولار الأمريكي عبر عدة سلاسل بلوكشين."
         },
+        note_stablecoin: "USDT عملة مستقرة تتبع قيمة الدولار الأمريكي (1 USDT ≈ 1$).",
         chains: {
-          title: "فهم الشبكات المختلفة",
-          desc: "عملة USDT تعمل على شبكات بلوكشين متعددة. كل شبكة تختلف في السرعة والرسوم.",
-          erc20: "تعمل على شبكة الإيثيريوم، لكنها مكلفة عند ازدحام الشبكة.",
-          bep20: "تعمل على شبكة بينانس الذكية، أسرع وأرخص من الإيثيريوم.",
-          trc20: "تعمل على شبكة ترون، وهي الأرخص والأسرع، ولهذا نستخدمها في الإيداع."
+          title: "الشبكات التي تدعم USDT",
+          desc: "يتوفر USDT على عدة شبكات بلوكشين، وتختلف الرسوم والسرعات حسب الشبكة.",
+          erc20: "مدعوم على نطاق واسع، لكن الرسوم قد ترتفع عند الازدحام.",
+          bep20: "رسوم أقل من ERC20؛ متوافق مع محافظ شبكة BNB.",
+          trc20: "عادةً الأرخص والأسرع لعمليات تحويل USDT."
         },
+        fees_tip: "نصيحة: TRC20 غالبًا الأرخص والأسرع لتحويلات USDT.",
         buy: {
           title: "كيفية شراء USDT",
-          desc: "يمكنك شراء USDT من منصات التداول العالمية أو من مواقع محلية في ليبيا.",
+          desc: "اختر منصة موثوقة أو بائعًا محليًا مُوثقًا.",
+          global_title: "منصات عالمية",
           libya_title: "الشراء داخل ليبيا",
-          libya_desc: "في ليبيا، يمكنك زيارة هذه المواقع الموثوقة التي تقدم خدمات تبادل العملات الرقمية:"
+          libya_desc: "استخدم منصات موثوقة أو مكاتب صرافة ذات تقييمات جيدة."
         },
+        kyc_warning: "استخدم بائعين موثّقين وأكمل التحقق من الهوية (KYC) عند الحاجة. تجنّب التداولات المباشرة بدون وساطة موثوقة.",
         send: {
-          title: "كيفية إرسال USDT (شبكة TRC20)",
-          desc: "بعد شراء USDT يمكنك إرساله إلى محفظة الإيداع الخاصة بنا. تأكد دائمًا أنك تستخدم شبكة TRC20!",
+          title: "كيفية إرسال USDT",
+          desc: "تحقق دائمًا من عنوان المحفظة والشبكة قبل الإرسال.",
           steps: {
-            1: "افتح محفظتك الرقمية أو تطبيق المنصة.",
-            2: "اختر خيار (إرسال) وحدد USDT.",
-            3: "ألصق عنوان محفظتنا على شبكة TRC20 بعناية.",
-            4: "تأكد أن الشبكة المحددة هي TRC20 قبل الإرسال."
+            1: "انسخ عنوان المستلم بدقة.",
+            2: "اختر الشبكة الصحيحة (مثل TRC20).",
+            3: "أرسل تجربة صغيرة أولًا للتأكد.",
+            4: "أرسل المبلغ الكامل بعد التأكيد."
           }
         },
         txn: {
-          title: "معرّف المعاملة (TxID)",
-          desc: "بعد الإرسال، سيظهر لك معرّف فريد طويل يمثل إثبات التحويل.",
-          note: "احفظ أو التقط صورة للمعاملة لتسريع عملية التحقق من الدفع."
+          title: "مثال على معرّف المعاملة",
+          desc: "هكذا قد يبدو مُعرّف (هاش) معاملة على البلوكشين.",
+          note: "يمكنك تتبّع هذا الهاش على أي مستكشف بلوكشين عام."
         },
-        cta_enroll: "متابعة التسجيل"
+        network_match_tip: "طابق الشبكة دائمًا بين المرسل والمستلم (مثل TRC20 ↔ TRC20).",
+        guide: {
+          quick: {
+            title: "دليل سريع: اشترِ → حدّد الشبكة → أرسل → أكّد",
+            buy: "اشترِ USDT من منصة أو بائع موثّق.",
+            network: "اختر TRC20 ما لم يُنصَح بغير ذلك لتقليل الرسوم/زيادة السرعة.",
+            verify: "ألصق العنوان، وتحقق من أول/آخر 4 أحرف، وأرسل تجربة 1$، ثم المبلغ الكامل."
+          }
+        },
+        faq: {
+          title: "الأسئلة الشائعة",
+          network_wrong: {
+            q: "ماذا لو اخترت الشبكة الخاطئة؟",
+            a: "قد تُفقَد الأموال. تأكد دائمًا من الشبكة مع المستلم قبل الإرسال."
+          },
+          fees: {
+            q: "لماذا وصلني مبلغ أقل؟",
+            a: "تفرض المنصات والشبكات رسومًا. أرسل مبلغًا أكبر قليلًا أو احسب الرسوم مسبقًا."
+          }
+        },
+        cta_enroll: "سجّل الآن",
+        cta_disclaimer: "محتوى تعليمي فقط. هذا ليس نصيحة مالية."
       },
       actions: {
         refresh: "تحديث",
