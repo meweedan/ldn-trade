@@ -122,6 +122,12 @@ const Dashboard: React.FC = () => {
   const [purchases, setPurchases] = React.useState<Purchase[]>([]);
   const [tiers, setTiers] = React.useState<Tier[]>([]);
 
+  // VIP Telegram subscription (client-side state; later can move to server)
+  const [vipStart, setVipStart] = React.useState<string | null>(null);
+  const [vipEnd, setVipEnd] = React.useState<string | null>(null);
+  const tgHandle = process.env.REACT_APP_TELEGRAM_HANDLE || "";
+  const tgLink = React.useMemo(() => (tgHandle ? `https://t.me/${tgHandle}` : "https://t.me/"), [tgHandle]);
+
   const [adminSubTab, setAdminSubTab] = React.useState<
     "analytics" | "verifications" | "content" | "communications" | "promos" | "jobs" | "applications"
   >("analytics");
@@ -145,6 +151,39 @@ const Dashboard: React.FC = () => {
   // Colors
   const brand = "#b7a27d";
   const COLORS = ["#22c55e", "#f59e0b", "#ef4444", "#0ea5e9", "#8b5cf6", "#14b8a6", "#f43f5e"];
+
+  // Load VIP subscription window if present
+  React.useEffect(() => {
+    try {
+      const raw = localStorage.getItem("vipSubscription");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed?.startIso) setVipStart(parsed.startIso);
+        if (parsed?.endIso) setVipEnd(parsed.endIso);
+      }
+    } catch {}
+  }, []);
+
+  // After Stripe success, if VIP was selected and not yet active, auto-start VIP subscription session
+  React.useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const success = params.get("success");
+      if (success === "1" && !vipStart) {
+        const extras = JSON.parse(localStorage.getItem("celebrationExtras") || "{}");
+        const wantsVip = Object.values(extras || {}).some((e: any) => e && e.vipTelegram);
+        if (wantsVip) {
+          (async () => {
+            try {
+              const resp = await api.post("/payments/vip", {});
+              const url = resp?.data?.url as string | undefined;
+              if (url) window.location.href = url;
+            } catch {}
+          })();
+        }
+      }
+    } catch {}
+  }, [vipStart]);
 
   /**
    * Bootstrap user + admin data
@@ -461,6 +500,40 @@ const Dashboard: React.FC = () => {
                     </Text>
                   </Box>
                 </SimpleGrid>
+              </GlassCard>
+
+              {/* VIP Telegram card */}
+              <GlassCard>
+                <Heading size="md" mb={2}>{t("dashboard.vip_title", { defaultValue: "VIP Telegram" })}</Heading>
+                {vipStart ? (
+                  <>
+                    <Text>{t("dashboard.vip_status_active", { defaultValue: "Status: Active ($10/month)" })}</Text>
+                    <HStack gap={3} mt={2} flexWrap="wrap">
+                      <Button size="sm" bg={brand} color="black" _hover={{ opacity: 0.9 }} onClick={() => window.open(tgLink, "_blank", "noreferrer")}>
+                        {t("dashboard.vip_join", { defaultValue: "Open VIP Telegram" })}
+                      </Button>
+                      {vipStart && (
+                        <Badge colorScheme="green">{t("dashboard.vip_started", { defaultValue: "Started" })}: {new Date(vipStart).toLocaleString()}</Badge>
+                      )}
+                      {vipEnd && (
+                        <Badge colorScheme="yellow">{t("dashboard.vip_renews", { defaultValue: "Renews" })}: {new Date(vipEnd).toLocaleString()}</Badge>
+                      )}
+                    </HStack>
+                  </>
+                ) : (
+                  <>
+                    <Text>{t("dashboard.vip_status_inactive", { defaultValue: "Not subscribed." })}</Text>
+                    <Button size="sm" mt={2} bg={brand} color="black" _hover={{ opacity: 0.9 }} onClick={async () => {
+                      try {
+                        const resp = await api.post("/payments/vip", {});
+                        const url = resp?.data?.url as string | undefined;
+                        if (url) window.location.href = url;
+                      } catch {}
+                    }}>
+                      {t("dashboard.vip_subscribe", { defaultValue: "Subscribe $10/month" })}
+                    </Button>
+                  </>
+                )}
               </GlassCard>
             </VStack>
           )}

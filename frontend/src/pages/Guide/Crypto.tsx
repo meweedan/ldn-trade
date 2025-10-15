@@ -26,6 +26,7 @@ import {
   AccordionPanel,
   AccordionIcon,
   Kbd,
+  AspectRatio,
 } from "@chakra-ui/react";
 import { useTranslation } from "react-i18next";
 import { ExternalLink } from "lucide-react";
@@ -113,7 +114,7 @@ export default function CryptoGuide() {
                     </Text>
                   </Box>
                 </SimpleGrid>
-                <Text fontSize="md" opacity={0.8} mt={3}>
+                <Text fontSize="md" opacity={0.8} mt={3} textAlign="center">
                   ✅{" "}
                   {t("crypto.fees_tip") ??
                     "Tip: TRC20 is usually the cheapest and fastest for USDT transfers."}
@@ -324,8 +325,34 @@ export default function CryptoGuide() {
             </CardBody>
           </Card>
 
+          {/* Video Guide */}
+          <Card variant="outline" borderColor={GOLD} bg="bg.surface">
+            <CardHeader pb={2}>
+              <Heading size="md">
+                {t("crypto.video.title") ?? "Video guide: Buy & Send USDT (TRC20)"}
+              </Heading>
+              <Text opacity={0.85} mt={1}>
+                {t("crypto.video.desc") ??
+                  "Watch this step-by-step tutorial on buying USDT (TRC20) and sending it safely."}
+              </Text>
+            </CardHeader>
+            <CardBody pt={0}>
+              <AspectRatio ratio={16 / 9}>
+                <iframe
+                  src={
+                    (t("crypto.video.url") as string) || "https://www.youtube.com/embed/VIDEO_ID"
+                  }
+                  title="USDT TRC20 Guide"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                  style={{ border: 0 }}
+                />
+              </AspectRatio>
+            </CardBody>
+          </Card>
+
           {/* CTA */}
-          <VStack>
+          <HStack justifyContent="center" > 
             <Button
               as={RouterLink}
               to="/checkout"
@@ -339,11 +366,25 @@ export default function CryptoGuide() {
             >
               {t("crypto.cta_enroll")}
             </Button>
-            <Text fontSize="sm" opacity={0.7}>
-              {t("crypto.cta_disclaimer") ??
-                "Educational content only. This is not financial advice."}
-            </Text>
-          </VStack>
+            <Button
+              as={RouterLink}
+              to="/contact"
+              variant="outline"
+              borderColor={GOLD}
+              color={GOLD}
+              px={8}
+              size="lg"
+              _hover={{ bg: "transparent", filter: "brightness(1.1)" }}
+              shadow="md"
+              borderRadius="xl"
+            >
+              {t("footer.contact_us") ?? "Contact us"}
+            </Button>
+          </HStack>
+          <Text fontSize="sm" opacity={0.7} textAlign="center">
+            {t("crypto.cta_disclaimer") ??
+              "Educational content only. This is not financial advice."}
+          </Text>
         </VStack>
       </Container>
     </Box>

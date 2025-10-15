@@ -744,7 +744,7 @@ const Learn: React.FC = () => {
       <Container maxW="6xl" py={8}>
         <VStack align="stretch" gap={6}>
           <HStack justify="space-between" align="start">
-            <Box>
+            <Box bg="bg.surface">
               <Heading>{tier.name || t("learn.course_fallback")}</Heading>
               {tier.description && (
                 <Text mt={2} color="text.primary">
@@ -801,7 +801,7 @@ const Learn: React.FC = () => {
           </HStack>
 
           {/* Visibility toggles */}
-          <Box borderWidth={1} borderRadius="lg" borderColor="#b7a27d" p={4}>
+          <Box borderWidth={1} borderRadius="lg" borderColor="#b7a27d" bg="bg.surface" p={4}>
             <HStack gap={3} wrap="wrap">
               <Button
                 size="sm"
@@ -881,7 +881,7 @@ const Learn: React.FC = () => {
 
           {/* Instructor */}
           {(tier.instructorName || tier.instructorBio) && (
-            <Box borderWidth={1} borderRadius="lg" borderColor="#b7a27d" p={5}>
+            <Box borderWidth={1} borderRadius="lg" borderColor="#b7a27d" p={5} bg="bg.surface">
               <HStack justify="space-between" mb={2}>
                 <Heading size="md">{t("learn.instructor.title")}</Heading>
               </HStack>
@@ -895,7 +895,7 @@ const Learn: React.FC = () => {
           )}
 
           {/* Materials / Links */}
-          <Box borderWidth={1} borderRadius="lg" borderColor="#b7a27d" p={5}>
+          <Box borderWidth={1} borderRadius="lg" borderColor="#b7a27d" p={5} bg="bg.surface">
             <HStack justify="space-between" mb={2}>
               <Heading size="md">{t("learn.materials.title")}</Heading>
             </HStack>
@@ -1051,7 +1051,7 @@ const Learn: React.FC = () => {
           </Box>
 
           {/* Documents (PDFs) — strict language prefix only */}
-          <Box borderWidth={1} borderRadius="lg" borderColor="#b7a27d" p={5}>
+          <Box borderWidth={1} borderRadius="lg" borderColor="#b7a27d" p={5} bg="bg.surface">
             <HStack justify="space-between" mb={2}>
               <Heading size="md">{t("learn.documents.title")}</Heading>
               <Button
@@ -1174,6 +1174,7 @@ const Learn: React.FC = () => {
                   borderWidth={1}
                   borderRadius="md"
                   borderColor="#b7a27d"
+                  bg="bg.surface"
                   overflow="hidden"
                 >
                   <iframe
@@ -1191,6 +1192,7 @@ const Learn: React.FC = () => {
                   borderWidth={1}
                   borderRadius="md"
                   borderColor="#b7a27d"
+                  bg="bg.surface"
                   overflow="hidden"
                 >
                   <iframe
@@ -1213,6 +1215,7 @@ const Learn: React.FC = () => {
                   borderWidth={1}
                   borderRadius="md"
                   borderColor="#b7a27d"
+                  bg="bg.surface"
                   overflow="hidden"
                 >
                   {/* Simple iframe; if you use official widgets.js, add it globally once */}
@@ -1234,6 +1237,7 @@ const Learn: React.FC = () => {
               borderRadius="lg"
               borderColor="#b7a27d"
               p={5}
+              bg="bg.surface"
             >
               <HStack justify="space-between" mb={2}>
                 <Heading size="md">{t("learn.videos.title")}</Heading>
@@ -1338,7 +1342,7 @@ const Learn: React.FC = () => {
           )}
 
           {/* Support / Purchase info */}
-          <Box borderWidth={1} borderRadius="lg" borderColor="#b7a27d" p={5}>
+          <Box borderWidth={1} borderRadius="lg" borderColor="#b7a27d" p={5} bg="bg.surface">
             <HStack justify="space-between" mb={2}>
               <Heading size="sm">{t("learn.support.title")}</Heading>
               <Button

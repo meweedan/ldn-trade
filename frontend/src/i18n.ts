@@ -73,6 +73,11 @@ const resources = {
             a: "Exchanges and networks charge fees. Send slightly more or account for fees ahead of time."
           }
         },
+        video: {
+          title: "Video guide: Buy & Send USDT (TRC20)",
+          desc: "Watch this step-by-step tutorial on buying USDT (TRC20) and sending it safely.",
+          url: ""
+        },
         cta_enroll: "Enroll now",
         cta_disclaimer: "Educational content only. This is not financial advice."
       },
@@ -141,7 +146,15 @@ const resources = {
           title: "Payment Method",
           usdt: "USDT (TRC20)",
           libyana: "Libyana Balance",
-          madar: "Madar Balance"
+          madar: "Madar Balance",
+          card: "Card (Visa/Mastercard)"
+        },
+        addons: {
+          vip: {
+            title: "VIP Telegram (monthly)",
+            subtitle: "Recurring $10/month. Cancel anytime.",
+            choose: "Add ($10/month)"
+          }
         },
         libyana: {
           title: "Pay with Libyana Balance",
@@ -203,7 +216,11 @@ const resources = {
         title: "Enrollment Confirmed!",
         body: "Congratulations, you're enrolled into {{course_name}} successfully.",
         cta_hint: "Click below to get started on your path to mastering trading.",
-        cta: "Go to My Courses"
+        cta: "Go to My Courses",
+        vip_ready: "VIP unlocked. Join via Telegram:",
+        vip_join: "Open VIP Telegram",
+        vip_offer: "Add VIP Telegram monthly subscription now:",
+        vip_subscribe: "Subscribe to VIP"
       },
       // NEW: unified keys referenced by ContentAdmin
       common: {
@@ -487,7 +504,7 @@ const resources = {
             spot: "Spot only: instant exchange (no delays).",
             no_riba: "No interest/swaps (no riba).",
             ecn: "Use ECN brokers — you own your position digitally.",
-            gharar: "Reduce uncertainty (gharar): learn basics and decide clearly."
+            gharar: "Learn basics and decide clearly to reduce uncertainty."
           }
         },
         crypto: {
@@ -557,6 +574,8 @@ const resources = {
           title: 'Master Trading Expertly.',
           subtitle: 'Join +4,200 learners making real profit in around 4 weeks.',
           cta_primary: 'Start Learning Now',
+          welcome: 'Welcome, {{name}}',
+          welcome_sub: 'Pick up where you left off — your courses, tools, and community await.',
           cta_secondary: 'View Course Details',
         },
         urgency: {
@@ -567,7 +586,9 @@ const resources = {
         promo: {
           kicker: "Limited-time course promo:",
           copy: "Copy",
-          details: "Save up to 10% — apply this code at checkout before the timer ends."
+          details: "Save up to 10% — apply this code at checkout before the timer ends.",
+          kicker_late: "Late access promo:",
+          details_late: "Missed the cohort? Use this late access code."
 
         },
         trustpilot: {
@@ -585,6 +606,10 @@ const resources = {
           ratingText3: "Global community of learners",
           reviewsCount3: "Growing every week",
           proofText3: "Transparency you can count on."
+        },
+        stats: {
+          students: "Learners trained",
+          profitability: "Reported profitability",
         },
         faq: {
           title: "Frequently Asked Questions",
@@ -809,6 +834,11 @@ const resources = {
             q: "Pourquoi ai-je reçu moins ?",
             a: "Les plateformes et réseaux facturent des frais. Envoyez un peu plus ou anticipez les frais."
           }
+        },
+        video: {
+          title: "Guide vidéo : Acheter et envoyer de l’USDT (TRC20)",
+          desc: "Regardez ce tutoriel pas à pas pour acheter de l’USDT (TRC20) et l’envoyer en toute sécurité.",
+          url: ""
         },
         cta_enroll: "S’inscrire maintenant",
         cta_disclaimer: "Contenu éducatif uniquement. Ceci n’est pas un conseil financier."
@@ -1180,7 +1210,14 @@ const resources = {
           title: 'Devenez un trader expert avec les meilleurs.',
           subtitle: 'Rejoignez des +4,200 d’apprenants.',
           cta_primary: 'Commencer la formation',
+          welcome: 'Bienvenue, {{name}}',
+          welcome_sub: 'Pick up where you left off — your courses, tools, and community await.',
+          recent_courses: 'Your recent courses',
           cta_secondary: 'Voir',
+        },
+        stats: {
+            students: "Learners trained",
+            profitability: "Reported profitability",
         },
         urgency: {
           kicker: "Les inscriptions au cours se terminent dans",
@@ -1333,6 +1370,13 @@ const resources = {
           awaiting: "En attente d’une confirmation manuelle par un administrateur. Vous recevrez l’accès une fois vérifié.",
           close: "Fermer",
           paid: "J’ai payé"
+        },
+        addons: {
+          vip: {
+            title: "VIP Telegram (mensuelle)",
+            subtitle: "Abonnement mensuel. Annulez à tout moment.",
+            choose: "Ajouter ($10/mois)"
+          }
         },
         errors: {
           txid_required: "Veuillez saisir le hash de transaction",
@@ -1506,6 +1550,11 @@ const resources = {
             q: "لماذا وصلني مبلغ أقل؟",
             a: "تفرض المنصات والشبكات رسومًا. أرسل مبلغًا أكبر قليلًا أو احسب الرسوم مسبقًا."
           }
+        },
+        video: {
+          title: "دليل بالفيديو: شراء وإرسال USDT (TRC20)",
+          desc: "شاهد شرحًا خطوة بخطوة لكيفية شراء USDT (TRC20) وإرساله بأمان.",
+          url: ""
         },
         cta_enroll: "سجّل الآن",
         cta_disclaimer: "محتوى تعليمي فقط. هذا ليس نصيحة مالية."
@@ -1736,6 +1785,13 @@ const resources = {
           libyana: "رصيد ليبيانا",
           madar: "رصيد المدار"
         },
+        addons: {
+          vip: {
+            title: "تيليجرام VIP (شهري)",
+            subtitle: "اشتراك شهري. إلغاء في أي وقت.",
+            choose: "إضافة ($10/شهرياً)"
+          }
+        },
         libyana: {
           title: "الدفع عبر رصيد ليبيانا",
           instructions: "أرسل المبلغ إلى الرقم التالي:",
@@ -1945,7 +2001,14 @@ const resources = {
           title: 'أتقن التداول مع الخبراء.',
           subtitle: 'انضم إلى +4,200 طالب يحققون أرباحًا حقيقية خلال حوالي 4 أسابيع فقط.',
           cta_primary: 'ابدأ التعلم الآن',
+          welcome: 'مرحباً {{name}}',
+          welcome_sub: 'كمل ما تركته - كورساتك، أدواتك، ومجتمعك ينتظرك.',
+          recent_courses: 'الكورسات الأخيرة',
           cta_secondary: 'عرض تفاصيل الكورس',
+        },
+        stats: {
+          students: "عدد الطلاب",
+          profitability: "نسبة النجاح",
         },
         urgency: {
           kicker: "التسجيل في الكورس ينتهي خلال",

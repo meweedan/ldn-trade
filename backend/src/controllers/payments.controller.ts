@@ -3,6 +3,8 @@ import Stripe from 'stripe';
 
 const stripeSecret = process.env.STRIPE_SECRET_KEY || '';
 const stripe = stripeSecret ? new Stripe(stripeSecret) : null;
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
+const STRIPE_VIP_PRICE_ID = process.env.STRIPE_VIP_PRICE_ID || '';
 
 export const createPaymentIntent = async (req: Request, res: Response) => {
   try {
@@ -20,6 +22,33 @@ export const createPaymentIntent = async (req: Request, res: Response) => {
     return res.status(201).json({ clientSecret: intent.client_secret });
   } catch (e: any) {
     return res.status(500).json({ message: 'Payment intent failed', error: e?.message });
+  }
+};
+
+export const createVipSubscription = async (req: Request & { user?: any }, res: Response) => {
+  try {
+    if (!stripe) return res.status(500).json({ message: 'Stripe not configured' });
+    if (!STRIPE_VIP_PRICE_ID) return res.status(500).json({ message: 'VIP price not configured' });
+    const pid = String(req.body?.purchaseId || '');
+    const session = await stripe.checkout.sessions.create({
+      mode: 'subscription',
+      line_items: [
+        {
+          price: STRIPE_VIP_PRICE_ID,
+          quantity: 1,
+        },
+      ],
+      success_url: `${FRONTEND_URL}/enrolled?vip=1`,
+      cancel_url: `${FRONTEND_URL}/enrolled?vip=0`,
+      metadata: {
+        vip: '1',
+        purchaseId: pid,
+        userId: (req as any).user?.sub || (req as any).user?.id || '',
+      },
+    });
+    return res.json({ url: session.url });
+  } catch (e: any) {
+    return res.status(500).json({ message: 'Failed to create VIP subscription session', error: e?.message });
   }
 };
 

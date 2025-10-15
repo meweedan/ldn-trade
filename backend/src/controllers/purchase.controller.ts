@@ -7,7 +7,7 @@ const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
 const stripe = STRIPE_SECRET_KEY ? new Stripe(STRIPE_SECRET_KEY) : null;
 
 export const createPurchase = [requireAuth, async (req: Request & { user?: any }, res: Response) => {
-  const { tierId, method, mode = 'payment', subscriptionPriceId, promoCode: rawPromoCode, refCode: rawRefCode, preview } = req.body as {
+  const { tierId, method, mode = 'payment', subscriptionPriceId, promoCode: rawPromoCode, refCode: rawRefCode, preview, vipTelegram } = req.body as {
     tierId: string;
     method: 'stripe' | 'usdt' | 'libyana' | 'madar' | 'free';
     mode?: 'payment' | 'subscription';
@@ -15,6 +15,7 @@ export const createPurchase = [requireAuth, async (req: Request & { user?: any }
     promoCode?: string;
     refCode?: string;
     preview?: boolean;
+    vipTelegram?: boolean;
   };
   const tier = await prisma.courseTier.findUnique({ where: { id: tierId } });
   if (!tier) return res.status(404).json({ error: 'Tier not found' });
@@ -109,10 +110,12 @@ export const createPurchase = [requireAuth, async (req: Request & { user?: any }
   if (refDiscount && !promoDiscount) pricingPath = 'refOnly';
   else if (promoDiscount && !refDiscount) pricingPath = 'promoOnly';
   else if (refDiscount && promoDiscount) pricingPath = chosen === 'ref' ? 'both_present_bestOf_ref' : 'both_present_bestOf_promo';
+  const vipAddon = !!vipTelegram && method === 'usdt' ? 10 : 0;
+  if (vipAddon) pricingPath = pricingPath + '|vip_addon_usd_10';
 
   // Preview: return computed price only, do not create a purchase
   if (preview) {
-    return res.json({ provider: method, amount: finalPrice, discount: appliedDiscount, baseUsed: P, pricingPath });
+    return res.json({ provider: method, amount: finalPrice + vipAddon, discount: appliedDiscount, baseUsed: P, pricingPath });
   }
 
   // Create purchase with metadata
@@ -126,7 +129,7 @@ export const createPurchase = [requireAuth, async (req: Request & { user?: any }
       promoId: promoId || undefined,
       promoCode: promoCode || undefined,
       discountUsd: appliedDiscount,
-      finalPriceUsd: finalPrice,
+      finalPriceUsd: finalPrice + vipAddon,
       pricingPath,
     },
   });
@@ -154,7 +157,8 @@ export const createPurchase = [requireAuth, async (req: Request & { user?: any }
     }
     // Return normalized provider details; amount is final price under rules
     const provider = ['usdt', 'libyana', 'madar'].includes(method) ? method : 'usdt';
-    return res.json({ provider, purchaseId: purchase.id, address: process.env.USDT_WALLET_ADDRESS || 'address', amount: finalPrice, status: 'pending' });
+    const amount = provider === 'usdt' ? finalPrice + vipAddon : finalPrice;
+    return res.json({ provider, purchaseId: purchase.id, address: process.env.USDT_WALLET_ADDRESS || 'address', amount, status: 'pending' });
   }
 }];
 
@@ -237,6 +241,19 @@ export const adminSetPurchaseStatus = [requireAdmin, async (req: Request & { use
     } else {
       await prisma.communityAccess.create({ data: { userId: purchase.userId, telegram: true, discord: false, twitter: false } });
     }
+    // If VIP was purchased via USDT bundle, activate VIP subscription window
+    try {
+      const path = String(purchase.pricingPath || '');
+      if (path.includes('vip_addon_usd_10')) {
+        const now = new Date();
+        const next = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+        await prisma.communityAccess.upsert({
+          where: { userId: purchase.userId },
+          update: { vip: true, vipStart: now, vipEnd: next },
+          create: { userId: purchase.userId, telegram: true, discord: false, twitter: false, vip: true, vipStart: now, vipEnd: next },
+        });
+      }
+    } catch {}
   }
 
   return res.json(updated);

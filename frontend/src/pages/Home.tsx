@@ -221,9 +221,102 @@ const Home: React.FC = () => {
     },
   ];
 
-  const reviewsToShow: Review[] = React.useMemo(() => sampleReviews, [i18n.language]);
-
   const [paused, setPaused] = React.useState(false);
+
+  // Build real reviews from courses (latestReviews per tier)
+  const courseReviews: Review[] = React.useMemo(() => {
+    try {
+      const out: Review[] = [];
+      for (const tier of tiers) {
+        const lr = Array.isArray(tier?.latestReviews) ? tier.latestReviews : [];
+        for (const r of lr) {
+          const rating = Math.max(1, Math.min(5, Number(r?.rating) || 0));
+          const body = String(r?.comment || "").trim();
+          if (!body) continue;
+          out.push({
+            source: "Other",
+            rating,
+            title: tier?.name || t("home.trustpilot.headline1") || "Verified Review",
+            body: body.length > 280 ? body.slice(0, 277) + "..." : body,
+            author: r?.user?.name || t("common.anonymous") || "Student",
+            date: r?.created_at,
+            url: undefined,
+            locale: i18n.language,
+          });
+        }
+      }
+      // keep up to 20 most recent by date
+      out.sort((a, b) => (new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime()));
+      return out.slice(0, 20);
+    } catch {
+      return [];
+    }
+  }, [tiers, i18n.language]);
+
+  const reviewsToShow: Review[] = React.useMemo(
+    () => (courseReviews.length ? courseReviews : sampleReviews),
+    [courseReviews, sampleReviews]
+  );
+
+  // Lightweight CountUp that starts when visible
+  const CountUpNumber: React.FC<{
+    end: number;
+    duration?: number;
+    suffix?: string;
+    locale?: string;
+  }> = ({ end, duration = 2.0, suffix = "", locale }) => {
+    const ref = React.useRef<HTMLSpanElement | null>(null);
+    const [value, setValue] = React.useState(0);
+    const [started, setStarted] = React.useState(false);
+    const startedOnce = React.useRef(false);
+
+    React.useEffect(() => {
+      const el = ref.current;
+      if (!el) return;
+      const io = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((e) => {
+            if (e.isIntersecting && !startedOnce.current) {
+              startedOnce.current = true;
+              setStarted(true);
+            }
+          });
+        },
+        { threshold: 0.3 }
+      );
+      io.observe(el);
+      return () => io.disconnect();
+    }, []);
+
+    React.useEffect(() => {
+      if (!started) return;
+      let raf = 0;
+      const t0 = performance.now();
+      const animate = (t: number) => {
+        const p = Math.min(1, (t - t0) / (duration * 1000));
+        const eased = 1 - Math.pow(1 - p, 3);
+        setValue(Math.floor(eased * end));
+        if (p < 1) raf = requestAnimationFrame(animate);
+      };
+      raf = requestAnimationFrame(animate);
+      return () => cancelAnimationFrame(raf);
+    }, [started, end, duration]);
+
+    const formatter = React.useMemo(() => {
+      try {
+        const loc = String(locale || i18n.language || "en");
+        return new Intl.NumberFormat(loc);
+      } catch {
+        return new Intl.NumberFormat();
+      }
+    }, [locale, i18n.language]);
+
+    return (
+      <span ref={ref}>
+        {formatter.format(value)} {suffix}
+      </span>
+    );
+  };
 
   // FAQ (localized)
   const faqItems = (t("home.faq.items", { returnObjects: true }) as any[]) || [
@@ -342,24 +435,26 @@ const Home: React.FC = () => {
       >
         <HStack justify="space-between" align="center" mb={2} gap={3}>
           <HStack gap={2} align="center">
-            <Image
-              src={
-                source === "Trustpilot"
-                  ? mode === "dark"
-                    ? "/images/logos/TP-White.png"
-                    : "/images/logos/TP-Black.png"
-                  : source === "Forex Peace Army"
-                  ? "/images/logos/fpa.png"
-                  : source === "CryptoCompare"
-                  ? mode === "dark"
-                    ? "/images/logos/cryptocom-dark.png"
-                    : "/images/logos/cryptocompare-darktext.png"
-                  : source === "Sitejabber"
-                  ? "/images/logos/sitejabber.png"
-                  : "/images/logos/review-generic.svg"
-              }
-              h="16px"
-            />
+            {source !== "Other" && (
+              <Image
+                src={
+                  source === "Trustpilot"
+                    ? mode === "dark"
+                      ? "/images/logos/TP-White.png"
+                      : "/images/logos/TP-Black.png"
+                    : source === "Forex Peace Army"
+                    ? "/images/logos/fpa.png"
+                    : source === "CryptoCompare"
+                    ? mode === "dark"
+                      ? "/images/logos/cryptocom-dark.png"
+                      : "/images/logos/cryptocompare-darktext.png"
+                    : source === "Sitejabber"
+                    ? "/images/logos/sitejabber.png"
+                    : "/images/logos/review-generic.svg"
+                }
+                h="16px"
+              />
+            )}
           </HStack>
           <HStack gap={1}>
             {Array.from({ length: 5 }).map((_, i) => (
@@ -511,8 +606,113 @@ const Home: React.FC = () => {
       <Hero />
 
       <Container maxW="container.xl">
+        {/* ===== What is Forex / Crypto (with lightweight Three.js animations) ===== */}
+        <Container maxW="container.xl" pt={{ base: 6, md: 10 }}>
+          <SimpleGrid columns={{ base: 1, md: 2 }} spacing={8} alignItems="center">
+            {/* What is Forex */}
+            <MotionBox
+              initial="hidden"
+              whileInView="visible"
+              bg="bg.surface"
+              borderRadius="lg"
+              borderWidth="1px"
+              overflow="hidden"
+              borderColor={accentColor}
+              p={4}
+              viewport={{ once: true }}
+              variants={fadeIn}
+            >
+              <Heading
+                color={accentColor}
+                mb={2}
+                fontSize={{ base: "2xl", md: "3xl" }}
+                textAlign={{ base: "center", md: "center" }}
+              >
+                {t("learn.forex.title") || "What is Forex?"}
+              </Heading>
+              <Text opacity={0.9} mb={4} textAlign={{ base: "center", md: "center" }}>
+                {t("learn.forex.subtitle") ||
+                  "Currencies move in pairs. You can buy one, sell the other—on the spot."}
+              </Text>
+              <ForexMatrix />
+              <VStack
+                align={{ base: "center", md: "center" }}
+                mt={4}
+                fontSize={{ base: "lg", md: "xl" }}
+                spacing={2}
+                color={accentColor}
+              >
+                <Text>
+                  •{" "}
+                  {t("learn.forex.points.gharar") ||
+                    "Cut uncertainty (gharar): learn basics, decide clearly."}
+                </Text>
+                <Text>• {t("learn.forex.points.no_riba") || "No interest/swaps (no riba)."}</Text>
+                <Text>
+                  • {t("learn.forex.points.ecn") || "Use ECN brokers—own your position digitally."}
+                </Text>
+              </VStack>
+              <Text fontSize="lg" opacity={0.7} mt={3} textAlign={{ base: "center", md: "center" }}>
+                {t("learn.disclaimer") ||
+                  "Halal when: spot settlement, no riba, and speculation minimized."}
+              </Text>
+            </MotionBox>
+
+            {/* What is Crypto */}
+            <MotionBox
+              initial="hidden"
+              bg="bg.surface"
+              borderRadius="lg"
+              borderWidth="1px"
+              overflow="hidden"
+              borderColor={accentColor}
+              p={4}
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={fadeIn}
+            >
+              <Heading
+                color={accentColor}
+                mb={2}
+                fontSize={{ base: "2xl", md: "3xl" }}
+                textAlign={{ base: "center", md: "center" }}
+              >
+                {t("learn.crypto.title") || "What is Crypto?"}
+              </Heading>
+              <Text opacity={0.9} mb={4} textAlign={{ base: "center", md: "center" }}>
+                {t("learn.crypto.subtitle") ||
+                  "Digital assets on blockchains. Trade and transfer peer‑to‑peer."}
+              </Text>
+              <CryptoMatrix />
+              <VStack
+                align={{ base: "center", md: "center" }}
+                mt={4}
+                fontSize={{ base: "lg", md: "xl" }}
+                spacing={2}
+                color={accentColor}
+              >
+                <Text>
+                  •{" "}
+                  {t("learn.crypto.points.ownership") ||
+                    "Buy the asset directly; avoid interest‑bearing products."}
+                </Text>
+                <Text>• {t("learn.crypto.points.no_interest") || "No interest (riba)."}</Text>
+                <Text>
+                  •{" "}
+                  {t("learn.crypto.points.education") ||
+                    "Reduce gharar: learn risk basics and trade thoughtfully."}
+                </Text>
+              </VStack>
+              <Text fontSize="lg" opacity={0.7} mt={3} textAlign={{ base: "center", md: "center" }}>
+                {t("learn.disclaimer_short") ||
+                  "Permissible when avoiding riba/maysir and minimizing gharar."}
+              </Text>
+            </MotionBox>
+          </SimpleGrid>
+        </Container>
+
         {/* Course Benefits */}
-        <Box py={10}>
+        <Box mt={20}>
           <Heading
             textAlign="center"
             mb={6}
@@ -568,99 +768,6 @@ const Home: React.FC = () => {
           </SimpleGrid>
         </Box>
 
-        {/* ===== What is Forex / Crypto (with lightweight Three.js animations) ===== */}
-        <Container maxW="container.xl" pt={{ base: 6, md: 10 }}>
-          <SimpleGrid columns={{ base: 1, md: 2 }} spacing={8} alignItems="center">
-            {/* What is Forex */}
-            <MotionBox
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              variants={fadeIn}
-            >
-              <Heading
-                color={accentColor}
-                mb={2}
-                fontSize={{ base: "2xl", md: "3xl" }}
-                textAlign={{ base: "center", md: "center" }}
-              >
-                {t("learn.forex.title") || "What is Forex?"}
-              </Heading>
-              <Text opacity={0.9} mb={4} textAlign={{ base: "center", md: "center" }}>
-                {t("learn.forex.subtitle") ||
-                  "Currencies move in pairs. You can buy one, sell the other—on the spot."}
-              </Text>
-              <ForexMatrix />
-              <VStack
-                align={{ base: "center", md: "center" }}
-                mt={4}
-                fontSize={{ base: "lg", md: "xl" }}
-                spacing={2}
-                color={accentColor}
-              >
-                <Text>
-                  •{" "}
-                  {t("learn.forex.points.gharar") ||
-                    "Cut uncertainty (gharar): learn basics, decide clearly."}
-                </Text>
-                <Text>• {t("learn.forex.points.no_riba") || "No interest/swaps (no riba)."}</Text>
-                <Text>
-                  • {t("learn.forex.points.ecn") || "Use ECN brokers—own your position digitally."}
-                </Text>
-              </VStack>
-              <Text fontSize="lg" opacity={0.7} mt={3} textAlign={{ base: "center", md: "center" }}>
-                {t("learn.disclaimer") ||
-                  "Halal when: spot settlement, no riba, and speculation minimized."}
-              </Text>
-            </MotionBox>
-
-            {/* What is Crypto */}
-            <MotionBox
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              variants={fadeIn}
-            >
-              <Heading
-                color={accentColor}
-                mb={2}
-                fontSize={{ base: "2xl", md: "3xl" }}
-                textAlign={{ base: "center", md: "center" }}
-              >
-                {t("learn.crypto.title") || "What is Crypto?"}
-              </Heading>
-              <Text opacity={0.9} mb={4} textAlign={{ base: "center", md: "center" }}>
-                {t("learn.crypto.subtitle") ||
-                  "Digital assets on blockchains. Trade and transfer peer‑to‑peer."}
-              </Text>
-              <CryptoMatrix />
-              <VStack
-                align={{ base: "center", md: "center" }}
-                mt={4}
-                fontSize={{ base: "lg", md: "xl" }}
-                spacing={2}
-                color={accentColor}
-              >
-                <Text>
-                  •{" "}
-                  {t("learn.crypto.points.ownership") ||
-                    "Buy the asset directly; avoid interest‑bearing products."}
-                </Text>
-                <Text>• {t("learn.crypto.points.no_interest") || "No interest (riba)."}</Text>
-                <Text>
-                  •{" "}
-                  {t("learn.crypto.points.education") ||
-                    "Reduce gharar: learn risk basics and trade thoughtfully."}
-                </Text>
-              </VStack>
-              <Text fontSize="lg" opacity={0.7} mt={3} textAlign={{ base: "center", md: "center" }}>
-                {t("learn.disclaimer_short") ||
-                  "Permissible when avoiding riba/maysir and minimizing gharar."}
-              </Text>
-            </MotionBox>
-          </SimpleGrid>
-        </Container>
-
         {/* Image for iPhones with charts */}
         <Box px={{ base: 4, md: 0 }} mt={{ base: 6, md: 12 }}>
           <Image
@@ -705,6 +812,36 @@ const Home: React.FC = () => {
                 </Box>
               </MotionBox>
             ))}
+          </SimpleGrid>
+        </Box>
+
+        {/* Animated stats bar */}
+        <Box
+          mb={{ base: 6, md: 8 }}
+          borderWidth="1px"
+          borderColor={accentColor}
+          borderRadius="2xl"
+          bg={mode === "dark" ? "black" : "white"}
+          px={{ base: 4, md: 8 }}
+          py={{ base: 4, md: 6 }}
+        >
+          <SimpleGrid columns={{ base: 1, md: 2 }} gap={6} alignItems="center">
+            <VStack gap={1} textAlign="center">
+              <Heading size="lg" color={accentColor}>
+                <CountUpNumber end={4200} suffix="+" locale={i18n.language} />
+              </Heading>
+              <Text opacity={0.85}>
+                {t("home.stats.students", { defaultValue: "Learners trained" })}
+              </Text>
+            </VStack>
+            <VStack gap={1} textAlign="center">
+              <Heading size="lg" color={accentColor}>
+                <CountUpNumber end={80} suffix="%+" locale={i18n.language} />
+              </Heading>
+              <Text opacity={0.85}>
+                {t("home.stats.profitability", { defaultValue: "Reported profitability" })}
+              </Text>
+            </VStack>
           </SimpleGrid>
         </Box>
 
@@ -932,7 +1069,7 @@ const Home: React.FC = () => {
           </Box>
         </Box>
 
-        {/* Trustpilot-like Carousel */}
+        {/* Stats Bar + Trustpilot-like Carousel */}
         <Box py={{ base: 10, md: 14 }}>
           <Heading
             textAlign="center"
@@ -943,26 +1080,30 @@ const Home: React.FC = () => {
             {t("home.trustpilot.title") || "Verified by learners — and it shows"}
           </Heading>
 
-          <Text textAlign="center" opacity={0.8} mb={8} fontSize={{ base: "xl", md: "2xl" }}>
-            <HStack gap={4} justify="center" wrap="wrap">
-              <Image
-                src={mode === "dark" ? "/images/logos/TP-White.png" : "/images/logos/TP-Black.png"}
-                alt="TrustPilot"
-                h="18px"
-              />
-              <Image src="/images/logos/fpa.png" alt="Forex Peace Army" h="18px" />
-              <Image
-                src={
-                  mode === "dark"
-                    ? "/images/logos/cryptocom-dark.png"
-                    : "/images/logos/cryptocompare-darktext.png"
-                }
-                alt="CryptoCompare"
-                h="18px"
-              />
-              <Image src="/images/logos/sitejabber.png" alt="Sitejabber" h="18px" />
-            </HStack>
-          </Text>
+          {courseReviews.length === 0 && (
+            <Text textAlign="center" opacity={0.8} mb={8} fontSize={{ base: "xl", md: "2xl" }}>
+              <HStack gap={4} justify="center" wrap="wrap">
+                <Image
+                  src={
+                    mode === "dark" ? "/images/logos/TP-White.png" : "/images/logos/TP-Black.png"
+                  }
+                  alt="TrustPilot"
+                  h="18px"
+                />
+                <Image src="/images/logos/fpa.png" alt="Forex Peace Army" h="18px" />
+                <Image
+                  src={
+                    mode === "dark"
+                      ? "/images/logos/cryptocom-dark.png"
+                      : "/images/logos/cryptocompare-darktext.png"
+                  }
+                  alt="CryptoCompare"
+                  h="18px"
+                />
+                <Image src="/images/logos/sitejabber.png" alt="Sitejabber" h="18px" />
+              </HStack>
+            </Text>
+          )}
 
           <Box
             position="relative"

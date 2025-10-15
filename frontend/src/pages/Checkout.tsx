@@ -19,7 +19,7 @@ import { useTranslation } from "react-i18next";
 import api, { getMyPurchases } from "../api/client";
 import { getAllCountries, getDeviceCountryCode } from "../utils/countries";
 
-type Method = "usdt" | "libyana" | "madar";
+type Method = "usdt" | "stripe" | "libyana" | "madar";
 
 const Checkout: React.FC = () => {
   const navigate = useNavigate();
@@ -42,6 +42,8 @@ const Checkout: React.FC = () => {
   const [promoCode, setPromoCode] = React.useState<string>("");
   const [refCode, setRefCode] = React.useState<string>("");
   const [alreadyEnrolled, setAlreadyEnrolled] = React.useState(false);
+  // Add-on: VIP Telegram monthly subscription (Stripe subscription)
+  const [vipTelegram, setVipTelegram] = React.useState(false);
 
   // Preview pricing
   const [previewAmount, setPreviewAmount] = React.useState<number | null>(null);
@@ -145,7 +147,7 @@ const Checkout: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const payload: any = { tierId, method, purchaseId, country, courseLanguage };
+      const payload: any = { tierId, method, purchaseId, country, courseLanguage, vipTelegram };
       if (promoCode) payload.promoCode = promoCode.trim();
       if (refCode) payload.refCode = refCode.trim();
       const resp = await api.post("/purchase/create", payload);
@@ -163,10 +165,52 @@ const Checkout: React.FC = () => {
           } else {
             localStorage.setItem(k, JSON.stringify([resp.data.purchaseId]));
           }
+
+      // Persist celebration extras for existing purchase as well
+      try {
+        const key = "celebrationExtras";
+        const extras = JSON.parse(localStorage.getItem(key) || "{}");
+        const pid2 = (resp.data?.purchaseId as string) || purchaseId;
+        if (pid2) {
+          extras[pid2] = { ...(extras[pid2] || {}), vipTelegram: !!vipTelegram };
+          localStorage.setItem(key, JSON.stringify(extras));
+        }
+      } catch {}
+        } catch {}
+        // Persist celebration extras for this purchase (e.g., VIP add-on intent)
+        try {
+          const key = "celebrationExtras";
+          const extras = JSON.parse(localStorage.getItem(key) || "{}");
+          const pid = resp.data.purchaseId as string;
+          extras[pid] = { ...(extras[pid] || {}), vipTelegram: !!vipTelegram };
+          localStorage.setItem(key, JSON.stringify(extras));
         } catch {}
       }
 
-      if (provider === "usdt") {
+      if (provider === "stripe") {
+        const url = (resp.data?.checkoutUrl || resp.data?.url) as string | undefined;
+        if (url) {
+          window.location.href = url;
+          return;
+        }
+        const clientSecret = (resp.data?.clientSecret || resp.data?.paymentIntentClientSecret) as
+          | string
+          | undefined;
+        if (clientSecret) {
+          setError(
+            t("checkout.errors.stripe_client_secret", {
+              defaultValue:
+                "Stripe client secret received. Payment Element flow is not enabled yet.",
+            })
+          );
+          return;
+        }
+        setError(
+          t("checkout.errors.stripe_url_missing", {
+            defaultValue: "Stripe checkout URL missing. Please try again.",
+          })
+        );
+      } else if (provider === "usdt") {
         const addr = resp.data?.address || null;
         const amt =
           typeof resp.data?.amount === "number"
@@ -217,6 +261,8 @@ const Checkout: React.FC = () => {
     openPaymentModal,
     navigate,
     previewAmount,
+    t,
+    vipTelegram,
   ]);
 
   // Promo preview
@@ -232,6 +278,7 @@ const Checkout: React.FC = () => {
         country,
         courseLanguage,
         preview: true, // <<< critical
+        vipTelegram,
       };
       if (promoCode) payload.promoCode = promoCode.trim();
       if (refCode) payload.refCode = refCode.trim();
@@ -264,7 +311,7 @@ const Checkout: React.FC = () => {
     } finally {
       setPreviewLoading(false);
     }
-  }, [tierId, method, country, courseLanguage, promoCode, refCode, t]);
+  }, [tierId, method, country, courseLanguage, promoCode, refCode, t, vipTelegram]);
 
   // Auto-preview when promo code changes (debounced)
   React.useEffect(() => {
@@ -613,6 +660,18 @@ const Checkout: React.FC = () => {
                     <HStack gap={3} flexWrap="wrap">
                       <input
                         type="radio"
+                        id="stripe"
+                        name="method"
+                        checked={method === "stripe"}
+                        onChange={() => setMethod("stripe")}
+                      />
+                      <label htmlFor="stripe">
+                        {t("checkout.payment.card", { defaultValue: "Card (Visa/Mastercard)" })}
+                      </label>
+                    </HStack>
+                    <HStack gap={3} flexWrap="wrap">
+                      <input
+                        type="radio"
                         id="usdt"
                         name="method"
                         checked={method === "usdt"}
@@ -703,6 +762,28 @@ const Checkout: React.FC = () => {
                     )}
                   </VStack>
 
+                  {/* Add-on: Telegram VIP (recurring) */}
+                  <Box mt={2} p={3} borderWidth={1} borderColor={cardBorder} borderRadius="md" bg="bg.surface">
+                    <HStack justify="space-between" align="center">
+                      <Box>
+                        <Text fontWeight={600}>
+                          {t("checkout.addons.vip.title", { defaultValue: "VIP Telegram (monthly)" })}
+                        </Text>
+                        <Text fontSize="sm" color={subtleText}>
+                          {t("checkout.addons.vip.subtitle", { defaultValue: "Recurring $10/month. Cancel anytime." })}
+                        </Text>
+                      </Box>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <input
+                          type="checkbox"
+                          checked={vipTelegram}
+                          onChange={(e) => setVipTelegram(e.target.checked)}
+                        />
+                        <Text fontSize="sm">{t("checkout.addons.vip.choose", { defaultValue: "Add ($10/month)" })}</Text>
+                      </label>
+                    </HStack>
+                  </Box>
+
                   {/* Promo */}
                   <Box mt={4}>
                     <Text fontWeight={600} mb={1}>
@@ -734,13 +815,21 @@ const Checkout: React.FC = () => {
                     )}
                     {previewAmount != null && (
                       <Text mt={2} fontWeight={600}>
-                        {t("checkout.promo.due", { defaultValue: "You pay:" })}{" "}
-                        {showLYD ? `${effectiveLyd} LYD` : `$${effectiveUsd}`}
-                        {savedUsd > 0 ? (
-                          <Text as="span" ml={2} color={subtleText} fontWeight={400}>
-                            ({t("checkout.promo.saved", { defaultValue: "saved" })} ${savedUsd})
-                          </Text>
-                        ) : null}
+                        {(() => {
+                          const dueUsd = previewAmount ?? baseUsd;
+                          const dueLyd = Math.round(dueUsd * 8 * 100) / 100;
+                          return (
+                            <>
+                              {t("checkout.promo.due", { defaultValue: "You pay:" })} {" "}
+                              {showLYD ? `${dueLyd} LYD` : `$${dueUsd}`}
+                              {savedUsd > 0 ? (
+                                <Text as="span" ml={2} color={subtleText} fontWeight={400}>
+                                  ({t("checkout.promo.saved", { defaultValue: "saved" })} ${savedUsd})
+                                </Text>
+                              ) : null}
+                            </>
+                          );
+                        })()}
                       </Text>
                     )}
                   </Box>
@@ -882,14 +971,28 @@ const Checkout: React.FC = () => {
 
                 <Box h="1px" bg="bg.surface" />
 
+                {/* VIP add-on (USDT only) */}
+                {method === "usdt" && vipTelegram && (
+                  <HStack justify="space-between">
+                    <Text>{t("checkout.addons.vip.title", { defaultValue: "VIP Telegram (monthly)" })}</Text>
+                    <Text fontWeight={700}>$10</Text>
+                  </HStack>
+                )}
+
+                {method === "usdt" && vipTelegram && <Box h="1px" bg="bg.surface" />}
+
                 <HStack justify="space-between">
                   <Text>{t("checkout.summary.subtotal", { defaultValue: "Subtotal" })}</Text>
                   <Text fontWeight={700}>
-                    {isFree
-                      ? freeLabel
-                      : showLYD
-                      ? `${effectiveLyd} LYD`
-                      : `$${effectiveUsd || "-"}`}
+                    {(() => {
+                      if (isFree) return freeLabel;
+                      const vipAddon = method === "usdt" && vipTelegram ? 10 : 0;
+                      if (showLYD) {
+                        const dueLyd = Math.round((effectiveUsd + vipAddon) * 8 * 100) / 100;
+                        return `${dueLyd} LYD`;
+                      }
+                      return `$${(effectiveUsd + vipAddon) || "-"}`;
+                    })()}
                   </Text>
                 </HStack>
                 <HStack justify="space-between">
@@ -900,11 +1003,15 @@ const Checkout: React.FC = () => {
                 <HStack justify="space-between">
                   <Text>{t("checkout.summary.total", { defaultValue: "Total" })}</Text>
                   <Text fontWeight={800}>
-                    {isFree
-                      ? freeLabel
-                      : showLYD
-                      ? `${effectiveLyd} LYD`
-                      : `$${effectiveUsd || "-"}`}
+                    {(() => {
+                      if (isFree) return freeLabel;
+                      const vipAddon = method === "usdt" && vipTelegram ? 10 : 0;
+                      if (showLYD) {
+                        const dueLyd = Math.round((effectiveUsd + vipAddon) * 8 * 100) / 100;
+                        return `${dueLyd} LYD`;
+                      }
+                      return `$${(effectiveUsd + vipAddon) || "-"}`;
+                    })()}
                   </Text>
                 </HStack>
               </VStack>

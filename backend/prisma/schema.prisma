@@ -282,6 +282,10 @@ model CommunityAccess {
   telegram Boolean @default(false)
   discord  Boolean @default(false)
   twitter  Boolean @default(false)
+  vip      Boolean @default(false)
+  vipStart DateTime?
+  vipEnd   DateTime?
+  vipStripeSubscriptionId String?
 
   user users @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

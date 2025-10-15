@@ -26,6 +26,25 @@ import {
 import { Link as ChakraLink, LinkProps as ChakraLinkProps } from "@chakra-ui/react";
 import { Link as RouterLink, LinkProps as RouterLinkProps, useLocation } from "react-router-dom";
 
+/* ---------- Payment chip used in the strip ---------- */
+const PaymentPill: React.FC<{
+  src?: string; // /images/payments/*.svg
+}> = ({ src }) => (
+  <HStack
+    as="li"
+    gap={2}
+    px={3}
+    py={2}
+    rounded="full"
+  >
+      <Image
+        src={src}
+        boxSize="56px"
+        objectFit="contain"
+      />
+  </HStack>
+);
+
 /* ---------- Inner footer with all hooks ---------- */
 const FooterInner: React.FC = () => {
   const { t } = useTranslation() as any;
@@ -70,6 +89,7 @@ const FooterInner: React.FC = () => {
     },
   ];
 
+  // --- Router + Chakra link bridge ---
   type RouterChakraLinkProps = ChakraLinkProps & RouterLinkProps;
   const RouterChakraLink = React.forwardRef<HTMLAnchorElement, RouterChakraLinkProps>(
     (props, ref) => <ChakraLink ref={ref} as={RouterLink} {...props} />
@@ -112,6 +132,16 @@ const FooterInner: React.FC = () => {
       {children}
     </Box>
   );
+
+  // --- Payment methods list ---
+  const paymentMethods = [
+    { label: "USDT", src: "/images/payments/usdt.png" },
+    { label: "Bank Cards", src: "/images/payments/bank-transfer.png" },
+    { label: "Visa", src: "/images/payments/visa.png" },
+    { label: "Mastercard", src: "/images/payments/mastercard.png" },
+    { label: "Neteller", src: "/images/payments/neteller.png" },
+    { label: "Skrill", src: "/images/payments/skrill.png" },
+  ];
 
   return (
     <>
@@ -185,10 +215,7 @@ const FooterInner: React.FC = () => {
       {/* Real footer */}
       <Box ref={sentinelRef}>
         <Container maxW="container.xl">
-          <SimpleGrid
-            columns={{ base: 1, md: 3 }}
-            mb={{ base: 6, md: 12 }}
-          >
+          <SimpleGrid columns={{ base: 1, md: 3 }} >
             {/* Brand */}
             <VStack align={{ base: "center", md: "flex-start" }}>
               <Image src="/logo.png" alt="Logo" w="160px" h="160px" objectFit="contain" />
@@ -199,7 +226,7 @@ const FooterInner: React.FC = () => {
               const isOpen = openIdx === idx;
               return (
                 <Box key={idx}>
-                  {/* Mobile header toggle (smaller title) */}
+                  {/* Mobile header toggle */}
                   <Button
                     w="full"
                     variant="ghost"
@@ -213,7 +240,6 @@ const FooterInner: React.FC = () => {
                     aria-expanded={isOpen}
                   >
                     <Heading
-                      // Smaller on mobile, same on desktop
                       fontSize={{ base: "md", md: "lg" }}
                       fontWeight={700}
                       letterSpacing="-0.01em"
@@ -223,30 +249,24 @@ const FooterInner: React.FC = () => {
                     <Icon as={isOpen ? ChevronUp : ChevronDown} />
                   </Button>
 
-                  {/* Desktop header (unchanged) */}
+                  {/* Desktop header */}
                   <Heading size="lg" color={accent} display={{ base: "none", md: "block" }} mb={3}>
                     {section.title}
                   </Heading>
 
-                  {/* Mobile links (bigger font, vertical list, extra spacing) */}
+                  {/* Mobile links */}
                   <SmallCollapse in={isOpen}>
-                    <Box
-                      display={{ base: "block", md: "none" }}
-                      pt={2} // space between title and links
-                      pb={1}
-                      pl={1}
-                    >
+                    <Box display={{ base: "block", md: "none" }} pt={2} pb={1} pl={1}>
                       <VStack align="stretch" gap={2.5}>
                         {section.links.map((item, i) => (
                           <RouterChakraLink
                             key={i}
                             to={item.to}
                             color={accent}
-                            fontSize={{ base: "sm", md: "sm" }} // larger than before
+                            fontSize={{ base: "sm", md: "sm" }}
                             lineHeight="1.4"
                             _hover={{ color: accent, opacity: 0.9 }}
                             transition="opacity 0.18s ease"
-                            // give each a bigger tap target
                             sx={{ paddingBlock: "6px" }}
                           >
                             {item.label}
@@ -256,7 +276,7 @@ const FooterInner: React.FC = () => {
                     </Box>
                   </SmallCollapse>
 
-                  {/* Desktop links (unchanged) */}
+                  {/* Desktop links */}
                   <VStack align="flex-start" gap={2.5} display={{ base: "none", md: "flex" }}>
                     {section.links.map((item, i) => (
                       <RouterChakraLink
@@ -276,6 +296,22 @@ const FooterInner: React.FC = () => {
             })}
           </SimpleGrid>
 
+          {/* Payment methods strip */}
+          <Box py={{ base: 4, md: 5 }}>
+            <Box
+              as="ul"
+              display="flex"
+              flexWrap="wrap"
+              justifyContent="center"
+              gap={{ base: 2, md: 3 }}
+              px={{ base: 2, md: 0 }}
+            >
+              {paymentMethods.map((m, i) => (
+                <PaymentPill key={i} src={m.src} />
+              ))}
+            </Box>
+          </Box>
+
           {/* Bottom row */}
           <HStack justify="center" pb={6}>
             <Text fontSize={{ base: "sm", md: "sm" }} textAlign="center" opacity={0.8}>
@@ -288,12 +324,12 @@ const FooterInner: React.FC = () => {
       {/* Mobile sticky micro-bar (only while real footer NOT visible) */}
       {!footerVisible && (
         <Box display={{ base: "block", md: "none" }} zIndex={1000}>
-          {/* Contact sheet (appears above FAB) */}
+          {/* Contact sheet */}
           {contactOpen && (
             <Box
               position="fixed"
               right="12px"
-              bottom={`calc(78px + env(safe-area-inset-bottom))`} // panel sits above the FAB
+              bottom={`calc(78px + env(safe-area-inset-bottom))`}
               bg="rgba(0,0,0,0.85)"
               backdropFilter="blur(10px)"
               border="1px solid rgba(255,255,255,0.12)"
@@ -413,7 +449,7 @@ const FooterInner: React.FC = () => {
             </Box>
           )}
 
-          {/* Floating Question-mark FAB */}
+          {/* Floating FAB */}
           <Button
             aria-label={t("footer.help") || "Help"}
             onClick={toggleContact}
@@ -430,7 +466,6 @@ const FooterInner: React.FC = () => {
             _hover={{ opacity: 0.95, transform: "translateY(-1px)" }}
             _active={{ transform: "translateY(0)" }}
           >
-            {/* Use the Help icon; looks like a question mark bubble */}
             <Icon as={HeadsetIcon} boxSize={6} />
           </Button>
         </Box>
