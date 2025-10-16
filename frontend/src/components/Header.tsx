@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React from "react";
 import {
   Box,
@@ -32,7 +33,20 @@ import { useTranslation } from "react-i18next";
 import Logo from "./Logo";
 import { useThemeMode } from "../themeProvider";
 import { useAuth } from "../auth/AuthContext";
-// Removed MUI icons to avoid Emotion theme conflicts
+import { TickerTape } from "react-ts-tradingview-widgets";
+
+const TickerTapeSafe: React.FC<React.ComponentProps<typeof TickerTape>> = (props) => {
+  const [mounted, setMounted] = React.useState(false);
+  const once = React.useRef(false);
+  React.useEffect(() => {
+    if (!once.current) {
+      once.current = true;
+      setMounted(true);
+    }
+  }, []);
+  if (!mounted) return null;
+  return <TickerTape {...props} />;
+};
 
 const Header: React.FC = () => {
   const { t, i18n } = useTranslation() as any;
@@ -58,7 +72,7 @@ const Header: React.FC = () => {
     };
     document.addEventListener("mousedown", onDoc);
     return () => document.removeEventListener("mousedown", onDoc);
-  }, [langOpen]);  
+  }, [langOpen]);
 
   // Close language sheet if the hamburger menu opens (avoid overlap)
   React.useEffect(() => {
@@ -77,21 +91,19 @@ const Header: React.FC = () => {
     };
   }, [langOpen]);
 
-
   // SOLID colors (no translucency/blur)
   const gold = "#b7a27d";
   const headerBg = mode === "dark" ? "#000000" : "#f9f6f2";
   const headerFg = "#b7a27d";
   const triggerRef = React.useRef<HTMLButtonElement | null>(null);
 
-  // ---- measure header height to place mobile dropdown flush to it ----
+  // Measure header height to place the ticker tape flush under it
   const headerRef = React.useRef<HTMLDivElement | null>(null);
   const [headerBottom, setHeaderBottom] = React.useState<number>(0);
   const recalcHeaderBottom = React.useCallback(() => {
     const el = headerRef.current;
     if (!el) return;
     const rect = el.getBoundingClientRect();
-    // rect.bottom is viewport pixels from top; perfect for fixed-position top
     setHeaderBottom(rect.bottom);
   }, []);
   React.useLayoutEffect(() => {
@@ -127,7 +139,29 @@ const Header: React.FC = () => {
     _hover: { bg: "transparent", _after: { opacity: 1 } },
   };
 
-  
+  // ----- TickerTape config (only when logged in) -----
+  const tickerSymbols = React.useMemo(
+    () => [
+      { proName: "FOREXCOM:SPXUSD", title: "S&P 500" },
+      { proName: "FOREXCOM:NSXUSD", title: "Nasdaq 100" },
+      { proName: "OANDA:XAUUSD", title: "XAU/USD" },
+      { proName: "FX:EURUSD", title: "EUR/USD" },
+      { proName: "FX:GBPUSD", title: "GBP/USD" },
+      { proName: "FX:USDJPY", title: "USD/JPY" },
+      { proName: "FX:USDCHF", title: "USD/CHF" },
+      { proName: "FX:NZDUSD", title: "NZD/USD" },
+      { proName: "FX:USDCAD", title: "USD/CAD" },
+      { proName: "FX:EURAUD", title: "EUR/AUD" },
+      { proName: "FX:EURNZD", title: "EUR/NZD" },
+      { proName: "FX:EURGBP", title: "EUR/GBP" },
+      { proName: "FX:EURCHF", title: "EUR/CHF" },
+      { proName: "FX:EURCAD", title: "EUR/CAD" },
+      { proName: "BITSTAMP:BTCUSD", title: "BTC/USD" },
+      { proName: "BITSTAMP:ETHUSD", title: "ETH/USD" },
+    ],
+    []
+  );
+  const tickerTheme = mode === "dark" ? "dark" : "light";
 
   return (
     <Box
@@ -246,7 +280,7 @@ const Header: React.FC = () => {
 
               {/* Language sheet trigger (mobile) */}
               <Button
-                ref={triggerRef} // <— add this
+                ref={triggerRef}
                 aria-label={t("dashboard.language") || "Language"}
                 variant="ghost"
                 color={headerFg}
@@ -269,7 +303,8 @@ const Header: React.FC = () => {
               </Button>
             </HStack>
           </Box>
-          {/* Mobile language sheet — horizontal, like the main mobile menu */}
+
+          {/* Mobile language sheet */}
           <AnimatePresence initial={false}>
             {langOpen && (
               <Portal>
@@ -285,7 +320,7 @@ const Header: React.FC = () => {
                   right={0}
                   zIndex={1300}
                   bg={headerBg}
-                  color={gold} // match the main mobile menu’s gold text
+                  color={gold}
                   borderTop="1px solid"
                   borderBottom="1px solid"
                   borderColor={mode === "dark" ? "whiteAlpha.200" : "blackAlpha.200"}
@@ -336,6 +371,35 @@ const Header: React.FC = () => {
         </Flex>
       </Container>
 
+      {/* ======= FIXED TICKER UNDER HEADER (only when logged in) ======= */}
+      {user && (
+        <Portal>
+          <Box
+            position="fixed"
+            left={0}
+            right={0}
+            top={`${headerBottom}px`}
+            zIndex={1100} // below mobile drawers (1300), above content
+            bg={headerBg}
+            borderTop="1px solid"
+            borderBottom="1px solid"
+            borderColor={mode === "dark" ? "whiteAlpha.200" : "blackAlpha.200"}
+            // contain the tape visually with some padding
+            px={{ base: 2, md: 4 }}
+            py={{ base: 1, md: 1 }}
+          >
+            <TickerTapeSafe
+              colorTheme={tickerTheme as any}
+              isTransparent={true}
+              displayMode="adaptive"
+              locale={(i18n.language || "en") as any}
+              showSymbolLogo
+              symbols={tickerSymbols}
+            />
+          </Box>
+        </Portal>
+      )}
+
       {/* Mobile dropdown — solid bg, gold menu text */}
       <AnimatePresence initial={false}>
         {menuOpen && (
@@ -346,7 +410,6 @@ const Header: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               position="fixed"
-              // flush to the bottom of the header
               top={`${headerBottom}px`}
               left={0}
               right={0}

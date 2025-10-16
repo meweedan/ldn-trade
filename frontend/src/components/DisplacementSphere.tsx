@@ -67,9 +67,9 @@ const GlowFallback: React.FC = () => {
 
       // Gold glow
       const grad = ctx.createRadialGradient(cx, cy, r * 0.15, cx, cy, r * 1.5);
-      grad.addColorStop(0, "rgba(183,162,125,0.40)");
-      grad.addColorStop(0.6, "rgba(183,162,125,0.18)");
-      grad.addColorStop(1, "rgba(0,0,0,0)");
+      grad.addColorStop(0, "#b7a27d");
+      grad.addColorStop(0.6, "#b7a27d");
+      grad.addColorStop(1, "#b7a27d");
       ctx.fillStyle = grad;
       ctx.beginPath();
       ctx.arc(cx, cy, r * 1.6, 0, Math.PI * 2);

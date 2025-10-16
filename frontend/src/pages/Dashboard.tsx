@@ -13,6 +13,7 @@ import {
   ButtonProps,
   Spinner,
   SimpleGrid,
+  Progress,
 } from "@chakra-ui/react";
 import GlassCard from "../components/GlassCard";
 import { useTranslation } from "react-i18next";
@@ -125,6 +126,7 @@ const Dashboard: React.FC = () => {
   // VIP Telegram subscription (client-side state; later can move to server)
   const [vipStart, setVipStart] = React.useState<string | null>(null);
   const [vipEnd, setVipEnd] = React.useState<string | null>(null);
+  const [vipActive, setVipActive] = React.useState<boolean>(false);
   const tgHandle = process.env.REACT_APP_TELEGRAM_HANDLE || "";
   const tgLink = React.useMemo(() => (tgHandle ? `https://t.me/${tgHandle}` : "https://t.me/"), [tgHandle]);
 
@@ -160,8 +162,61 @@ const Dashboard: React.FC = () => {
         const parsed = JSON.parse(raw);
         if (parsed?.startIso) setVipStart(parsed.startIso);
         if (parsed?.endIso) setVipEnd(parsed.endIso);
+        if (parsed?.startIso) setVipActive(true);
       }
     } catch {}
+  }, []);
+
+  // Always fetch VIP status from server to ensure accurate state
+  React.useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const resp = await api.get("/community/status");
+        const data = resp?.data || {};
+        // Expecting fields like vip, vipStart, vipEnd from backend's communityAccess
+        const isVip = !!data.vip;
+        if (!mounted) return;
+        setVipActive(isVip);
+        if (data.vipStart) setVipStart(data.vipStart);
+        if (data.vipEnd) setVipEnd(data.vipEnd);
+      } catch {}
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  // If redirected from Stripe with vip=1, activate VIP server-side, then refresh status
+  React.useEffect(() => {
+    let mounted = true;
+    const params = new URLSearchParams(window.location.search);
+    const vip = params.get("vip");
+    if (vip === "1") {
+      (async () => {
+        try {
+          const act = await api.post("/community/vip/activate", {});
+          const data = act?.data || {};
+          if (!mounted) return;
+          setVipActive(!!data.vip);
+          if (data.vipStart) setVipStart(data.vipStart);
+          if (data.vipEnd) setVipEnd(data.vipEnd);
+        } catch {
+          // fallback: try to fetch status anyway
+          try {
+            const resp = await api.get("/community/status");
+            const data = resp?.data || {};
+            if (!mounted) return;
+            setVipActive(!!data.vip);
+            if (data.vipStart) setVipStart(data.vipStart);
+            if (data.vipEnd) setVipEnd(data.vipEnd);
+          } catch {}
+        }
+      })();
+    }
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   // After Stripe success, if VIP was selected and not yet active, auto-start VIP subscription session
@@ -505,18 +560,67 @@ const Dashboard: React.FC = () => {
               {/* VIP Telegram card */}
               <GlassCard>
                 <Heading size="md" mb={2}>{t("dashboard.vip_title", { defaultValue: "VIP Telegram" })}</Heading>
-                {vipStart ? (
+                {vipActive ? (
                   <>
                     <Text>{t("dashboard.vip_status_active", { defaultValue: "Status: Active ($10/month)" })}</Text>
                     <HStack gap={3} mt={2} flexWrap="wrap">
                       <Button size="sm" bg={brand} color="black" _hover={{ opacity: 0.9 }} onClick={() => window.open(tgLink, "_blank", "noreferrer")}>
                         {t("dashboard.vip_join", { defaultValue: "Open VIP Telegram" })}
                       </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        color={brand}
+                        borderColor={brand}
+                        _hover={{ bg: "rgba(183,162,125,0.12)" }}
+                        onClick={async () => {
+                          try {
+                            const resp = await api.post("/payments/vip", {});
+                            const url = resp?.data?.url as string | undefined;
+                            if (url) window.location.href = url;
+                          } catch {}
+                        }}
+                      >
+                        {t("dashboard.vip_renew", { defaultValue: "Renew Subscription" })}
+                      </Button>
+                    </HStack>
+                    {(() => {
+                      if (!vipStart || !vipEnd) return null;
+                      const start = new Date(vipStart).getTime();
+                      const end = new Date(vipEnd).getTime();
+                      const now = Date.now();
+                      const totalMs = Math.max(0, end - start);
+                      const leftMs = Math.max(0, end - now);
+                      const dayMs = 24 * 60 * 60 * 1000;
+                      const totalDays = Math.max(1, Math.round(totalMs / dayMs));
+                      const daysLeft = Math.max(0, Math.ceil(leftMs / dayMs));
+                      const pct = Math.max(0, Math.min(100, Math.round((leftMs / totalMs) * 100)));
+                      const color = daysLeft <= 2 ? "red" : daysLeft <= 10 ? "orange" : "green";
+                      const nf = new Intl.NumberFormat((t as any).i18n?.language || undefined);
+                      return (
+                        <VStack align="stretch" gap={2} mt={3}>
+                          <HStack justify="space-between">
+                            <Text fontSize="sm" opacity={0.85}>
+                              {t("dashboard.vip_days_left", { defaultValue: "Days remaining" })}
+                            </Text>
+                            <Text fontSize="sm" opacity={0.9}>
+                              {nf.format(daysLeft)} {t("dashboard.days", { defaultValue: "days" })}
+                            </Text>
+                          </HStack>
+                          <Progress value={pct} colorScheme={color} borderRadius="md" />
+                        </VStack>
+                      );
+                    })()}
+                    <HStack justify="center" gap={8} mt={2} flexWrap="wrap">
                       {vipStart && (
-                        <Badge colorScheme="green">{t("dashboard.vip_started", { defaultValue: "Started" })}: {new Date(vipStart).toLocaleString()}</Badge>
+                        <Text opacity={0.8}>
+                          {t("dashboard.vip_started", { defaultValue: "Started" })}: {new Date(vipStart).toLocaleString()}
+                        </Text>
                       )}
                       {vipEnd && (
-                        <Badge colorScheme="yellow">{t("dashboard.vip_renews", { defaultValue: "Renews" })}: {new Date(vipEnd).toLocaleString()}</Badge>
+                        <Text opacity={0.8}>
+                          {t("dashboard.vip_renews", { defaultValue: "Renews" })}: {new Date(vipEnd).toLocaleString()}
+                        </Text>
                       )}
                     </HStack>
                   </>
