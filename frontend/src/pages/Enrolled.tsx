@@ -10,12 +10,26 @@ const Enrolled: React.FC = () => {
   const [enrollments, setEnrollments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [vipInfo, setVipInfo] = useState<{ active: boolean; endIso: string | null }>({ active: false, endIso: null });
+  const tgHandle = (process.env.REACT_APP_TELEGRAM_HANDLE as string) || '';
+  const tgLink = tgHandle ? `https://t.me/${tgHandle}` : 'https://t.me/';
 
   useEffect(() => {
     (async () => {
       try {
         const list = await getMyPurchases({ ttlMs: 10 * 60 * 1000 });
-        setEnrollments(Array.isArray(list) ? list : []);
+        const arr = Array.isArray(list) ? list : [];
+        setEnrollments(arr);
+        try {
+          const vipActive = arr.some((p: any) => String(p.status || '').toUpperCase() === 'CONFIRMED' && p?.tier?.isVipProduct);
+          const raw = localStorage.getItem('vipSubscription');
+          let endIso: string | null = null;
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            endIso = parsed?.endIso || null;
+          }
+          setVipInfo({ active: vipActive || !!endIso, endIso });
+        } catch {}
       } catch (e: any) {
         setError(e?.response?.data?.message || 'Failed to load enrollments');
         setEnrollments([]);
@@ -36,6 +50,33 @@ const Enrolled: React.FC = () => {
 
   return (
     <Box p={{ base: 4, md: 8 }}>
+      {(vipInfo.active || vipInfo.endIso) && (
+        <Box
+          p={3}
+          borderWidth={1}
+          borderColor="#b7a27d"
+          borderRadius="lg"
+          mb={5}
+          bg="bg.surface"
+        >
+          <HStack justify="space-between" align="center">
+            <HStack>
+              <Badge colorScheme="yellow">VIP</Badge>
+              <Text>
+                {(() => {
+                  if (!vipInfo.endIso) return t('vip.active', { defaultValue: 'VIP active' });
+                  const diff = new Date(vipInfo.endIso).getTime() - Date.now();
+                  const days = Math.max(0, Math.ceil(diff / (24 * 60 * 60 * 1000)));
+                  return t('vip.days_remaining', { defaultValue: `VIP days remaining: ${days}` });
+                })()}
+              </Text>
+            </HStack>
+            <Button bg="#b7a27d" color="black" onClick={() => window.open(tgLink, '_blank', 'noreferrer')}>
+              {t('vip.open', { defaultValue: 'Open VIP Telegram' })}
+            </Button>
+          </HStack>
+        </Box>
+      )}
       <Heading fontSize="2xl" fontWeight="bold" textAlign="center" mb={6}>
         {t("dashboard.courses") || "My Enrollments"}
       </Heading>

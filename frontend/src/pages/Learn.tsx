@@ -744,7 +744,7 @@ const Learn: React.FC = () => {
       <Container maxW="6xl" py={8}>
         <VStack align="stretch" gap={6}>
           <HStack justify="space-between" align="start">
-            <Box bg="bg.surface">
+            <Box>
               <Heading>{tier.name || t("learn.course_fallback")}</Heading>
               {tier.description && (
                 <Text mt={2} color="text.primary">
@@ -752,14 +752,6 @@ const Learn: React.FC = () => {
                 </Text>
               )}
             </Box>
-            <Button
-              onClick={() => navigate("/enrolled")}
-              color="text.primary"
-              bg="#b7a27d"
-              variant="outline"
-            >
-              {t("learn.actions.my_courses")}
-            </Button>
             {!isCompleted ? (
               <Button
                 onClick={handleMarkCompleted}
@@ -1364,97 +1356,97 @@ const Learn: React.FC = () => {
         </VStack>
       </Container>
       {/* <-- put this OUTSIDE the certOpen block */}
-        {reviewOpen && (
+      {reviewOpen && (
+        <Box
+          position="fixed"
+          inset={0}
+          bg="blackAlpha.700"
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          zIndex={1100}
+          p={4}
+        >
           <Box
-            position="fixed"
-            inset={0}
-            bg="blackAlpha.700"
-            display="flex"
-            alignItems="center"
-            justifyContent="center"
-            zIndex={1100}
+            bg={mode === "dark" ? "gray.900" : "white"}
+            borderRadius="xl"
+            borderColor="#b7a27d"
+            borderWidth={1}
             p={4}
+            maxW="560px"
+            w="100%"
           >
-            <Box
-              bg={mode === "dark" ? "gray.900" : "white"}
-              borderRadius="xl"
-              borderColor="#b7a27d"
-              borderWidth={1}
-              p={4}
-              maxW="560px"
-              w="100%"
-            >
-              <VStack align="stretch" gap={4}>
-                <Heading size="md">
-                  {t("reviews.leave_review", { defaultValue: "Leave a review" })}
-                </Heading>
+            <VStack align="stretch" gap={4}>
+              <Heading size="md">
+                {t("reviews.leave_review", { defaultValue: "Leave a review" })}
+              </Heading>
 
-                {/* Rating */}
-                <Box>
-                  <Text mb={2}>{t("reviews.rating", { defaultValue: "Rating" })}</Text>
-                  <HStack>
-                    {[1, 2, 3, 4, 5].map((n) => (
-                      <Button
-                        key={n}
-                        variant="ghost"
-                        onClick={() => setMyRating(n)}
-                        aria-label={`rate-${n}`}
-                        p={1.5}
-                      >
-                        <Icon
-                          as={Star}
-                          fill={n <= myRating ? "#b7a27d" : "transparent"}
-                          color="#b7a27d"
-                        />
-                      </Button>
-                    ))}
-                  </HStack>
-                </Box>
-
-                {/* Comment */}
-                <Box>
-                  <Text mb={2}>{t("reviews.comment", { defaultValue: "Comment" })}</Text>
-                  <Textarea
-                    value={myComment}
-                    onChange={(e) => setMyComment(e.target.value)}
-                    rows={5}
-                    placeholder={t("reviews.comment_ph", {
-                      defaultValue: "What did you think of the course?",
-                    })}
-                    borderColor="#b7a27d"
-                    _hover={{ borderColor: "#b7a27d" }}
-                    _focus={{ borderColor: "#b7a27d", boxShadow: "0 0 0 1px #b7a27d" }}
-                  />
-                </Box>
-
-                <HStack justify="flex-end" gap={3}>
-                  <Button variant="ghost" onClick={() => setReviewOpen(false)}>
-                    {t("reviews.cancel", { defaultValue: "Cancel" })}
-                  </Button>
-                  <Button
-                    bg="#b7a27d"
-                    color="black"
-                    _hover={{ opacity: 0.9 }}
-                    isLoading={submittingReview}
-                    onClick={async () => {
-                      if (!myRating) {
-                        alert(t("learn.reviews.rating_required") || "Please select a rating");
-                        return;
-                      }
-                      await handleSubmitReview();
-                      if (isCompleted) {
-                        setReviewOpen(false);
-                        handleGenerateCertificate();
-                      }
-                    }}
-                  >
-                    {t("reviews.submit", { defaultValue: "Submit review" })}
-                  </Button>
+              {/* Rating */}
+              <Box>
+                <Text mb={2}>{t("reviews.rating", { defaultValue: "Rating" })}</Text>
+                <HStack>
+                  {[1, 2, 3, 4, 5].map((n) => (
+                    <Button
+                      key={n}
+                      variant="ghost"
+                      onClick={() => setMyRating(n)}
+                      aria-label={`rate-${n}`}
+                      p={1.5}
+                    >
+                      <Icon
+                        as={Star}
+                        fill={n <= myRating ? "#b7a27d" : "transparent"}
+                        color="#b7a27d"
+                      />
+                    </Button>
+                  ))}
                 </HStack>
-              </VStack>
-            </Box>
+              </Box>
+
+              {/* Comment */}
+              <Box>
+                <Text mb={2}>{t("reviews.comment", { defaultValue: "Comment" })}</Text>
+                <Textarea
+                  value={myComment}
+                  onChange={(e) => setMyComment(e.target.value)}
+                  rows={5}
+                  placeholder={t("reviews.comment_ph", {
+                    defaultValue: "What did you think of the course?",
+                  })}
+                  borderColor="#b7a27d"
+                  _hover={{ borderColor: "#b7a27d" }}
+                  _focus={{ borderColor: "#b7a27d", boxShadow: "0 0 0 1px #b7a27d" }}
+                />
+              </Box>
+
+              <HStack justify="flex-end" gap={3}>
+                <Button variant="ghost" onClick={() => setReviewOpen(false)}>
+                  {t("reviews.cancel", { defaultValue: "Cancel" })}
+                </Button>
+                <Button
+                  bg="#b7a27d"
+                  color="black"
+                  _hover={{ opacity: 0.9 }}
+                  isLoading={submittingReview}
+                  onClick={async () => {
+                    if (!myRating) {
+                      alert(t("learn.reviews.rating_required") || "Please select a rating");
+                      return;
+                    }
+                    await handleSubmitReview();
+                    if (isCompleted) {
+                      setReviewOpen(false);
+                      handleGenerateCertificate();
+                    }
+                  }}
+                >
+                  {t("reviews.submit", { defaultValue: "Submit review" })}
+                </Button>
+              </HStack>
+            </VStack>
           </Box>
-        )}
+        </Box>
+      )}
 
       {certOpen && (
         <Box

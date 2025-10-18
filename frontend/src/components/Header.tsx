@@ -12,7 +12,7 @@ import {
   VStack,
   useBreakpointValue,
 } from "@chakra-ui/react";
-import { Link as RouterLink } from "react-router-dom";
+import { Link as RouterLink, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Sun,
@@ -28,6 +28,7 @@ import {
   BookOpen,
   Globe,
   LayoutDashboard,
+  Book,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import Logo from "./Logo";
@@ -162,6 +163,7 @@ const Header: React.FC = () => {
     []
   );
   const tickerTheme = mode === "dark" ? "dark" : "light";
+  const { pathname } = useLocation();
 
   return (
     <Box
@@ -191,15 +193,20 @@ const Header: React.FC = () => {
                 {t("nav.contact") || (isAR ? "اتصل بنا" : "Contact")}
               </Button>
             </RouterLink>
-            <RouterLink to={user ? "/enrolled" : "/courses"}>
+            <RouterLink to="/courses">
               <Button {...navButtonProps}>
                 <Icon as={BookOpen} mr={2} />
-                {user
-                  ? t("nav.enrolled") || (isAR ? "كورساتي" : "My Enrollments")
-                  : t("footer.courses") || (isAR ? "الكورسات" : "Courses")}
+                {t("footer.courses") || (isAR ? "الكورسات" : "Courses")}
               </Button>
             </RouterLink>
-
+            {user && (
+              <RouterLink to={"/enrolled"}>
+                <Button {...navButtonProps}>
+                  <Icon as={Book} mr={2} />
+                  {t("nav.enrolled") || (isAR ? "كورساتي" : "My Enrollments")}
+                </Button>
+              </RouterLink>
+            )}
             {!user && (
               <>
                 <RouterLink to="/register">
@@ -371,8 +378,8 @@ const Header: React.FC = () => {
         </Flex>
       </Container>
 
-      {/* ======= FIXED TICKER UNDER HEADER (only when logged in) ======= */}
-      {user && (
+      {/* ======= FIXED TICKER UNDER HEADER (only on Home and when logged in) ======= */}
+      {user && pathname === "/" && (
         <Portal>
           <Box
             position="fixed"
@@ -381,14 +388,12 @@ const Header: React.FC = () => {
             top={`${headerBottom}px`}
             zIndex={1100} // below mobile drawers (1300), above content
             bg={headerBg}
-            borderTop="1px solid"
-            borderBottom="1px solid"
-            borderColor={mode === "dark" ? "whiteAlpha.200" : "blackAlpha.200"}
             // contain the tape visually with some padding
             px={{ base: 2, md: 4 }}
             py={{ base: 1, md: 1 }}
           >
             <TickerTapeSafe
+              key={tickerTheme}
               colorTheme={tickerTheme as any}
               isTransparent={true}
               displayMode="adaptive"
@@ -481,17 +486,23 @@ const Header: React.FC = () => {
                     </MotionButton>
                   </RouterLink>
 
-                  <RouterLink
-                    to={user ? "/enrolled" : "/courses"}
-                    onClick={() => setMenuOpen(false)}
-                  >
+                  {/* Always show Courses */}
+                  <RouterLink to="/courses" onClick={() => setMenuOpen(false)}>
                     <MotionButton variant="ghost" w="full" justifyContent="center" color="inherit">
                       <Icon as={BookOpen} mr={2} color="inherit" />
-                      {user
-                        ? t("dashboard.courses") || "My Enrollments"
-                        : t("footer.courses") || "Courses"}
+                      {t("footer.courses") || "Courses"}
                     </MotionButton>
                   </RouterLink>
+
+                  {/* Show Enrolled only when logged in */}
+                  {user && (
+                    <RouterLink to="/enrolled" onClick={() => setMenuOpen(false)}>
+                      <MotionButton variant="ghost" w="full" justifyContent="center" color="inherit">
+                        <Icon as={Book} mr={2} color="inherit" />
+                        {t("nav.enrolled") || "My Enrollments"}
+                      </MotionButton>
+                    </RouterLink>
+                  )}
 
                   {user && (
                     <MotionButton

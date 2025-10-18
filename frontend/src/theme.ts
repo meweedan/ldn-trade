@@ -49,25 +49,69 @@ const semanticTokens = {
 /** ---- Global styles (dir-aware font families + utilities) ---- */
 const styles = {
   global: {
-    "html, body, #root": {
+    /* Base canvas and stacking */
+    "html, body": {
       height: "100%",
       background: "bg.canvas",
-      // Subtle dotted background (light: blackish dots, dark: brand gold dots)
-      backgroundImage: "radial-gradient(rgba(0,0,0,0.06) 1px, transparent 1.5px)",
-      backgroundSize: "14px 14px",
-      backgroundPosition: "0 0",
       color: "text.primary",
       WebkitFontSmoothing: "antialiased",
       MozOsxFontSmoothing: "grayscale",
     },
-
-    // Dark mode override for dotted pattern (use brand gold dots)
-    // Target html, body, and #root across Chakra's class and data-theme mechanisms
-    "html.chakra-ui-dark, body.chakra-ui-dark, #root.chakra-ui-dark, html[data-theme='dark'], body[data-theme='dark'], [data-theme='dark'] #root": {
-      backgroundImage: "radial-gradient(rgba(183,162,125,0.22) 1px, transparent 1.5px) !important",
-      backgroundSize: "14px 14px",
-      backgroundPosition: "0 0",
+    /* Important: keep #root transparent and above the decorative layers */
+    "#root": {
+      height: "100%",
+      background: "transparent !important",
+      position: "relative",
+      zIndex: 3, // content baseline
     },
+
+    /* ------------------------------------------------------
+       Dot pattern layer (now above section BGs, below content)
+       ------------------------------------------------------ */
+    "body::before": {
+      content: "''",
+      position: "fixed",
+      inset: 0,
+      zIndex: 2,              // ↑ above hero BG (z=0/1), below content (z=3+)
+      pointerEvents: "none",
+
+      /* mode-aware dot color via CSS var */
+      backgroundImage: "radial-gradient(var(--dot-color, rgba(0,0,0,0.06)) 1.2px, transparent 2px)",
+      backgroundSize: "22px 22px", // less condensed dots
+      backgroundPosition: "0 0",
+
+      /* Shallower fade so dots still appear right at the top */
+      WebkitMaskImage:
+        "linear-gradient(to bottom, transparent 0, black 3vh, black calc(100% - 3vh), transparent 100%)",
+      maskImage:
+        "linear-gradient(to bottom, transparent 0, black 3vh, black calc(100% - 3vh), transparent 100%)",
+    },
+
+    /* ------------------------------------------------------
+       Subtle #b7a27d shimmer at top & bottom (also above hero BGs)
+       ------------------------------------------------------ */
+    "body::after": {
+      content: "''",
+      position: "fixed",
+      inset: 0,
+      zIndex: 2,              // sits with dots layer; ::after paints above ::before
+      pointerEvents: "none",
+      backgroundImage:
+        "linear-gradient(to bottom, rgba(134, 112, 74, 0.24), rgba(183,162,125,0))," +
+        "linear-gradient(to top, rgba(134, 112, 74, 0.24), rgba(183,162,125,0))",
+      backgroundRepeat: "no-repeat, no-repeat",
+      backgroundPosition: "top, bottom",
+      backgroundSize: "100% 25vh, 100% 25vh", // slightly slimmer for elegance
+      filter: "blur(0.2px)",
+    },
+
+    /* ---- Light mode dot color ---- */
+    "html:not([data-theme='dark']).chakra-ui-light body, html:not([data-theme='dark']) body:not(.chakra-ui-dark)":
+      { "--dot-color": "rgba(0,0,0,0.09)" },
+
+    /* ---- Dark mode dot color (brand gold) ---- */
+    "html.chakra-ui-dark body, body.chakra-ui-dark, html[data-theme='dark'] body, [data-theme='dark'] body":
+      { "--dot-color": "rgba(183,162,125,0.12)" },
 
     /* === Dir-aware base font === */
     "html[dir='ltr'] body": {
@@ -90,21 +134,10 @@ const styles = {
       fontWeight: 400,
     },
 
-    a: {
-      color: "accent.500",
-      _hover: { color: "accent.600", textDecoration: "none" },
-    },
-    "p, span, div, h1, h2, h3, h4, h5, h6, .chakra-text, .chakra-heading": {
-      color: "inherit",
-    },
-    "h1, .chakra-heading[data-level='1']": {
-      fontWeight: 800,
-      letterSpacing: "-0.02em",
-    },
-    "h2, .chakra-heading[data-level='2']": {
-      fontWeight: 700,
-      letterSpacing: "-0.01em",
-    },
+    a: { color: "accent.500", _hover: { color: "accent.600", textDecoration: "none" } },
+    "p, span, div, h1, h2, h3, h4, h5, h6, .chakra-text, .chakra-heading": { color: "inherit" },
+    "h1, .chakra-heading[data-level='1']": { fontWeight: 800, letterSpacing: "-0.02em" },
+    "h2, .chakra-heading[data-level='2']": { fontWeight: 700, letterSpacing: "-0.01em" },
     p: { lineHeight: 1.6 },
 
     "input, select, textarea": {
@@ -119,11 +152,9 @@ const styles = {
       borderColor: "border.default",
       _placeholder: { color: "text.muted" },
     },
-    ".chakra-button": {
-      _hover: { transform: "translateY(-1px)" },
-    },
+    ".chakra-button": { _hover: { transform: "translateY(-1px)" } },
 
-    /* === Reusable section heading class (optional) === */
+    /* === Optional section heading underline === */
     ".section-heading": {
       fontFamily:
         "'FuturaCustom', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, 'Apple Color Emoji', 'Segoe UI Emoji' !important",

@@ -723,7 +723,7 @@ const Contact: React.FC = () => {
 
           {/* ===== Tickets (if logged in) ===== */}
           {me?.email && (
-            <Box borderWidth={1} borderColor={brand} borderRadius="lg" p={{ base: 4, md: 6 }}>
+            <Box borderWidth={1} borderColor={brand} borderRadius="lg" p={{ base: 4, md: 6 }} bg="bg.surface">
               <HStack justify="space-between" align="center" mb={3}>
                 <Heading size="sm">
                   {t("contact.my_tickets_title", { defaultValue: "Your Tickets" })}
@@ -817,7 +817,7 @@ const Contact: React.FC = () => {
 
           {/* Tracker panel */}
           {trackOpen && (
-            <Box borderWidth={1} borderColor={brand} borderRadius="lg" p={4}>
+            <Box borderWidth={1} borderColor={brand} borderRadius="lg" p={4} bg="bg.surface">
               {trackLoading && (
                 <Text mb={2}>{t("common.loading", { defaultValue: "Loading…" })}</Text>
               )}
@@ -838,7 +838,10 @@ const Contact: React.FC = () => {
                   </Button>
                   <Button
                     size="sm"
-                    variant="ghost"
+                    variant="solid"
+                    bg="gray.500"
+                    color="white"
+                    _hover={{ opacity: 0.9 }}
                     onClick={() => {
                       setTrackOpen(false);
                       setTrackResult(null);
@@ -955,18 +958,18 @@ const Contact: React.FC = () => {
           <HStack gap={3} justifyContent="center">
             <Button
               onClick={() => window.open(waLink, "_blank", "noreferrer")}
-              variant="outline"
-              borderColor="#25D366"
-              color="#25D366"
+              variant="solid"
+              bg="#25D366"
+              color="white"
             >
               <Icon as={PhoneCall} style={{ marginRight: 8 }} />
               {t("contact.whatsapp", { defaultValue: "WhatsApp" })}
             </Button>
             <Button
               onClick={() => window.open(tgLink, "_blank", "noreferrer")}
-              variant="outline"
-              borderColor="#229ED9"
-              color="#229ED9"
+              variant="solid"
+              bg="#229ED9"
+              color="white"
             >
               <Icon as={MessageSquare} style={{ marginRight: 8 }} />
               {t("contact.telegram", { defaultValue: "Telegram" })}

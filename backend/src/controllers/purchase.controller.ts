@@ -110,8 +110,18 @@ export const createPurchase = [requireAuth, async (req: Request & { user?: any }
   if (refDiscount && !promoDiscount) pricingPath = 'refOnly';
   else if (promoDiscount && !refDiscount) pricingPath = 'promoOnly';
   else if (refDiscount && promoDiscount) pricingPath = chosen === 'ref' ? 'both_present_bestOf_ref' : 'both_present_bestOf_promo';
-  const vipAddon = !!vipTelegram && method === 'usdt' ? 10 : 0;
-  if (vipAddon) pricingPath = pricingPath + '|vip_addon_usd_10';
+  // Resolve VIP addon from VIP Tier price (for non-Stripe methods only to avoid Stripe line items issues)
+  let vipAddon = 0;
+  if (vipTelegram) {
+    try {
+      const vipTier = await prisma.courseTier.findFirst({ where: { isVipProduct: true } as any });
+      const vipUsd = Number((vipTier as any)?.price_usdt || 0);
+      if (vipUsd > 0 && method !== 'stripe') {
+        vipAddon = vipUsd;
+        pricingPath = pricingPath + `|vip_addon_usd_${vipUsd}`;
+      }
+    } catch {}
+  }
 
   // Preview: return computed price only, do not create a purchase
   if (preview) {
@@ -210,7 +220,7 @@ export const adminSetPurchaseStatus = [requireAdmin, async (req: Request & { use
   const prevStatus = purchase.status as string;
   const updated = await prisma.purchase.update({ where: { id }, data: { status: status as any, txnHash: note ? String(note) : purchase.txnHash } });
 
-  // On first-time CONFIRMED, grant VIP and log rewards/redemptions
+  // On first-time CONFIRMED, grant entitlements and log rewards/redemptions
   if (status === 'CONFIRMED' && prevStatus !== 'CONFIRMED') {
     // Referral reward
     if (purchase.refAffiliateId) {
@@ -234,23 +244,33 @@ export const adminSetPurchaseStatus = [requireAdmin, async (req: Request & { use
         },
       });
     }
-    // Grant VIP Telegram access
+    // Grant community Telegram access
     const hasAccess = await prisma.communityAccess.findUnique({ where: { userId: purchase.userId } });
     if (hasAccess) {
       await prisma.communityAccess.update({ where: { userId: purchase.userId }, data: { telegram: true } });
     } else {
       await prisma.communityAccess.create({ data: { userId: purchase.userId, telegram: true, discord: false, twitter: false } });
     }
-    // If VIP was purchased via USDT bundle, activate VIP subscription window
+
+    // VIP: if VIP Tier or VIP add-on present, activate/extend VIP 30 days
     try {
-      const path = String(purchase.pricingPath || '');
-      if (path.includes('vip_addon_usd_10')) {
+      const full = await prisma.purchase.findUnique({ where: { id: purchase.id }, include: { tier: true } as any });
+      const isVipTier = !!(full as any)?.tier?.isVipProduct;
+      const path = String((full as any)?.pricingPath || '');
+      const vipAddonMatch = path.includes('vip_addon_usd_');
+      if (isVipTier || vipAddonMatch) {
         const now = new Date();
-        const next = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+        const existing = await prisma.communityAccess.findUnique({ where: { userId: purchase.userId } });
+        let start = now;
+        let end = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+        if (existing?.vipEnd && existing.vipEnd > now) {
+          start = existing.vipStart || now;
+          end = new Date(existing.vipEnd.getTime() + 30 * 24 * 60 * 60 * 1000);
+        }
         await prisma.communityAccess.upsert({
           where: { userId: purchase.userId },
-          update: { vip: true, vipStart: now, vipEnd: next },
-          create: { userId: purchase.userId, telegram: true, discord: false, twitter: false, vip: true, vipStart: now, vipEnd: next },
+          update: { vip: true, vipStart: start, vipEnd: end },
+          create: { userId: purchase.userId, telegram: true, discord: false, twitter: false, vip: true, vipStart: start, vipEnd: end },
         });
       }
     } catch {}
@@ -272,8 +292,27 @@ async function expireStalePurchases(userId: string) {
 export const myPurchases = [requireAuth, async (req: Request & { user?: any }, res: Response) => {
   // Expire stale pending purchases before returning
   await expireStalePurchases(req.user!.sub);
-  const purchases = await prisma.purchase.findMany({ where: { userId: req.user!.sub }, orderBy: { createdAt: 'desc' }, include: { tier: true } });
-  res.json(purchases);
+  const [purchases, access] = await Promise.all([
+    prisma.purchase.findMany({ where: { userId: req.user!.sub }, orderBy: { createdAt: 'desc' }, include: { tier: true } }),
+    prisma.communityAccess.findUnique({ where: { userId: req.user!.sub } }),
+  ]);
+  const entitlements = {
+    vipTelegram: { active: !!access?.vip, endsAt: access?.vipEnd || null },
+  } as any;
+  const enriched = purchases.map((p: any) => {
+    const tiers: string[] = (() => {
+      if (p?.tier?.isBundle) {
+        try {
+          const raw = p?.tier?.bundleTierIds as any;
+          if (Array.isArray(raw)) return raw.map(String);
+          if (raw && Array.isArray(raw.ids)) return raw.ids.map(String);
+        } catch {}
+      }
+      return [p.tierId];
+    })();
+    return { ...p, entitlements: { ...entitlements, tiers } };
+  });
+  res.json(enriched);
 }];
 
 // Confirm/provide proof of payment

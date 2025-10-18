@@ -13,6 +13,7 @@ import {
 } from "@chakra-ui/react";
 import { Plus, RefreshCcw, Trash2, Save } from "lucide-react";
 import api from "../../api/client";
+import { useTranslation } from "react-i18next";
 
 const brand = "#b7a27d";
 
@@ -36,6 +37,7 @@ type Promo = {
 const PromoAdminPanel: React.FC = () => {
   const [items, setItems] = React.useState<Promo[]>([]);
   const [loading, setLoading] = React.useState(false);
+  const { t } = useTranslation();
 
   const [form, setForm] = React.useState<Partial<Promo>>({
     code: "",
@@ -95,25 +97,25 @@ const PromoAdminPanel: React.FC = () => {
     <Box>
       <HStack justify="space-between" mb={4}>
         <Heading size="md">Promo Codes</Heading>
-        <Button onClick={load} variant="outline">
+        <Button onClick={load} variant="solid" bg="#b7a27d">
           <Icon as={RefreshCcw} style={{ marginRight: 8 }} />
-          Refresh
+          {t('admin.refresh')}
         </Button>
       </HStack>
 
       {/* Create form */}
       <Box borderWidth={1} borderColor={brand} borderRadius="lg" p={4} mb={6}>
         <Heading size="sm" mb={3}>
-          Create Promo
+          {t('admin.createPromo')}
         </Heading>
         <SimpleGrid columns={{ base: 1, md: 3 }} gap={3}>
           <Input
-            placeholder="CODE"
+            placeholder={t('admin.code')}
             value={form.code || ""}
             onChange={(e) => updateField("code", e.target.value.toUpperCase())}
           />
           <Input
-            placeholder="Type: PERCENT or AMOUNT"
+            placeholder={t('admin.discountType')}
             value={form.discountType || "PERCENT"}
             onChange={(e) => updateField("discountType", (e.target.value || "PERCENT") as any)}
           />
@@ -171,18 +173,14 @@ const PromoAdminPanel: React.FC = () => {
             }
           />
           <HStack>
-            <Button onClick={() => updateField("active", !form.active)} variant="outline">
+            <Button onClick={() => updateField("active", !form.active)} variant="solid" bg="#b7a27d">
               {form.active ? "Active" : "Paused"}
             </Button>
-            <Button onClick={create} colorScheme="yellow">
-              <Icon as={Plus} style={{ marginRight: 8 }} /> Create
+            <Button onClick={create} bg="#b7a27d" variant="solid">
+              <Icon as={Plus} style={{ marginRight: 8 }} /> {t('admin.create')}
             </Button>
           </HStack>
         </SimpleGrid>
-        <Text mt={2} fontSize="sm" color="gray.500">
-          Guardrails: prefer 10–15% standard; per-user=1 for new customer; floor price enforced in
-          pricing.
-        </Text>
       </Box>
 
       {/* List */}
@@ -213,10 +211,10 @@ const PromoAdminPanel: React.FC = () => {
                 </Text>
               </VStack>
               <HStack>
-                <Button size="xs" variant="outline" onClick={() => toggleActive(p)}>
+                <Button size="xs" variant="solid" bg="#b7a27d" onClick={() => toggleActive(p)}>
                   <Icon as={Save} style={{ marginRight: 6 }} /> {p.active ? "Pause" : "Activate"}
                 </Button>
-                <Button size="xs" variant="outline" onClick={() => del(p.id)}>
+                <Button size="xs" variant="solid" bg="#b7a27d" onClick={() => del(p.id)}>
                   <Icon as={Trash2} style={{ marginRight: 6 }} /> Delete
                 </Button>
               </HStack>

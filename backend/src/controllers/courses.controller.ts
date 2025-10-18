@@ -120,6 +120,9 @@ export async function createTier(req: Request, res: Response) {
       discordWidgetId,
       discordInviteUrl,
       twitterTimelineUrl,
+      isVipProduct,
+      isBundle,
+      bundleTierIds,
     } = req.body || {};
     const created = await prisma.courseTier.create({
       data: {
@@ -138,6 +141,9 @@ export async function createTier(req: Request, res: Response) {
         discordWidgetId,
         discordInviteUrl,
         twitterTimelineUrl,
+        isVipProduct: !!isVipProduct,
+        isBundle: !!isBundle,
+        bundleTierIds: bundleTierIds != null ? (Array.isArray(bundleTierIds) ? bundleTierIds : (typeof bundleTierIds === 'string' ? JSON.parse(bundleTierIds) : bundleTierIds)) : undefined,
       },
     });
     return res.status(201).json(created);
@@ -165,6 +171,9 @@ export async function updateTier(req: Request, res: Response) {
       discordWidgetId,
       discordInviteUrl,
       twitterTimelineUrl,
+      isVipProduct,
+      isBundle,
+      bundleTierIds,
     } = req.body || {};
     const updated = await prisma.courseTier.update({
       where: { id },
@@ -184,6 +193,9 @@ export async function updateTier(req: Request, res: Response) {
         discordWidgetId,
         discordInviteUrl,
         twitterTimelineUrl,
+        isVipProduct: isVipProduct != null ? !!isVipProduct : undefined,
+        isBundle: isBundle != null ? !!isBundle : undefined,
+        bundleTierIds: bundleTierIds != null ? (Array.isArray(bundleTierIds) ? bundleTierIds : (typeof bundleTierIds === 'string' ? JSON.parse(bundleTierIds) : bundleTierIds)) : undefined,
         updatedAt: new Date(),
       },
     });

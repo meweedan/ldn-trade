@@ -220,6 +220,10 @@ model CourseTier {
   discordWidgetId     String?
   discordInviteUrl    String?
   twitterTimelineUrl  String?
+  // Commerce flags
+  isVipProduct        Boolean     @default(false)
+  isBundle            Boolean     @default(false)
+  bundleTierIds       Json?
   reviews             CourseReview[]
   createdAt           DateTime    @default(now()) @db.Timestamp(6)
   updatedAt           DateTime    @default(now()) @db.Timestamp(6)

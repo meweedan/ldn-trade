@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 // src/components/Hero.tsx
 import React from "react";
-import { Box, Container, VStack, HStack, Button, Text, useToken } from "@chakra-ui/react";
+import { Box, Container, VStack, HStack, Button, Text, useToken, Progress, SimpleGrid, IconButton, Flex } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
@@ -45,6 +46,74 @@ function GradientPill({
   );
 }
 
+const InfinityLayer: React.FC<{
+  count?: number;
+  zIndex?: number;
+}> = ({ count = 44, zIndex = 2 }) => {
+  const [items, setItems] = React.useState<
+    { id: number; left: string; top: string; size: number; delay: number; duration: number }[]
+  >([]);
+
+  React.useEffect(() => {
+    // client-only randoms
+    const arr = Array.from({ length: count }).map((_, i) => {
+      const left = Math.random() * 92 + 4; // 4%..96%
+      const top = Math.random() * 80 + 8; // 8%..88% (avoid extreme edges so shimmer stays visible)
+      const size = Math.round(Math.random() * 18 + 16); // 16..34px
+      const delay = Math.random() * 3; // 0..3s
+      const duration = Math.random() * 4 + 4; // 4..8s fade cycle
+      return { id: i, left: `${left}%`, top: `${top}%`, size, delay, duration };
+    });
+    setItems(arr);
+
+    // optional re-shuffle every 15s
+    const t = setInterval(() => {
+      const shuffled = arr.map((it) => ({
+        ...it,
+        left: `${Math.random() * 92 + 4}%`,
+        top: `${Math.random() * 80 + 8}%`,
+        delay: Math.random() * 3,
+        duration: Math.random() * 4 + 4,
+      }));
+      setItems(shuffled);
+    }, 15000);
+    return () => clearInterval(t);
+  }, [count]);
+
+  return (
+    <Box position="absolute" inset={0} zIndex={zIndex} pointerEvents="none" aria-hidden="true">
+      {items.map((it) => (
+        <motion.div
+          key={it.id}
+          style={{
+            position: "absolute",
+            left: it.left,
+            top: it.top,
+            fontSize: it.size,
+            lineHeight: 1,
+            filter: "saturate(0.9)",
+            transform: "translate(-50%, -50%)",
+          }}
+          initial={{ opacity: 0, y: 8, scale: 0.9 }}
+          animate={{
+            opacity: [0, 0.6, 0],
+            y: [8, 0, -6],
+            scale: [0.9, 1, 0.98],
+          }}
+          transition={{
+            delay: it.delay,
+            duration: it.duration,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        >
+          ♾️
+        </motion.div>
+      ))}
+    </Box>
+  );
+};
+
 export default function Hero() {
   const { t, i18n } = useTranslation() as any;
   const navigate = useNavigate();
@@ -85,37 +154,53 @@ export default function Hero() {
   const [isMember, setIsMember] = React.useState(false);
   const [me, setMe] = React.useState<any>(null);
   const [recentCourses, setRecentCourses] = React.useState<any[]>([]);
+  const [vipActive, setVipActive] = React.useState(false);
+  const [vipEnd, setVipEnd] = React.useState<string | null>(null);
+  const [tgLink, setTgLink] = React.useState<string>("");
+  const [enrolledCount, setEnrolledCount] = React.useState(0);
+  const [currentPage, setCurrentPage] = React.useState(0);
 
   // Determine if user is enrolled or VIP
   React.useEffect(() => {
     let active = true;
     (async () => {
       try {
-        const [st, mine, meResp] = await Promise.all([
+        const [st, mine, meResp, courses] = await Promise.all([
           api.get("/community/status").catch(() => ({ data: null })),
           api.get("/purchase/mine").catch(() => ({ data: [] })),
           api.get("/users/me").catch(() => ({ data: null })),
+          api.get("/courses").catch(() => ({ data: [] })),
         ]);
         const vip = !!(st as any)?.data?.vip;
         const tg = !!(st as any)?.data?.telegram;
+        const vipEndDate = (st as any)?.data?.vipEnd || null;
+        
+        // Get Telegram URL from VIP tier
+        const allTiers = Array.isArray((courses as any)?.data) ? (courses as any).data : [];
+        const vipTier = allTiers.find((t: any) => t?.isVipProduct);
+        const telegramUrl = vipTier?.telegramUrl || "";
+        
         const list = Array.isArray((mine as any)?.data) ? (mine as any).data : [];
-        const confirmed = list.some(
+        const confirmed = list.filter(
           (p: any) => String(p.status || "").toUpperCase() === "CONFIRMED"
         );
         if (active) {
-          setIsMember(vip || tg || confirmed);
+          setIsMember(vip || tg || confirmed.length > 0);
           setMe((meResp as any)?.data || null);
-          // compute recent confirmed courses (up to 3) — include tier.id for "View Course"
-          const recents = list
-            .filter((p: any) => String(p.status || "").toUpperCase() === "CONFIRMED")
+          setVipActive(vip);
+          setVipEnd(vipEndDate);
+          setTgLink(telegramUrl);
+          setEnrolledCount(confirmed.length);
+          // compute all confirmed courses — include tier for product links
+          const recents = confirmed
             .sort(
               (a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
             )
-            .slice(0, 3)
             .map((p: any) => ({
               id: p?.tier?.id,
               name: p?.tier?.name || "Course",
               date: p.createdAt,
+              tier: p?.tier,
             }));
           setRecentCourses(recents);
         }
@@ -216,57 +301,21 @@ export default function Hero() {
       overflow="hidden"
       dir={dir}
     >
-      {/* Backgrounds */}
-      {!me ? (
-        <>
-          <Box
-            display={{ base: "none", md: "block" }}
-            position="absolute"
-            w="100%"
-            inset={0}
-            style={{
-              backgroundImage: "url('/candlesticks.gif')",
-              backgroundRepeat: "no-repeat",
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-            }}
-            zIndex={1}
-          />
-          <Box
-            display={{ base: "block", md: "none" }}
-            position="absolute"
-            inset={0}
-            zIndex={0}
-            _before={{
-              content: '""',
-              position: "absolute",
-              inset: 0,
-              bgImage: "url('/candlesticks.gif')",
-              bgSize: "cover",
-              bgRepeat: "no-repeat",
-              bgPosition: "center",
-              zIndex: 0,
-            }}
-          />
-        </>
-      ) : (
-        <>
-          <Box
-            position="absolute"
-            top="50%"
-            left="50%"
-            transform="translate(-50%, -50%)" // true center, ignores RTL/LTR & padding
-            zIndex={1}
-            pointerEvents="none"
-            overflow="hidden"
-            // responsive size tuned for phones
-            w={{ base: "min(110vw, 900px)", md: "min(88vw, 1200px)", lg: "min(70vw, 1400px)" }}
-            h={{ base: "58vh", md: "62vh", lg: "68vh" }}
-          >
-            <DisplacementSphere />
-          </Box>
-        </>
-      )}
+      <InfinityLayer count={12} zIndex={3} />
+      {/* Displacement Sphere Background - always visible, morphs based on enrollment */}
+      <Box
+        position="absolute"
+        top="50%"
+        left="50%"
+        transform="translate(-50%, -50%)"
+        zIndex={3}
+        pointerEvents="none"
+        overflow="hidden"
+        w={{ base: "min(110vw, 900px)", md: "min(88vw, 1200px)", lg: "min(70vw, 1400px)" }}
+        h={{ base: "58vh", md: "62vh", lg: "68vh" }}
+      >
+        <DisplacementSphere />
+      </Box>
 
       {/* Content */}
       <Container
@@ -603,8 +652,8 @@ export default function Hero() {
             </Box>
           )}
 
-          {/* Recent courses for logged-in users with "View Course" */}
-          {isLoggedIn && recentCourses.length > 0 && (
+          {/* VIP Telegram status for logged-in users */}
+          {isLoggedIn && vipActive && (
             <Box
               w="100%"
               bg="bg.surface"
@@ -612,35 +661,211 @@ export default function Hero() {
               borderColor={GOLD}
               borderRadius="lg"
               p={{ base: 3, md: 4 }}
+              maxW="600px"
             >
-              <Text fontWeight="bold" mb={2} color={GOLD}>
-                {t("home.hero.recent_courses", { defaultValue: "Your recent courses" })}
-              </Text>
-              <VStack align="stretch" gap={2}>
-                {recentCourses.map((c, i) => (
-                  <HStack key={i} justify="space-between" align="center">
-                    <HStack gap={3}>
-                      <Text>{c.name}</Text>
-                      <Text fontSize="sm" opacity={0.8}>
-                        {new Date(c.date).toLocaleDateString()}
-                      </Text>
-                    </HStack>
-                    {c.id && (
-                      <Button
-                        size="sm"
-                        bg={GOLD}
-                        color="black"
-                        _hover={{ filter: "brightness(0.95)" }}
-                        onClick={() => navigate(`/learn/${c.id}`)}
-                      >
-                        {t("home.courses.view", { defaultValue: "View Course" })}
-                      </Button>
-                    )}
-                  </HStack>
-                ))}
+              <VStack align="stretch" gap={3}>
+                <HStack justify="space-between" align="center" flexWrap="wrap" gap={3}>
+                  <Text fontWeight="bold" color={GOLD} fontSize="lg">
+                    {t("home.hero.vip_title", { defaultValue: "VIP Telegram" })}
+                  </Text>
+                  {tgLink && (
+                    <Button
+                      size="sm"
+                      bg={GOLD}
+                      color="black"
+                      _hover={{ opacity: 0.9 }}
+                      onClick={() => window.open(tgLink, "_blank", "noreferrer")}
+                    >
+                      {t("home.hero.open_telegram", { defaultValue: "Open Telegram" })}
+                    </Button>
+                  )}
+                </HStack>
+                {vipEnd && (() => {
+                  const end = new Date(vipEnd).getTime();
+                  const now = Date.now();
+                  const leftMs = Math.max(0, end - now);
+                  const dayMs = 24 * 60 * 60 * 1000;
+                  const daysLeft = Math.max(0, Math.ceil(leftMs / dayMs));
+                  const totalDays = 30; // assume 30-day subscription
+                  const pct = Math.max(0, Math.min(100, Math.round((daysLeft / totalDays) * 100)));
+                  const color = daysLeft <= 2 ? "red" : daysLeft <= 10 ? "orange" : "blue";
+                  return (
+                    <VStack align="stretch" gap={2}>
+                      <HStack justify="space-between">
+                        <Text fontSize="sm" opacity={0.85}>
+                          {t("home.hero.days_remaining", { defaultValue: "Days remaining" })}
+                        </Text>
+                        <Text fontSize="sm" fontWeight="semibold">
+                          {daysLeft} {t("home.hero.days", { defaultValue: "days" })}
+                        </Text>
+                      </HStack>
+                      <Progress value={pct} colorScheme={color} borderRadius="md" size="sm" />
+                    </VStack>
+                  );
+                })()}
               </VStack>
             </Box>
           )}
+
+          {/* Enrolled courses summary */}
+          {isLoggedIn && enrolledCount > 0 && (() => {
+            const count = recentCourses.length;
+            // Determine columns: 1 course = 1 col, 2-3 courses = up to 3 cols, 4+ courses = 3 cols
+            const columns = count === 1 ? 1 : count <= 3 ? count : 3;
+            
+            // Mobile pagination: 3 courses per page
+            const coursesPerPage = 3;
+            const totalPages = Math.ceil(count / coursesPerPage);
+            const startIdx = currentPage * coursesPerPage;
+            const endIdx = startIdx + coursesPerPage;
+            const currentCourses = recentCourses.slice(startIdx, endIdx);
+            
+            return (
+              <Box
+                w="100%"
+                bg="bg.surface"
+                border="1px solid"
+                borderColor={GOLD}
+                borderRadius="lg"
+                p={{ base: 3, md: 4 }}
+                maxW="900px"
+              >
+                <Text fontWeight="bold" mb={2} color={GOLD}>
+                  {t("home.hero.enrolled_courses", { defaultValue: "Your Courses" })}
+                </Text>
+                <Text fontSize="sm" opacity={0.85} mb={3}>
+                  {enrolledCount} {t("home.hero.courses_enrolled", { defaultValue: "courses enrolled" })}
+                </Text>
+                
+                {/* Desktop: Show all in grid */}
+                <Box display={{ base: "none", md: "block" }}>
+                  <SimpleGrid columns={columns} spacing={3}>
+                    {recentCourses.map((c, i) => {
+                      const tier = c.tier;
+                      const productLink = tier?.telegramUrl || tier?.discordInviteUrl || `/learn/${c.id}`;
+                      return (
+                        <Box
+                          key={i}
+                          p={3}
+                          border="1px solid"
+                          borderColor={GOLD}
+                          borderRadius="md"
+                          bg="bg.subtle"
+                          display="flex"
+                          flexDirection="column"
+                          gap={2}
+                        >
+                          <Text fontWeight="semibold" fontSize="sm">{c.name}</Text>
+                          <Button
+                            size="sm"
+                            bg={GOLD}
+                            color="black"
+                            _hover={{ filter: "brightness(0.95)" }}
+                            onClick={() => {
+                              if (tier?.telegramUrl || tier?.discordInviteUrl) {
+                                window.open(productLink, "_blank", "noreferrer");
+                              } else {
+                                navigate(productLink);
+                              }
+                            }}
+                          >
+                            {t("home.courses.access", { defaultValue: "Access" })}
+                          </Button>
+                        </Box>
+                      );
+                    })}
+                  </SimpleGrid>
+                </Box>
+                
+                {/* Mobile: Paginated view */}
+                <Box display={{ base: "block", md: "none" }}>
+                  <VStack align="stretch" spacing={3}>
+                    {currentCourses.map((c, i) => {
+                      const tier = c.tier;
+                      const productLink = tier?.telegramUrl || tier?.discordInviteUrl || `/learn/${c.id}`;
+                      return (
+                        <Box
+                          key={startIdx + i}
+                          p={3}
+                          border="1px solid"
+                          borderColor={GOLD}
+                          borderRadius="md"
+                          bg="bg.subtle"
+                          display="flex"
+                          flexDirection="column"
+                          gap={2}
+                        >
+                          <Text fontWeight="semibold" fontSize="sm">{c.name}</Text>
+                          <Button
+                            size="sm"
+                            bg={GOLD}
+                            color="black"
+                            _hover={{ filter: "brightness(0.95)" }}
+                            onClick={() => {
+                              if (tier?.telegramUrl || tier?.discordInviteUrl) {
+                                window.open(productLink, "_blank", "noreferrer");
+                              } else {
+                                navigate(productLink);
+                              }
+                            }}
+                          >
+                            {t("home.courses.access", { defaultValue: "Access" })}
+                          </Button>
+                        </Box>
+                      );
+                    })}
+                  </VStack>
+                  
+                  {/* Pagination controls for mobile */}
+                  {totalPages > 1 && (
+                    <Flex align="center" justify="center" gap={3} mt={4}>
+                      <IconButton
+                        aria-label="Previous page"
+                        icon={<Text fontSize="lg">{dir === "rtl" ? "→" : "←"}</Text>}
+                        size="sm"
+                        bg={GOLD}
+                        color="black"
+                        isDisabled={currentPage === 0}
+                        onClick={() => setCurrentPage(p => Math.max(0, p - 1))}
+                        _hover={{ opacity: 0.8 }}
+                        _disabled={{ opacity: 0.3, cursor: "not-allowed" }}
+                      />
+                      
+                      {/* Page dots */}
+                      <HStack spacing={2}>
+                        {Array.from({ length: totalPages }).map((_, idx) => (
+                          <Box
+                            key={idx}
+                            w={2}
+                            h={2}
+                            borderRadius="full"
+                            bg={idx === currentPage ? GOLD : "gray.500"}
+                            opacity={idx === currentPage ? 1 : 0.4}
+                            cursor="pointer"
+                            onClick={() => setCurrentPage(idx)}
+                            transition="all 0.2s"
+                            _hover={{ opacity: 1 }}
+                          />
+                        ))}
+                      </HStack>
+                      
+                      <IconButton
+                        aria-label="Next page"
+                        icon={<Text fontSize="lg">{dir === "rtl" ? "←" : "→"}</Text>}
+                        size="sm"
+                        bg={GOLD}
+                        color="black"
+                        isDisabled={currentPage === totalPages - 1}
+                        onClick={() => setCurrentPage(p => Math.min(totalPages - 1, p + 1))}
+                        _hover={{ opacity: 0.8 }}
+                        _disabled={{ opacity: 0.3, cursor: "not-allowed" }}
+                      />
+                    </Flex>
+                  )}
+                </Box>
+              </Box>
+            );
+          })()}
 
           {/* CTAs — hide when logged in */}
           {!isLoggedIn && (

@@ -2,8 +2,17 @@
 import React, { useRef, useEffect, useState } from "react";
 import * as THREE from "three";
 import styles from "./Sphere.module.css";
+import api from "../api/client";
 
 const GOLD_NUM = 0xb7a27d;
+
+// === Scroll behavior tuning ===
+const SHRINK_END_PX = 320;
+const FADE_OUT_END_PX = 800;
+
+// === Morph animation tuning ===
+const MORPH_DURATION_MS = 1600; // total morph time
+const EASE = (t: number) => 1 - Math.pow(1 - t, 3); // cubic ease-out
 
 function hasWebGL(): boolean {
   try {
@@ -14,28 +23,13 @@ function hasWebGL(): boolean {
   }
 }
 
-/** Fit a rectangle (with aspect = width/height) inside a circle of diameter D, with a margin (0..1) */
-function fitRectInCircle(D: number, aspect: number, margin = 0.9) {
-  // For a rectangle W×H inside a circle: W^2 + H^2 <= (D*margin)^2
-  // With W = aspect * H ⇒ H = (D*margin) / sqrt(aspect^2 + 1), W = aspect * H
-  const max = D * margin;
-  const H = max / Math.sqrt(aspect * aspect + 1);
-  const W = aspect * H;
-  return { W, H };
-}
-
-/** Non-WebGL fallback: gold glow + centered logo, aspect-correct, circle-fit */
+/** Non-WebGL fallback: gold glow */
 const GlowFallback: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const imgRef = useRef<HTMLImageElement | null>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-
-    const img = new Image();
-    img.src = "/logo.png";
-    imgRef.current = img;
 
     let raf = 0;
     const ctx = canvas.getContext("2d");
@@ -43,8 +37,8 @@ const GlowFallback: React.FC = () => {
 
     const resize = () => {
       const rect = canvas.parentElement?.getBoundingClientRect();
-      const w = Math.max(200, Math.floor(rect?.width ?? window.innerWidth));
-      const h = Math.max(220, Math.floor(rect?.height ?? window.innerHeight));
+      const w = Math.max(250, Math.floor(rect?.width ?? window.innerWidth));
+      const h = Math.max(250, Math.floor(rect?.height ?? window.innerHeight));
       const dpr = Math.min(1.75, window.devicePixelRatio || 1);
       canvas.width = w * dpr;
       canvas.height = h * dpr;
@@ -61,11 +55,8 @@ const GlowFallback: React.FC = () => {
 
       const cx = Wc / 2;
       const cy = Hc / 2;
-
-      // Sphere/glow radius (visual), a bit larger
       const r = Math.min(Wc, Hc) * 0.32;
 
-      // Gold glow
       const grad = ctx.createRadialGradient(cx, cy, r * 0.15, cx, cy, r * 1.5);
       grad.addColorStop(0, "#b7a27d");
       grad.addColorStop(0.6, "#b7a27d");
@@ -74,17 +65,6 @@ const GlowFallback: React.FC = () => {
       ctx.beginPath();
       ctx.arc(cx, cy, r * 1.6, 0, Math.PI * 2);
       ctx.fill();
-
-      // Centered logo — circle-fit
-      const logo = imgRef.current;
-      if (logo && logo.complete) {
-        const aspect =
-          logo.naturalWidth && logo.naturalHeight ? logo.naturalWidth / logo.naturalHeight : 1;
-        const { W, H } = fitRectInCircle(2 * r, aspect, 0.9);
-        ctx.globalAlpha = 0.6;
-        ctx.drawImage(logo, cx - W / 2, cy - H / 2, W, H);
-        ctx.globalAlpha = 1;
-      }
 
       raf = requestAnimationFrame(draw);
     };
@@ -106,11 +86,83 @@ const DisplacementSphere: React.FC = () => {
   const mountRef = useRef<HTMLDivElement | null>(null);
   const [isClient, setIsClient] = useState(false);
   const [webglOK, setWebglOK] = useState(false);
+  const [isEnrolled, setIsEnrolled] = useState(false);
+
+  // Scroll-driven visual state (applied to wrapper so it affects WebGL and fallback)
+  const [wrapStyle, setWrapStyle] = useState<{ opacity: number; scale: number }>({
+    opacity: 1,
+    scale: 1,
+  });
 
   useEffect(() => {
     setIsClient(true);
     setWebglOK(hasWebGL());
   }, []);
+
+  // Check if user is logged in and enrolled
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const [st, mine] = await Promise.all([
+          api.get("/community/status").catch(() => ({ data: null })),
+          api.get("/purchase/mine").catch(() => ({ data: [] })),
+        ]);
+        const vip = !!(st as any)?.data?.vip;
+        const tg = !!(st as any)?.data?.telegram;
+        const list = Array.isArray((mine as any)?.data) ? (mine as any).data : [];
+        const confirmed = list.some(
+          (p: any) => String(p.status || "").toUpperCase() === "CONFIRMED"
+        );
+        if (active) {
+          setIsEnrolled(vip || tg || confirmed);
+        }
+      } catch {}
+    })();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  // === Scroll handler with rAF throttle
+  useEffect(() => {
+    if (!isClient) return;
+
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      const y = window.scrollY || window.pageYOffset || 0;
+
+      // Phase 1: 0 -> SHRINK_END_PX
+      if (y <= SHRINK_END_PX) {
+        const p = Math.min(1, y / SHRINK_END_PX); // 0..1
+        const scale = 1 - 0.3 * p; // 1 -> 0.7
+        const opacity = 1 - 0.6 * p; // 1 -> 0.4
+        setWrapStyle({ opacity, scale });
+      } else {
+        // Phase 2: SHRINK_END_PX -> FADE_OUT_END_PX
+        const p2 = Math.min(1, (y - SHRINK_END_PX) / Math.max(1, FADE_OUT_END_PX - SHRINK_END_PX));
+        const scale = 0.7 - 0.15 * p2; // 0.7 -> 0.55
+        const opacity = 0.5 * (1 - p2); // ~0.5 -> 0
+        setWrapStyle({ opacity, scale });
+      }
+    };
+
+    const onScroll = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(update);
+    };
+
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll, { passive: true });
+
+    return () => {
+      if (raf) cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, [isClient]);
 
   useEffect(() => {
     if (!isClient || !webglOK || !mountRef.current) return;
@@ -118,8 +170,14 @@ const DisplacementSphere: React.FC = () => {
     // ===== Scene, Camera, Renderer =====
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(44, 1, 0.1, 100);
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    const renderer = new THREE.WebGLRenderer({
+      antialias: true,
+      alpha: true,
+      powerPreference: "high-performance",
+    });
     renderer.setClearColor(0x000000, 0);
+    // @ts-ignore
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
 
     const container = mountRef.current;
     container.appendChild(renderer.domElement);
@@ -128,8 +186,8 @@ const DisplacementSphere: React.FC = () => {
 
     const setSize = () => {
       const rect = container.getBoundingClientRect();
-      const width = Math.max(240, Math.floor(rect.width));
-      const height = Math.max(260, Math.floor(rect.height));
+      const width = Math.max(290, Math.floor(rect.width));
+      const height = Math.max(290, Math.floor(rect.height));
       const dpr = Math.min(maxDpr, window.devicePixelRatio || 1);
       renderer.setPixelRatio(dpr);
       renderer.setSize(width, height, false);
@@ -140,87 +198,136 @@ const DisplacementSphere: React.FC = () => {
 
     const widthNow = container.getBoundingClientRect().width;
     const isSmall = widthNow < 520;
-    const radius = 2.8; // larger sphere
+    const radius = isSmall ? 3.2 : 3.0;
     const widthSegments = isSmall ? 48 : 64;
     const heightSegments = isSmall ? 48 : 64;
 
-    // ===== Geometry with subtle displacement =====
+    // ===== Geometry with displacement =====
     const geometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments);
     const posAttr = geometry.attributes.position as THREE.BufferAttribute;
     const v = new THREE.Vector3();
+
+    // Store original positions and create two states
+    const originalPositions = new Float32Array(posAttr.count * 3);
+    const chaoticPositions = new Float32Array(posAttr.count * 3);
+    const calmPositions = new Float32Array(posAttr.count * 3);
+
     for (let i = 0; i < posAttr.count; i++) {
       v.fromBufferAttribute(posAttr, i);
-      const offset = (Math.random() - 0.5) * 0.22;
-      const bump = 1 + offset * Math.sin(v.length() * 3.0);
-      v.multiplyScalar(bump);
-      posAttr.setXYZ(i, v.x, v.y, v.z);
+      originalPositions[i * 3] = v.x;
+      originalPositions[i * 3 + 1] = v.y;
+      originalPositions[i * 3 + 2] = v.z;
+
+      // Chaotic state: spiky and aggressive
+      const chaoticOffset = (Math.random() - 0.5) * 0.85;
+      const chaoticBump = 1 + chaoticOffset * Math.sin(v.length() * 5.0);
+      const vChaotic = v.clone().multiplyScalar(chaoticBump);
+      chaoticPositions[i * 3] = vChaotic.x;
+      chaoticPositions[i * 3 + 1] = vChaotic.y;
+      chaoticPositions[i * 3 + 2] = vChaotic.z;
+
+      // Calm state: subtle and smooth
+      const calmOffset = (Math.random() - 0.5) * 0.18;
+      const calmBump = 1 + calmOffset * Math.sin(v.length() * 2.5);
+      const vCalm = v.clone().multiplyScalar(calmBump);
+      calmPositions[i * 3] = vCalm.x;
+      calmPositions[i * 3 + 1] = vCalm.y;
+      calmPositions[i * 3 + 2] = vCalm.z;
+    }
+
+    // Start with appropriate state
+    const startPositions = isEnrolled ? calmPositions : chaoticPositions;
+    for (let i = 0; i < posAttr.count; i++) {
+      posAttr.setXYZ(i, startPositions[i * 3], startPositions[i * 3 + 1], startPositions[i * 3 + 2]);
     }
     geometry.computeVertexNormals();
 
-    // ===== Material: gold + ~35% opacity so logo shows through
+    // ===== Mesh / Materials =====
+    // Use emissive to maintain stable #b7a27d gold color regardless of theme mode
     const material = new THREE.MeshStandardMaterial({
       color: GOLD_NUM,
-      metalness: 0.55,
-      roughness: 0.6,
+      emissive: GOLD_NUM,
+      emissiveIntensity: 0.28,
+      metalness: 0.85,
+      roughness: 0.3,
       transparent: true,
-      opacity: 0.35,
-      emissive: new THREE.Color(GOLD_NUM),
-      emissiveIntensity: 0.08,
+      opacity: 0.6, // spiky starts a bit brighter; calm will tween down to ~0.38
       side: THREE.DoubleSide,
-      depthWrite: false, // keep transparent nice & show logo through
+      depthWrite: false,
     });
 
     const sphere = new THREE.Mesh(geometry, material);
     scene.add(sphere);
 
-    // ===== Centered logo (sprite), **aspect-correct + circle-fit**
-    const textureLoader = new THREE.TextureLoader();
-    const logoTexture = textureLoader.load("/logo.png", (tex) => {
-      const img = tex.image as HTMLImageElement | { width: number; height: number } | undefined;
-      const imgW = (img as any)?.width || (img as any)?.naturalWidth || 1;
-      const imgH = (img as any)?.height || (img as any)?.naturalHeight || 1;
-      const aspect = imgW / imgH;
+    // Lights (subtle rim + ambient)
+    const ambient = new THREE.AmbientLight(0xffffff, 0.55);
+    scene.add(ambient);
+    const dir = new THREE.DirectionalLight(0xffffff, 0.9);
+    dir.position.set(3, 5, 4);
+    scene.add(dir);
 
-      // Fit inside sphere of diameter (2 * radius) with a margin
-      const { W, H } = fitRectInCircle(2 * radius, aspect, 0.9);
-      logoSprite.scale.set(W, H, 1);
-    });
-    logoTexture.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+    camera.position.z = 10.5;
 
-    const spriteMat = new THREE.SpriteMaterial({
-      map: logoTexture,
-      transparent: true,
-      opacity: 0.6, // 60%
-      depthTest: true,
-      depthWrite: false,
-    });
-    const logoSprite = new THREE.Sprite(spriteMat);
-    logoSprite.position.set(0, 0, 0);
-    // temporary scale until texture loads (assume square-ish)
-    const { W: initW, H: initH } = fitRectInCircle(2 * radius, 1, 0.85);
-    logoSprite.scale.set(initW, initH, 1);
-    // Render after sphere so it blends through; sphere doesn't write depth
-    logoSprite.renderOrder = 1;
-    sphere.renderOrder = 0;
-    scene.add(logoSprite);
+    // ===== Animate with time-based delta and morphing
+    const clock = new THREE.Clock();
+    let running = true;
+    let morphProgress = 0; // 0 = chaotic, 1 = calm
+    let targetMorph = isEnrolled ? 1 : 0;
+    const morphSpeed = 1 / (MORPH_DURATION_MS / 1000); // per second
 
-    // ===== Lights
-    const pointLight = new THREE.PointLight(0xffffff, 1.9, 30, 2.0);
-    pointLight.position.set(9, 9, 9);
-    scene.add(pointLight);
-    scene.add(new THREE.AmbientLight(0x404040, 1.1));
+    // Rotation speeds
+    const chaoticRotSpeed = { x: 2.4, y: 3.8, z: 1.6 };
+    const calmRotSpeed = { x: 0.9, y: 1.8, z: 0 };
 
-    camera.position.z = 11.5;
-
-    // ===== Animate
-    let raf = 0;
     const animate = () => {
-      sphere.rotation.x += 0.004;
-      sphere.rotation.y += 0.008;
+      if (!running) return;
+      const dt = clock.getDelta();
+
+      // Morph geometry smoothly
+      if (Math.abs(morphProgress - targetMorph) > 0.001) {
+        const direction = targetMorph > morphProgress ? 1 : -1;
+        morphProgress += direction * morphSpeed * dt;
+        morphProgress = Math.max(0, Math.min(1, morphProgress));
+        const t = EASE(morphProgress);
+
+        // Interpolate vertex positions
+        for (let i = 0; i < posAttr.count; i++) {
+          const cx = chaoticPositions[i * 3];
+          const cy = chaoticPositions[i * 3 + 1];
+          const cz = chaoticPositions[i * 3 + 2];
+          const lx = calmPositions[i * 3];
+          const ly = calmPositions[i * 3 + 1];
+          const lz = calmPositions[i * 3 + 2];
+
+          posAttr.setXYZ(
+            i,
+            cx + (lx - cx) * t,
+            cy + (ly - cy) * t,
+            cz + (lz - cz) * t
+          );
+        }
+        posAttr.needsUpdate = true;
+        geometry.computeVertexNormals();
+      }
+
+      // Interpolate rotation speed
+      const rotT = EASE(morphProgress);
+      const rotX = chaoticRotSpeed.x + (calmRotSpeed.x - chaoticRotSpeed.x) * rotT;
+      const rotY = chaoticRotSpeed.y + (calmRotSpeed.y - chaoticRotSpeed.y) * rotT;
+      const rotZ = chaoticRotSpeed.z + (calmRotSpeed.z - chaoticRotSpeed.z) * rotT;
+
+      sphere.rotation.x += dt * rotX;
+      sphere.rotation.y += dt * rotY;
+      sphere.rotation.z += dt * rotZ;
+
       renderer.render(scene, camera);
-      raf = requestAnimationFrame(animate);
     };
-    raf = requestAnimationFrame(animate);
+    renderer.setAnimationLoop(animate);
+
+    // Watch for enrollment changes
+    const enrollmentWatcher = setInterval(() => {
+      targetMorph = isEnrolled ? 1 : 0;
+    }, 100);
 
     // Resize
     const onWindowResize = () => setSize();
@@ -228,31 +335,61 @@ const DisplacementSphere: React.FC = () => {
     ro.observe(container);
     window.addEventListener("resize", onWindowResize);
 
+    // Pause when offscreen or tab hidden
+    let io: IntersectionObserver | null = null;
+    const visibilityHandler = () => {
+      running = document.visibilityState !== "hidden";
+      if (running) clock.getDelta();
+    };
+    document.addEventListener("visibilitychange", visibilityHandler);
+    io = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        running = !!entry?.isIntersecting;
+        if (running) clock.getDelta();
+      },
+      { threshold: 0.01 }
+    );
+    io.observe(container);
+
     // Cleanup
     return () => {
-      cancelAnimationFrame(raf);
+      running = false;
+      clearInterval(enrollmentWatcher);
       window.removeEventListener("resize", onWindowResize);
       ro.disconnect();
-
-      scene.remove(logoSprite);
-      spriteMat.dispose();
-      logoTexture.dispose();
+      document.removeEventListener("visibilitychange", visibilityHandler);
+      io && io.disconnect();
 
       scene.remove(sphere);
       geometry.dispose();
       material.dispose();
+      renderer.setAnimationLoop(null);
       renderer.dispose();
 
       if (renderer.domElement && renderer.domElement.parentElement === container) {
         container.removeChild(renderer.domElement);
       }
     };
-  }, [isClient, webglOK]);
+  }, [isClient, webglOK, isEnrolled]);
 
   if (!isClient) return null;
 
+  // Wrapper applies smooth transform + fade
+  const { opacity, scale } = wrapStyle;
+
   return (
-    <div className={styles.sphereContainer} ref={mountRef}>
+    <div
+      className={styles.sphereContainer}
+      ref={mountRef}
+      style={{
+        opacity,
+        transform: `scale(${scale})`,
+        transition: "opacity 120ms linear, transform 160ms ease-out",
+        willChange: "opacity, transform",
+        pointerEvents: "none",
+      }}
+    >
       {!webglOK && <GlowFallback />}
     </div>
   );

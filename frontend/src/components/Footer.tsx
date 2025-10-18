@@ -136,7 +136,6 @@ const FooterInner: React.FC = () => {
   // --- Payment methods list ---
   const paymentMethods = [
     { label: "USDT", src: "/images/payments/usdt.png" },
-    { label: "Bank Cards", src: "/images/payments/bank-transfer.png" },
     { label: "Visa", src: "/images/payments/visa.png" },
     { label: "Mastercard", src: "/images/payments/mastercard.png" },
     { label: "Neteller", src: "/images/payments/neteller.png" },

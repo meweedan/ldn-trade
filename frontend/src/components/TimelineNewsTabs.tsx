@@ -2,6 +2,7 @@
 /* eslint-disable */
 import * as React from "react";
 import { Box, Button, HStack, VStack, Heading, Divider } from "@chakra-ui/react";
+import { useTranslation } from "react-i18next";
 
 type Props = {
   mode: "light" | "dark";
@@ -57,6 +58,7 @@ const TimelineNewsTabs: React.FC<Props> = ({
   accentColor = "#b7a27d",
   height = 360,
 }) => {
+  const { t } = useTranslation();
   const [tab, setTab] = React.useState<0 | 1>(0);
   const locale = resolveLocale(i18nLang);
 
@@ -77,6 +79,8 @@ const TimelineNewsTabs: React.FC<Props> = ({
       borderRadius="xl"
       p={2}
       bg={mode === "dark" ? "black" : "white"}
+      // ⬇️ Force crisp text color by theme (fixes gray-on-white in light mode)
+      color={mode === "dark" ? "white" : "black"}
     >
       <HStack gap={8} justify="center" mb={3} wrap="wrap">
         <Button
@@ -89,7 +93,7 @@ const TimelineNewsTabs: React.FC<Props> = ({
           color={tab === 0 ? "white" : accentColor}
           _hover={{ bg: tab === 0 ? accentColor : "rgba(183,162,125,0.1)" }}
         >
-          Forex / Gold / Indices
+          {t("Forex_Gold_Indices")}
         </Button>
         <Button
           onClick={() => setTab(1)}
@@ -101,15 +105,16 @@ const TimelineNewsTabs: React.FC<Props> = ({
           color={tab === 1 ? "white" : accentColor}
           _hover={{ bg: tab === 1 ? accentColor : "rgba(183,162,125,0.1)" }}
         >
-          Crypto
+          {t("Crypto")}
         </Button>
       </HStack>
 
       <Box position="relative">
         <Box style={{ display: tab === 0 ? "block" : "none" }}>
-          <Section title="All Forex Headlines" accent={accentColor}>
+          <Section title={t("All_Forex_Headlines")} accent={accentColor}>
             <iframe
-              title="Forex Timeline"
+              key={`tv-forexAll-${mode}-${locale}`}
+              title={t("Forex_Timeline")}
               src={forexAll}
               style={{ border: 0, width: "100%", height }}
               loading="lazy"
@@ -118,9 +123,10 @@ const TimelineNewsTabs: React.FC<Props> = ({
             />
           </Section>
 
-          <Section title="Gold (XAUUSD) Headlines" accent={accentColor}>
+          <Section title={t("Gold_XAUUSD_Headlines")} accent={accentColor}>
             <iframe
-              title="Gold Timeline"
+              key={`tv-gold-${mode}-${locale}`}
+              title={t("Gold_Timeline")}
               src={goldXAU}
               style={{ border: 0, width: "100%", height }}
               loading="lazy"
@@ -129,9 +135,10 @@ const TimelineNewsTabs: React.FC<Props> = ({
             />
           </Section>
 
-          <Section title="Indices Headlines" accent={accentColor}>
+          <Section title={t("Indices_Headlines")} accent={accentColor}>
             <iframe
-              title="Indices Timeline"
+              key={`tv-indices-${mode}-${locale}`}
+              title={t("Indices_Timeline")}
               src={indices}
               style={{ border: 0, width: "100%", height }}
               loading="lazy"
@@ -142,9 +149,10 @@ const TimelineNewsTabs: React.FC<Props> = ({
         </Box>
 
         <Box style={{ display: tab === 1 ? "block" : "none" }}>
-          <Section title="All Crypto Headlines" accent={accentColor}>
+          <Section title={t("All_Crypto_Headlines")} accent={accentColor}>
             <iframe
-              title="Crypto Timeline"
+              key={`tv-cryptoAll-${mode}-${locale}`}
+              title={t("Crypto_Timeline")}
               src={cryptoAll}
               style={{ border: 0, width: "100%", height }}
               loading="lazy"

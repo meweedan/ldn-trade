@@ -94,7 +94,7 @@ const MarketsBoard: React.FC<{ mode: string; accentColor: string; t: any }> = Re
     return localStorage.getItem("mbCrActive") || "BINANCE:BTCUSDT";
   });
 
-  const chartHeight = 630;
+  const chartHeight = 700;
   const themeRTW = React.useMemo(() => (mode === "dark" ? "dark" : "light") as "dark" | "light", [mode]);
 
   return (
@@ -904,7 +904,7 @@ const Home: React.FC = () => {
             />
             {/* Keep your existing start-trading-cta image */}
               <Box>
-                <Box mb={{ base: 8, md: 12 }} marginTop={20} px={{ base: 4, md: 0 }}>
+                <Box mb={{ base: 8, md: 12 }} marginTop={10} px={{ base: 4, md: 0 }}>
                   <Image
                     src={
                       isAR

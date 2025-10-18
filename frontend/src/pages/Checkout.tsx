@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+// src/pages/Checkout.tsx
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
@@ -14,6 +16,8 @@ import {
   GridItem,
   Input,
   Badge,
+  useBreakpointValue,
+  Link as ChakraLink,
 } from "@chakra-ui/react";
 import { useTranslation } from "react-i18next";
 import api, { getMyPurchases } from "../api/client";
@@ -36,26 +40,22 @@ const Checkout: React.FC = () => {
   const [address, setAddress] = React.useState<string | null>(null);
   const [amount, setAmount] = React.useState<number | null>(null);
   const [tier, setTier] = React.useState<any | null>(null);
+  const [allTiers, setAllTiers] = React.useState<any[]>([]);
   const [user, setUser] = React.useState<any | null>(null);
   const [country, setCountry] = React.useState("");
   const [courseLanguage, setCourseLanguage] = React.useState("en");
   const [promoCode, setPromoCode] = React.useState<string>("");
   const [refCode, setRefCode] = React.useState<string>("");
   const [alreadyEnrolled, setAlreadyEnrolled] = React.useState(false);
-  // Add-on: VIP Telegram monthly subscription (Stripe subscription)
   const [vipTelegram, setVipTelegram] = React.useState(false);
 
-  // Preview pricing
   const [previewAmount, setPreviewAmount] = React.useState<number | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [previewDiscount, setPreviewDiscount] = React.useState<number | null>(null);
   const [previewBase, setPreviewBase] = React.useState<number | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [previewPath, setPreviewPath] = React.useState<string | null>(null);
   const [previewLoading, setPreviewLoading] = React.useState(false);
   const [previewError, setPreviewError] = React.useState<string | null>(null);
 
-  // Payment modal state
   const [paymentOpen, setPaymentOpen] = React.useState(false);
   const [paymentExpiresAt, setPaymentExpiresAt] = React.useState<number | null>(null);
   const [remainingSec, setRemainingSec] = React.useState(0);
@@ -66,15 +66,19 @@ const Checkout: React.FC = () => {
   const [purchaseStatus, setPurchaseStatus] = React.useState<string | null>(null);
   const [proofSubmitted, setProofSubmitted] = React.useState(false);
 
-  // USDT QR code
   const [qrDataUrl, setQrDataUrl] = React.useState<string | null>(null);
 
-  // Premium theming via tokens only (no hooks)
+  // NEW: Promo UX controls
+  const [showPromoInput, setShowPromoInput] = React.useState(false);
+  const [promoConfirmed, setPromoConfirmed] = React.useState(false);
+
   const brand = "#b7a27d";
-  const cardBorder = "border.default";
+  const cardBorder = "#b7a27d";
   const subtleText = "text.muted";
-  const selectBorder = "border.default";
-  const selectFocus = "border.focus";
+  const selectBorder = "#b7a27d";
+  const selectFocus = "#b7a27d";
+
+  const isMdUp = useBreakpointValue({ base: false, md: true });
 
   const openPaymentModal = React.useCallback(() => {
     const expires = Date.now() + 30 * 60 * 1000;
@@ -85,23 +89,27 @@ const Checkout: React.FC = () => {
   React.useEffect(() => {
     (async () => {
       try {
-        const [me, tResp, mine] = await Promise.all([
+        const [me, tResp, mine, all] = await Promise.all([
           api.get("/users/me").catch(() => ({ data: null })),
           tierId ? api.get(`/courses/${tierId}`) : Promise.resolve({ data: null }),
           getMyPurchases({ ttlMs: 10 * 60 * 1000 }).catch(() => [] as any[]),
+          api.get("/courses").catch(() => ({ data: [] })),
         ]);
         setUser((me as any).data);
         setTier((tResp as any).data);
+        const listAll = Array.isArray((all as any).data) ? (all as any).data : [];
+        setAllTiers(listAll);
         const list: any[] = Array.isArray(mine) ? (mine as any[]) : [];
         const enrolled = list.some(
-          (p) => String(p.status || "").toUpperCase() === "CONFIRMED" && ((p.tier && p.tier.id === tierId) || p.tierId === tierId)
+          (p) =>
+            String(p.status || "").toUpperCase() === "CONFIRMED" &&
+            ((p.tier && p.tier.id === tierId) || p.tierId === tierId)
         );
         setAlreadyEnrolled(enrolled);
       } catch {}
     })();
   }, [tierId]);
 
-  // Persist referral
   React.useEffect(() => {
     const ref = qs.get("ref");
     const stored = localStorage.getItem("refCode") || "";
@@ -113,7 +121,6 @@ const Checkout: React.FC = () => {
     }
   }, [qs]);
 
-  // Purchase status helper
   const fetchPurchaseStatus = React.useCallback(async (): Promise<string | null> => {
     try {
       const list = await getMyPurchases({ force: true });
@@ -127,7 +134,6 @@ const Checkout: React.FC = () => {
     }
   }, [purchaseId]);
 
-  // Start polling after proof submitted
   const startPollingStatus = React.useCallback(() => {
     let active = true;
     const poll = async () => {
@@ -142,20 +148,25 @@ const Checkout: React.FC = () => {
     };
   }, [fetchPurchaseStatus]);
 
-  // Start checkout: opens modal and starts 30-min window immediately for non-redirect methods
   const startCheckout = React.useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const payload: any = { tierId, method, purchaseId, country, courseLanguage, vipTelegram };
-      if (promoCode) payload.promoCode = promoCode.trim();
+      const payload: any = {
+        tierId,
+        method,
+        purchaseId,
+        country,
+        courseLanguage,
+        vipTelegram: !!vipTelegram && !tier?.isVipProduct,
+      };
+      if (promoConfirmed && promoCode) payload.promoCode = promoCode.trim();
       if (refCode) payload.refCode = refCode.trim();
       const resp = await api.post("/purchase/create", payload);
       const provider = (resp.data?.provider || "").toString().toLowerCase();
 
       if (resp.data?.purchaseId && !purchaseId) {
         setPurchaseId(resp.data.purchaseId as string);
-        // Mark this purchase to be watched by celebration overlay
         try {
           const k = "watchPurchaseIds";
           const arr = JSON.parse(localStorage.getItem(k) || "[]");
@@ -165,25 +176,6 @@ const Checkout: React.FC = () => {
           } else {
             localStorage.setItem(k, JSON.stringify([resp.data.purchaseId]));
           }
-
-      // Persist celebration extras for existing purchase as well
-      try {
-        const key = "celebrationExtras";
-        const extras = JSON.parse(localStorage.getItem(key) || "{}");
-        const pid2 = (resp.data?.purchaseId as string) || purchaseId;
-        if (pid2) {
-          extras[pid2] = { ...(extras[pid2] || {}), vipTelegram: !!vipTelegram };
-          localStorage.setItem(key, JSON.stringify(extras));
-        }
-      } catch {}
-        } catch {}
-        // Persist celebration extras for this purchase (e.g., VIP add-on intent)
-        try {
-          const key = "celebrationExtras";
-          const extras = JSON.parse(localStorage.getItem(key) || "{}");
-          const pid = resp.data.purchaseId as string;
-          extras[pid] = { ...(extras[pid] || {}), vipTelegram: !!vipTelegram };
-          localStorage.setItem(key, JSON.stringify(extras));
         } catch {}
       }
 
@@ -216,11 +208,9 @@ const Checkout: React.FC = () => {
           typeof resp.data?.amount === "number"
             ? resp.data.amount
             : Number(resp.data?.amount) || null;
-        // Prefer previewed discounted amount if available
         const finalAmt = previewAmount != null ? previewAmount : amt;
         setAddress(addr);
         setAmount(finalAmt);
-        // generate QR immediately for USDT
         if (addr) {
           const { default: QRCode } = await import("qrcode");
           const dataUrl = await QRCode.toDataURL(addr, { margin: 1, scale: 5 });
@@ -228,11 +218,10 @@ const Checkout: React.FC = () => {
         } else {
           setQrDataUrl(null);
         }
-        openPaymentModal(); // starts 30min
+        openPaymentModal();
       } else if (provider === "libyana" || provider === "madar") {
-        openPaymentModal(); // starts 30min too
+        openPaymentModal();
       } else if (provider === "free") {
-        // Immediately watch and navigate; overlay will celebrate on next poll
         try {
           const k = "watchPurchaseIds";
           const arr = JSON.parse(localStorage.getItem(k) || "[]");
@@ -256,6 +245,7 @@ const Checkout: React.FC = () => {
     purchaseId,
     country,
     courseLanguage,
+    promoConfirmed,
     promoCode,
     refCode,
     openPaymentModal,
@@ -263,10 +253,9 @@ const Checkout: React.FC = () => {
     previewAmount,
     t,
     vipTelegram,
+    tier?.isVipProduct,
   ]);
 
-  // Promo preview
-  // Promo preview — TRUST the API, don't infer
   const confirmPromo = React.useCallback(async () => {
     setPreviewLoading(true);
     setPreviewError(null);
@@ -274,11 +263,11 @@ const Checkout: React.FC = () => {
       if (!tierId) throw new Error("Missing course");
       const payload: any = {
         tierId,
-        method, // the backend prices per method (ok to pass)
+        method,
         country,
         courseLanguage,
-        preview: true, // <<< critical
-        vipTelegram,
+        preview: true,
+        vipTelegram: !!vipTelegram && !tier?.isVipProduct,
       };
       if (promoCode) payload.promoCode = promoCode.trim();
       if (refCode) payload.refCode = refCode.trim();
@@ -294,11 +283,22 @@ const Checkout: React.FC = () => {
       setPreviewDiscount(validDisc);
       setPreviewBase(validBase);
       setPreviewPath(resp.data?.pricingPath || null);
-      // If a promo was entered but no discount applied, surface a friendly message
-      if (promoCode && validBase != null && (validDue == null || Math.abs(validDue - validBase) < 1e-6)) {
+
+      // Determine if promo applied
+      const applied =
+        !!promoCode &&
+        validBase != null &&
+        validDue != null &&
+        Math.abs(validDue - validBase) >= 1e-6;
+
+      setPromoConfirmed(applied);
+      if (applied) setShowPromoInput(false);
+
+      if (promoCode && !applied) {
         setPreviewError(
           t("checkout.promo.not_applied", {
-            defaultValue: "This promo didn’t apply (invalid, expired, not applicable, or per-user limit).",
+            defaultValue:
+              "This promo didn’t apply (invalid, expired, not applicable, or per-user limit).",
           })
         );
       }
@@ -308,12 +308,23 @@ const Checkout: React.FC = () => {
       setPreviewDiscount(null);
       setPreviewBase(null);
       setPreviewPath(null);
+      setPromoConfirmed(false);
     } finally {
       setPreviewLoading(false);
     }
-  }, [tierId, method, country, courseLanguage, promoCode, refCode, t, vipTelegram]);
+  }, [
+    tierId,
+    method,
+    country,
+    courseLanguage,
+    promoCode,
+    refCode,
+    t,
+    vipTelegram,
+    tier?.isVipProduct,
+  ]);
 
-  // Auto-preview when promo code changes (debounced)
+  // Debounce preview on code typing (keep behavior)
   React.useEffect(() => {
     if (!promoCode) {
       setPreviewAmount(null);
@@ -321,6 +332,7 @@ const Checkout: React.FC = () => {
       setPreviewBase(null);
       setPreviewPath(null);
       setPreviewError(null);
+      setPromoConfirmed(false);
       return;
     }
     const id = setTimeout(() => {
@@ -330,14 +342,13 @@ const Checkout: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [promoCode, method, country, courseLanguage, tierId]);
 
-  // Free enroll
   const enrollFree = React.useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       if (!tierId) throw new Error("Missing course");
       const payload: any = { tierId, method: "free" };
-      if (promoCode) payload.promoCode = promoCode.trim();
+      if (promoConfirmed && promoCode) payload.promoCode = promoCode.trim();
       if (refCode) payload.refCode = refCode.trim();
       await api.post("/purchase/create", payload);
       navigate("/enrolled");
@@ -346,9 +357,8 @@ const Checkout: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [tierId, navigate, promoCode, refCode]);
+  }, [tierId, navigate, promoConfirmed, promoCode, refCode]);
 
-  // Submit proof
   const submitProof = async () => {
     setProofError(null);
     setProofSubmitting(true);
@@ -395,7 +405,6 @@ const Checkout: React.FC = () => {
       if (ok) {
         setProofSubmitted(true);
         startPollingStatus();
-        // Watch this purchase for celebration when confirmed
         try {
           const idToWatch = pid;
           if (idToWatch) {
@@ -429,11 +438,18 @@ const Checkout: React.FC = () => {
   const isLibya = country === "LY";
   const isWallet = method === "libyana" || method === "madar";
   const showLYD = isLibya && isWallet;
-  const baseUsd = previewBase != null ? previewBase : usdPrice; // prefer server base after preview
+  const baseUsd = previewBase != null ? previewBase : usdPrice;
   const baseLyd = Math.round(baseUsd * 8 * 100) / 100;
 
-  // Effective price after a confirmed preview
   const effectiveUsd = previewAmount != null ? previewAmount : baseUsd;
+  const vipTier = React.useMemo(
+    () => (allTiers || []).find((x: any) => x?.isVipProduct) || null,
+    [allTiers]
+  );
+  const vipPriceUsd: number = React.useMemo(() => {
+    const v = vipTier?.price_usdt;
+    return typeof v === "number" ? v : Number(v || 0);
+  }, [vipTier?.price_usdt]);
   const effectiveLyd = Math.round(effectiveUsd * 8 * 100) / 100;
   const savedUsd = Math.max(0, baseUsd - effectiveUsd);
 
@@ -442,12 +458,24 @@ const Checkout: React.FC = () => {
     defaultValue: lang.startsWith("ar") ? "مجاني" : lang.startsWith("fr") ? "Gratuit" : "Free",
   });
 
-  // All countries (localized), device-first
   const countryOptions = React.useMemo(() => {
     return getAllCountries(i18n?.language || "en", deviceCode);
   }, [i18n?.language, deviceCode]);
 
-  // Compute device code on client, optionally preselect
+  const vipAddonUsd = React.useMemo(() => {
+    if (tier?.isVipProduct || !vipTelegram) return 0;
+    const p = Number(vipPriceUsd);
+    return Number.isFinite(p) && p > 0 ? p : 20; // fallback to 20 if price missing
+  }, [tier?.isVipProduct, vipTelegram, vipPriceUsd]);  
+
+  // Combined due amount (course + VIP add-on). Drives UI and totals.
+  const totalUsd = React.useMemo(() => {
+    const base = Number(effectiveUsd) || 0;
+    const addon = Number(vipAddonUsd) || 0;
+    return Math.max(0, base + addon);
+  }, [effectiveUsd, vipAddonUsd]);
+  const isZeroDue = totalUsd <= 0;
+
   React.useEffect(() => {
     const dc = getDeviceCountryCode();
     setDeviceCode(dc);
@@ -455,7 +483,6 @@ const Checkout: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // 30-min countdown tick
   React.useEffect(() => {
     if (!paymentOpen || !paymentExpiresAt) return;
     const tick = () => {
@@ -468,14 +495,12 @@ const Checkout: React.FC = () => {
     return () => clearInterval(iv);
   }, [paymentOpen, paymentExpiresAt]);
 
-  // Advanced tier?
   const isAdvancedTier = React.useMemo(() => {
     const name = String(tier?.name || "").toLowerCase();
     const level = String(tier?.level || "").toLowerCase();
     return name.includes("advanced") || level.includes("advanced");
   }, [tier?.name, tier?.level]);
 
-  // Copy helpers
   const copy = async (value: string) => {
     try {
       await navigator.clipboard.writeText(value);
@@ -483,39 +508,182 @@ const Checkout: React.FC = () => {
     } catch {}
   };
 
+  // Helpers for where to render controls
+  const renderPromoBlock = (variant: "inline" | "footer") => {
+    // hide when free product
+    if (isFree) return null;
+
+    const PromoToggle = (
+      <HStack gap={2} flexWrap="wrap" align="center">
+        {!showPromoInput && !promoConfirmed && (
+          <ChakraLink
+            as="button"
+            color={brand}
+            textDecoration="underline"
+            onClick={() => setShowPromoInput(true)}
+          >
+            {t("checkout.promo.have_code", { defaultValue: "I have a promo code" })}
+          </ChakraLink>
+        )}
+      </HStack>
+    );
+
+    const PromoInput = (
+      <>
+        <HStack gap={2} flexWrap="wrap" align="stretch" bg="bg.surface"> 
+          <Input
+            value={promoCode}
+            onChange={(e) => setPromoCode(e.target.value)}
+            placeholder={t("checkout.promo.placeholder", {
+              defaultValue: "Enter code",
+            })}
+            w={{ base: "100%", sm: "auto" }}
+            flex="1"
+          />
+          <Button
+            onClick={confirmPromo}
+            isLoading={previewLoading}
+            variant="outline"
+            borderColor={brand}
+            color="inherit"
+            _hover={{ bg: "#b7a27d" }}
+            w={{ base: "100%", sm: "auto" }}
+          >
+            {t("checkout.promo.confirm", { defaultValue: "Apply" })}
+          </Button>
+        </HStack>
+        {previewError && (
+          <Text mt={2} color="red.500" fontSize="sm">
+            {previewError}
+          </Text>
+        )}
+        {promoConfirmed && (
+          <Text mt={2} color="green.600" fontSize="sm">
+            {t("checkout.promo.applied", { defaultValue: "Promo applied!" })} {promoCode}
+          </Text>
+        )}
+      </>
+    );
+
+    return (
+      <Box mt={variant === "footer" ? 0 : 4}>
+        <Text fontWeight={600} mb={1}>
+          {t("checkout.promo.label", { defaultValue: "Promo Code" })}
+        </Text>
+        {!promoConfirmed && !showPromoInput && PromoToggle}
+        {!promoConfirmed && showPromoInput && PromoInput}
+      </Box>
+    );
+  };
+
+  const renderVipUpsell = (variant: "inline" | "footer") => {
+    if (tier?.isVipProduct) return null; // don't upsell inside VIP product
+    return (
+      <Box
+        mt={variant === "footer" ? 2 : 2}
+        p={3}
+        borderWidth={1}
+        borderColor="#229ED9"
+        borderRadius="md"
+        bg="#229ED9"
+      >
+        <HStack justify="space-between" align="center" flexWrap="wrap" gap={3}>
+          <Box minW={0}>
+            <Text fontWeight={600} color="white">
+              {t("checkout.addons.vip.title", { defaultValue: "VIP Telegram (monthly)" })}
+            </Text>
+            <Text fontSize="sm" color="white">
+              {t("checkout.addons.vip.subtitle", {
+                defaultValue: `Recurring $${vipPriceUsd}/month. Cancel anytime.`,
+              })}
+            </Text>
+          </Box>
+          <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <input
+              type="checkbox"
+              checked={vipTelegram}
+              onChange={(e) => setVipTelegram(e.target.checked)}
+            />
+            <Text fontSize="sm" color="white">
+              {t("checkout.addons.vip.choose", {
+                defaultValue: `Add ($${vipPriceUsd || 10}/month)`,
+              })}
+            </Text>
+          </label>
+        </HStack>
+      </Box>
+    );
+  };
+
   return (
-    <Box py={{ base: 6, md: 10 }} color="text.primary">
-      <Container maxW="6xl">
-        {/* Premium header (opaque, mobile friendly) */}
+    <Box py={{ base: 4, md: 10 }} color="text.primary" overflowX="hidden">
+      <Container maxW={{ base: "full", md: "6xl" }} px={{ base: 3, md: 6 }}>
+        {/* Header */}
         <Box
           border="1px solid"
           borderColor={cardBorder}
           bg="bg.surface"
           borderRadius="2xl"
           px={{ base: 4, md: 8 }}
-          py={{ base: 5, md: 7 }}
-          mb={6}
+          py={{ base: 4, md: 7 }}
+          mb={{ base: 4, md: 6 }}
           boxShadow="lg"
+          w="full"
+          minW={0}
         >
           <HStack justify="space-between" align="center" flexWrap="wrap" gap={3}>
-            <VStack align="start" gap={1}>
-              <Heading size="lg">{t("checkout.title", { defaultValue: "Checkout" })}</Heading>
-              <Text color={subtleText}>
+            <VStack align="start" gap={1} minW={0}>
+              <Heading size={useBreakpointValue({ base: "md", md: "lg" })} noOfLines={2}>
+                {t("checkout.title", { defaultValue: "Checkout" })}
+              </Heading>
+              <Text color={subtleText} noOfLines={2}>
                 {t("checkout.subtitle", {
                   defaultValue: "Secure your seat with fast, flexible payment methods.",
                 })}
               </Text>
             </VStack>
             {tier?.level && (
-              <Badge colorScheme="yellow" fontSize="sm">
+              <Badge color="#b7a27d" fontSize="sm" flexShrink={0}>
                 {tier.level}
               </Badge>
             )}
           </HStack>
         </Box>
 
+        {tier?.isBundle && Array.isArray(tier?.bundleTierIds) && tier.bundleTierIds.length > 0 && (
+          <Box
+            p={3}
+            border="1px solid"
+            borderColor={cardBorder}
+            borderRadius="md"
+            mb={{ base: 4, md: 6 }}
+            bg="bg.surface"
+            w="full"
+          >
+            <Text fontWeight={600} mb={1}>
+              {t("checkout.bundle.includes", { defaultValue: "This bundle includes:" })}
+            </Text>
+            <VStack align="start" spacing={1}>
+              {tier.bundleTierIds
+                .map((id: string) => allTiers.find((x) => x.id === id)?.name)
+                .filter(Boolean)
+                .map((name: any, idx: number) => (
+                  <Text key={`bund-i-${idx}`}>• {name}</Text>
+                ))}
+            </VStack>
+          </Box>
+        )}
+
         {!tierId && (
-          <Box p={3} border="1px solid" borderColor={brand} borderRadius="md" mb={6} bg="bg.surface">
+          <Box
+            p={3}
+            border="1px solid"
+            borderColor={brand}
+            borderRadius="md"
+            mb={{ base: 4, md: 6 }}
+            bg="bg.surface"
+            w="full"
+          >
             <Text>
               {t("checkout.no_tier", {
                 defaultValue: "No course tier selected. Go back and choose a course.",
@@ -524,9 +692,20 @@ const Checkout: React.FC = () => {
           </Box>
         )}
         {alreadyEnrolled && (
-          <Box p={3} border="1px solid" borderColor="green.300" borderRadius="md" mb={6} bg="bg.surface" color="green.700">
-            {t("checkout.already_enrolled", { defaultValue: "You already own this course. Enjoy learning!" })}
-            <Button ml={3} size="sm" onClick={() => navigate("/enrolled")}>
+          <Box
+            p={3}
+            border="1px solid"
+            borderColor="green.300"
+            borderRadius="md"
+            mb={{ base: 4, md: 6 }}
+            bg="bg.surface"
+            color="green.700"
+            w="full"
+          >
+            {t("checkout.already_enrolled", {
+              defaultValue: "You already own this course. Enjoy learning!",
+            })}
+            <Button ml={3} mt={{ base: 2, md: 0 }} size="sm" onClick={() => navigate("/enrolled")}>
               {t("celebration.cta", { defaultValue: "Go to My Courses" })}
             </Button>
           </Box>
@@ -540,7 +719,8 @@ const Checkout: React.FC = () => {
             borderRadius="md"
             bg="bg.surface"
             color="red.700"
-            mb={6}
+            mb={{ base: 4, md: 6 }}
+            w="full"
           >
             {error}
           </Box>
@@ -550,10 +730,12 @@ const Checkout: React.FC = () => {
           templateColumns={{ base: "1fr", md: "2fr 1fr" }}
           gap={{ base: 4, md: 8 }}
           alignItems="start"
+          w="full"
+          minW={0}
         >
           {/* Left */}
-          <GridItem>
-            <VStack align="stretch" gap={{ base: 4, md: 6 }}>
+          <GridItem minW={0}>
+            <VStack align="stretch" gap={{ base: 4, md: 6 }} w="full" minW={0}>
               {/* Customer details */}
               <Box
                 borderWidth={1}
@@ -562,21 +744,24 @@ const Checkout: React.FC = () => {
                 borderRadius="xl"
                 p={{ base: 4, md: 5 }}
                 boxShadow="md"
+                w="full"
+                minW={0}
               >
                 <Heading size="md" mb={4}>
                   {t("checkout.customer.details", { defaultValue: "Customer Details" })}
                 </Heading>
                 <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={4}>
-                  <Box>
+                  <Box minW={0}>
                     <Text fontWeight={600} mb={1}>
                       {t("checkout.customer.full_name", { defaultValue: "Full Name" })}
                     </Text>
                     <Input
                       defaultValue={user?.name || ""}
                       placeholder={t("checkout.placeholders.name", { defaultValue: "Your name" })}
+                      w="full"
                     />
                   </Box>
-                  <Box>
+                  <Box minW={0}>
                     <Text fontWeight={600} mb={1}>
                       {t("checkout.customer.email", { defaultValue: "Email" })}
                     </Text>
@@ -584,9 +769,10 @@ const Checkout: React.FC = () => {
                       defaultValue={user?.email || ""}
                       placeholder="you@example.com"
                       type="email"
+                      w="full"
                     />
                   </Box>
-                  <Box>
+                  <Box minW={0}>
                     <Text fontWeight={600} mb={1}>
                       {t("checkout.customer.country", { defaultValue: "Country/Region" })}
                     </Text>
@@ -600,6 +786,7 @@ const Checkout: React.FC = () => {
                       border="1px solid"
                       borderColor={selectBorder}
                       _focus={{ outline: "none", boxShadow: `0 0 0 1px ${selectFocus}` }}
+                      w="full"
                     >
                       <option value="">
                         {t("checkout.placeholders.country", { defaultValue: "Choose country" })}
@@ -611,7 +798,7 @@ const Checkout: React.FC = () => {
                       ))}
                     </CSelect>
                   </Box>
-                  <Box>
+                  <Box minW={0}>
                     <Text fontWeight={600} mb={1}>
                       {t("checkout.customer.pref_lang", {
                         defaultValue: "Preferred Course Language",
@@ -627,6 +814,7 @@ const Checkout: React.FC = () => {
                       border="1px solid"
                       borderColor={selectBorder}
                       _focus={{ outline: "none", boxShadow: `0 0 0 1px ${selectFocus}` }}
+                      w="full"
                     >
                       <option value="en">
                         {t("checkout.lang.en", { defaultValue: "English" })}
@@ -643,7 +831,7 @@ const Checkout: React.FC = () => {
               </Box>
 
               {/* Payment */}
-              {!isFree && (
+              {!isZeroDue && (
                 <Box
                   borderWidth={1}
                   borderColor={cardBorder}
@@ -651,13 +839,15 @@ const Checkout: React.FC = () => {
                   borderRadius="xl"
                   p={{ base: 4, md: 5 }}
                   boxShadow="md"
+                  w="full"
+                  minW={0}
                 >
                   <Heading size="md" mb={4}>
                     {t("checkout.payment.title", { defaultValue: "Payment Method" })}
                   </Heading>
 
                   <VStack align="stretch" gap={3}>
-                    <HStack gap={3} flexWrap="wrap">
+                    <HStack gap={3} flexWrap="wrap" align="center">
                       <input
                         type="radio"
                         id="stripe"
@@ -669,7 +859,7 @@ const Checkout: React.FC = () => {
                         {t("checkout.payment.card", { defaultValue: "Card (Visa/Mastercard)" })}
                       </label>
                     </HStack>
-                    <HStack gap={3} flexWrap="wrap">
+                    <HStack gap={3} flexWrap="wrap" align="center">
                       <input
                         type="radio"
                         id="usdt"
@@ -684,7 +874,7 @@ const Checkout: React.FC = () => {
 
                     {country === "LY" && (
                       <>
-                        <HStack gap={3} flexWrap="wrap">
+                        <HStack gap={3} flexWrap="wrap" align="center">
                           <input
                             type="radio"
                             id="libyana"
@@ -696,7 +886,7 @@ const Checkout: React.FC = () => {
                             {t("checkout.payment.libyana", { defaultValue: "Libyana Balance" })}
                           </label>
                         </HStack>
-                        <HStack gap={3} flexWrap="wrap">
+                        <HStack gap={3} flexWrap="wrap" align="center">
                           <input
                             type="radio"
                             id="madar"
@@ -762,106 +952,44 @@ const Checkout: React.FC = () => {
                     )}
                   </VStack>
 
-                  {/* Add-on: Telegram VIP (recurring) */}
-                  <Box mt={2} p={3} borderWidth={1} borderColor={cardBorder} borderRadius="md" bg="bg.surface">
-                    <HStack justify="space-between" align="center">
-                      <Box>
-                        <Text fontWeight={600}>
-                          {t("checkout.addons.vip.title", { defaultValue: "VIP Telegram (monthly)" })}
-                        </Text>
-                        <Text fontSize="sm" color={subtleText}>
-                          {t("checkout.addons.vip.subtitle", { defaultValue: "Recurring $10/month. Cancel anytime." })}
-                        </Text>
-                      </Box>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <input
-                          type="checkbox"
-                          checked={vipTelegram}
-                          onChange={(e) => setVipTelegram(e.target.checked)}
-                        />
-                        <Text fontSize="sm">{t("checkout.addons.vip.choose", { defaultValue: "Add ($10/month)" })}</Text>
-                      </label>
-                    </HStack>
-                  </Box>
+                  {/* VIP upsell (kept inline for desktop view) */}
+                  {isMdUp && !tier?.isVipProduct && renderVipUpsell("inline")}
 
-                  {/* Promo */}
-                  <Box mt={4}>
-                    <Text fontWeight={600} mb={1}>
-                      {t("checkout.promo.label", { defaultValue: "Promo Code" })}
-                    </Text>
-                    <HStack gap={2} flexWrap="wrap">
-                      <Input
-                        value={promoCode}
-                        onChange={(e) => setPromoCode(e.target.value)}
-                        placeholder={t("checkout.promo.placeholder", {
-                          defaultValue: "Enter code (optional)",
-                        })}
-                      />
+                  {/* Promo block:
+                      - Desktop: keep here.
+                      - Mobile: rendered later at page footer. */}
+                  {isMdUp && renderPromoBlock("inline")}
+
+                  {/* Actions (desktop only) */}
+                  {isMdUp && (
+                    <HStack mt={6} gap={3} flexWrap="wrap">
                       <Button
-                        onClick={confirmPromo}
-                        isLoading={previewLoading}
+                        onClick={startCheckout}
+                        isLoading={loading}
+                        disabled={!tierId || alreadyEnrolled}
+                        variant="solid"
+                        bg="#b7a27d"
+                        w={{ base: "100%", sm: "auto" }}
+                      >
+                        {t("checkout.actions.complete", { defaultValue: "Complete Purchase" })}
+                      </Button>
+                      <Button
                         variant="outline"
+                        onClick={() => navigate(-1)}
                         borderColor={brand}
                         color="inherit"
                         _hover={{ bg: "#b7a27d" }}
+                        w={{ base: "100%", sm: "auto" }}
                       >
-                        {t("checkout.promo.confirm", { defaultValue: "Confirm Promo" })}
+                        {t("checkout.actions.back", { defaultValue: "Back" })}
                       </Button>
                     </HStack>
-                    {previewError && (
-                      <Text mt={2} color="red.500" fontSize="sm">
-                        {previewError}
-                      </Text>
-                    )}
-                    {previewAmount != null && (
-                      <Text mt={2} fontWeight={600}>
-                        {(() => {
-                          const dueUsd = previewAmount ?? baseUsd;
-                          const dueLyd = Math.round(dueUsd * 8 * 100) / 100;
-                          return (
-                            <>
-                              {t("checkout.promo.due", { defaultValue: "You pay:" })} {" "}
-                              {showLYD ? `${dueLyd} LYD` : `$${dueUsd}`}
-                              {savedUsd > 0 ? (
-                                <Text as="span" ml={2} color={subtleText} fontWeight={400}>
-                                  ({t("checkout.promo.saved", { defaultValue: "saved" })} ${savedUsd})
-                                </Text>
-                              ) : null}
-                            </>
-                          );
-                        })()}
-                      </Text>
-                    )}
-                  </Box>
-
-                  {/* Actions */}
-                  <HStack mt={6} gap={3} flexWrap="wrap">
-                    <Button
-                      onClick={startCheckout}
-                      isLoading={loading}
-                      disabled={!tierId || alreadyEnrolled}
-                      variant="solid"
-                      bg="#b7a27d"
-                      w={{ base: "100%", sm: "auto" }}
-                    >
-                      {t("checkout.actions.complete", { defaultValue: "Complete Purchase" })}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => navigate(-1)}
-                      borderColor={brand}
-                      color="inherit"
-                      _hover={{ bg: "#b7a27d" }}
-                      w={{ base: "100%", sm: "auto" }}
-                    >
-                      {t("checkout.actions.back", { defaultValue: "Back" })}
-                    </Button>
-                  </HStack>
+                  )}
                 </Box>
               )}
 
               {/* Free path */}
-              {isFree && (
+              {isZeroDue && (
                 <HStack gap={3} flexWrap="wrap">
                   <Button
                     onClick={enrollFree}
@@ -891,7 +1019,7 @@ const Checkout: React.FC = () => {
           </GridItem>
 
           {/* Right: Order summary */}
-          <GridItem>
+          <GridItem minW={0}>
             <Box
               borderWidth={1}
               borderColor={cardBorder}
@@ -899,23 +1027,25 @@ const Checkout: React.FC = () => {
               borderRadius="xl"
               p={{ base: 4, md: 5 }}
               boxShadow="md"
-              position="sticky"
-              top={4}
+              position={{ base: "static", md: "sticky" }}
+              top={{ md: 4 }}
+              w="full"
+              minW={0}
             >
               <Heading size="md" mb={4}>
                 {t("checkout.summary.title", { defaultValue: "Order Summary" })}
               </Heading>
               <VStack align="stretch" gap={3}>
-                <HStack justify="space-between" align="start">
-                  <Box>
-                    <Text fontWeight={600}>
+                <HStack justify="space-between" align="start" minW={0}>
+                  <Box minW={0}>
+                    <Text fontWeight={600} noOfLines={1}>
                       {tier?.name || t("checkout.summary.course", { defaultValue: "Course" })}
                     </Text>
-                    <Text fontSize="sm" color={subtleText}>
+                    <Text fontSize="sm" noOfLines={3}>
                       {tier?.description}
                     </Text>
                   </Box>
-                  <Text fontWeight={700}>
+                  <Text fontWeight={700} textAlign="right" flexShrink={0} color="#b7a27d">
                     {isFree ? (
                       freeLabel
                     ) : showLYD ? (
@@ -971,46 +1101,62 @@ const Checkout: React.FC = () => {
 
                 <Box h="1px" bg="bg.surface" />
 
-                {/* VIP add-on (USDT only) */}
-                {method === "usdt" && vipTelegram && (
-                  <HStack justify="space-between">
-                    <Text>{t("checkout.addons.vip.title", { defaultValue: "VIP Telegram (monthly)" })}</Text>
-                    <Text fontWeight={700}>$10</Text>
-                  </HStack>
+                {/* VIP add-on (summary) */}
+                {!tier?.isVipProduct && vipTelegram && (
+                  <>
+                    <HStack justify="space-between">
+                      <Text color="#b7a27d">
+                        {t("checkout.addons.vip.title", { defaultValue: "VIP Telegram (monthly)" })}
+                      </Text>
+                      <Text fontWeight={700}>${vipPriceUsd || 20}</Text>
+                    </HStack>
+                    <Box h="1px" bg="bg.surface" />
+                  </>
                 )}
 
-                {method === "usdt" && vipTelegram && <Box h="1px" bg="bg.surface" />}
+                {/* Promo line item (code + discount) */}
+                {promoConfirmed && !isFree && (
+                  <>
+                    <HStack justify="space-between">
+                      <Text>
+                        {t("checkout.summary.promo", { defaultValue: "Promo" })}{" "}
+                        <Text as="span" color={brand}>
+                          ({promoCode})
+                        </Text>
+                      </Text>
+                      <Text fontWeight={700} color="green.600">
+                        {showLYD
+                          ? `- ${Math.round((previewDiscount || savedUsd) * 8 * 100) / 100} LYD`
+                          : `- $${(previewDiscount || savedUsd).toFixed(2)}`}
+                      </Text>
+                    </HStack>
+                    <Box h="1px" bg="bg.surface" />
+                  </>
+                )}
 
                 <HStack justify="space-between">
                   <Text>{t("checkout.summary.subtotal", { defaultValue: "Subtotal" })}</Text>
-                  <Text fontWeight={700}>
+                  <Text fontWeight={700} color="#b7a27d">
                     {(() => {
                       if (isFree) return freeLabel;
-                      const vipAddon = method === "usdt" && vipTelegram ? 10 : 0;
                       if (showLYD) {
-                        const dueLyd = Math.round((effectiveUsd + vipAddon) * 8 * 100) / 100;
+                        const dueLyd = Math.round((effectiveUsd + vipAddonUsd) * 8 * 100) / 100;
                         return `${dueLyd} LYD`;
                       }
-                      return `$${(effectiveUsd + vipAddon) || "-"}`;
+                      return `$${(effectiveUsd + vipAddonUsd).toFixed(2)}`;
                     })()}
                   </Text>
                 </HStack>
                 <HStack justify="space-between">
-                  <Text>{t("checkout.summary.taxes", { defaultValue: "Taxes" })}</Text>
-                  <Text fontWeight={700}>{isFree ? freeLabel : "$0"}</Text>
-                </HStack>
-                <Box h="1px" bg="bg.surface" />
-                <HStack justify="space-between">
                   <Text>{t("checkout.summary.total", { defaultValue: "Total" })}</Text>
-                  <Text fontWeight={800}>
+                  <Text fontWeight={800} color="#b7a27d">
                     {(() => {
                       if (isFree) return freeLabel;
-                      const vipAddon = method === "usdt" && vipTelegram ? 10 : 0;
                       if (showLYD) {
-                        const dueLyd = Math.round((effectiveUsd + vipAddon) * 8 * 100) / 100;
+                        const dueLyd = Math.round((effectiveUsd + vipAddonUsd) * 8 * 100) / 100;
                         return `${dueLyd} LYD`;
                       }
-                      return `$${(effectiveUsd + vipAddon) || "-"}`;
+                      return `$${(effectiveUsd + vipAddonUsd).toFixed(2)}`;
                     })()}
                   </Text>
                 </HStack>
@@ -1019,8 +1165,43 @@ const Checkout: React.FC = () => {
           </GridItem>
         </Grid>
 
-        {/* Payment modal (opaque, mobile-friendly) */}
-        {paymentOpen && !isFree && (
+        {/* === MOBILE FOOTER CONTROLS (shown only on base) === */}
+        {!isMdUp && !isFree && (
+          <VStack align="stretch" gap={4} mt={4}>
+            {/* VIP upsell before purchase on mobile */}
+            {renderVipUpsell("footer")}
+
+            {/* Promo at the end on mobile */}
+            {renderPromoBlock("footer")}
+
+            {/* Final actions at the very end on mobile */}
+            <HStack mt={2} gap={3} flexWrap="wrap">
+              <Button
+                onClick={startCheckout}
+                isLoading={loading}
+                disabled={!tierId || alreadyEnrolled}
+                variant="solid"
+                bg="#b7a27d"
+                w={{ base: "100%", sm: "auto" }}
+              >
+                {t("checkout.actions.complete", { defaultValue: "Complete Purchase" })}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => navigate(-1)}
+                borderColor={brand}
+                color="inherit"
+                _hover={{ bg: "#b7a27d" }}
+                w={{ base: "100%", sm: "auto" }}
+              >
+                {t("checkout.actions.back", { defaultValue: "Back" })}
+              </Button>
+            </HStack>
+          </VStack>
+        )}
+
+        {/* Payment modal */}
+        {paymentOpen && !isZeroDue && (
           <Box
             position="fixed"
             inset={0}
@@ -1028,14 +1209,18 @@ const Checkout: React.FC = () => {
             alignItems="center"
             justifyContent="center"
             zIndex={1000}
-            px={4}
+            px={{ base: 3, md: 4 }}
+            py={{ base: 3, md: 6 }}
+            bg="rgba(0,0,0,0.55)"
           >
             <Box
               bg="bg.surface"
               p={{ base: 4, md: 6 }}
               borderRadius="lg"
-              maxW="lg"
+              maxW={{ base: "100%", sm: "540px" }}
               w="full"
+              maxH="90vh"
+              overflowY="auto"
               border="1px solid"
               borderColor="bg.surface"
               boxShadow="xl"
@@ -1058,17 +1243,19 @@ const Checkout: React.FC = () => {
                       <Text fontSize="sm">
                         {t("checkout.modal.send_to", { defaultValue: "Send USDT (TRC20) to:" })}
                       </Text>
-                      <HStack gap={2} align="center" mt={1}>
+                      <HStack gap={2} align="stretch" mt={1} flexWrap="wrap">
                         <Code
                           p={2}
                           borderRadius="md"
                           display="block"
                           w={{ base: "100%", sm: "auto" }}
+                          overflowWrap="anywhere"
+                          wordBreak="break-all"
                         >
                           {address}
                         </Code>
-                        </HStack>
-                        <HStack gap={2} align="center" mt={1}>
+                      </HStack>
+                      <HStack gap={2} align="center" mt={2} flexWrap="wrap">
                         <Button
                           variant="solid"
                           bg={brand}
@@ -1079,7 +1266,11 @@ const Checkout: React.FC = () => {
                           {t("common.copy", { defaultValue: "Copy" })}
                         </Button>
                         {qrDataUrl && (
-                          <a href={qrDataUrl} download="usdt-address-qr.png">
+                          <a
+                            href={qrDataUrl}
+                            download="usdt-address-qr.png"
+                            style={{ width: "100%" }}
+                          >
                             <Button
                               variant="solid"
                               bg={brand}
@@ -1097,7 +1288,12 @@ const Checkout: React.FC = () => {
                           <img
                             src={qrDataUrl}
                             alt="USDT Address QR"
-                            style={{ maxWidth: 180, margin: "0 auto" }}
+                            style={{
+                              width: "180px",
+                              maxWidth: "100%",
+                              height: "auto",
+                              margin: "0 auto",
+                            }}
                           />
                           <Text fontSize="xs" color={subtleText} mt={1}>
                             {t("checkout.modal.scan_qr", { defaultValue: "Scan to pay" })}
@@ -1122,6 +1318,7 @@ const Checkout: React.FC = () => {
                     placeholder={t("checkout.modal.txid_ph", { defaultValue: "Transaction hash" })}
                     value={txnHash}
                     onChange={(e) => setTxnHash(e.target.value)}
+                    w="full"
                   />
 
                   {purchaseStatus && (
@@ -1161,6 +1358,7 @@ const Checkout: React.FC = () => {
                     placeholder={method === "libyana" ? "092xxxxxxx" : "091xxxxxxx"}
                     value={fromPhone}
                     onChange={(e) => setFromPhone(e.target.value)}
+                    w="full"
                   />
                   {purchaseStatus && (
                     <Text fontSize="sm">
@@ -1195,9 +1393,6 @@ const Checkout: React.FC = () => {
                   variant="solid"
                   bg="red"
                   onClick={() => setPaymentOpen(false)}
-                  borderColor={brand}
-                  color="inherit"
-                  _hover={{ bg: "#b7a27d" }}
                   w={{ base: "100%", sm: "auto" }}
                 >
                   {t("checkout.modal.close", { defaultValue: "Close" })}
