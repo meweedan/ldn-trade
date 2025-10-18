@@ -29,6 +29,7 @@ import {
   Globe,
   LayoutDashboard,
   Book,
+  ShoppingBag,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import Logo from "./Logo";
@@ -193,10 +194,10 @@ const Header: React.FC = () => {
                 {t("nav.contact") || (isAR ? "اتصل بنا" : "Contact")}
               </Button>
             </RouterLink>
-            <RouterLink to="/courses">
+            <RouterLink to="/products">
               <Button {...navButtonProps}>
-                <Icon as={BookOpen} mr={2} />
-                {t("footer.courses") || (isAR ? "الكورسات" : "Courses")}
+                <Icon as={ShoppingBag} mr={2} />
+                {t("common.products") || (isAR ? "المنتجات" : "Products")}
               </Button>
             </RouterLink>
             {user && (
@@ -487,17 +488,22 @@ const Header: React.FC = () => {
                   </RouterLink>
 
                   {/* Always show Courses */}
-                  <RouterLink to="/courses" onClick={() => setMenuOpen(false)}>
+                  <RouterLink to="/products" onClick={() => setMenuOpen(false)}>
                     <MotionButton variant="ghost" w="full" justifyContent="center" color="inherit">
-                      <Icon as={BookOpen} mr={2} color="inherit" />
-                      {t("footer.courses") || "Courses"}
+                      <Icon as={ShoppingBag} mr={2} color="inherit" />
+                      {t("common.products") || "Products"}
                     </MotionButton>
                   </RouterLink>
 
                   {/* Show Enrolled only when logged in */}
                   {user && (
                     <RouterLink to="/enrolled" onClick={() => setMenuOpen(false)}>
-                      <MotionButton variant="ghost" w="full" justifyContent="center" color="inherit">
+                      <MotionButton
+                        variant="ghost"
+                        w="full"
+                        justifyContent="center"
+                        color="inherit"
+                      >
                         <Icon as={Book} mr={2} color="inherit" />
                         {t("nav.enrolled") || "My Enrollments"}
                       </MotionButton>

@@ -41,8 +41,8 @@ function App() {
         <RouteTracker />
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/courses" element={<CoursesList />} />
-          <Route path="/courses/:id" element={<CourseDetail />} />
+          <Route path="/products" element={<CoursesList />} />
+          <Route path="/products/:id" element={<CourseDetail />} />
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/learn/:id" element={<Learn />} />
           <Route path="/enrolled" element={<Enrolled />} />

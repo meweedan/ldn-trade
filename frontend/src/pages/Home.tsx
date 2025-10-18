@@ -899,8 +899,6 @@ const Home: React.FC = () => {
             <MarketsBoard mode={mode} accentColor={accentColor} t={t} />
             <TimelineNewsTabs
               mode={mode === "dark" ? "dark" : "light"}
-              i18nLang={i18n.language || "en"}
-              accentColor={accentColor}
             />
             {/* Keep your existing start-trading-cta image */}
               <Box>

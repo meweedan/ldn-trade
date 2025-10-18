@@ -49,67 +49,147 @@ function GradientPill({
 const InfinityLayer: React.FC<{
   count?: number;
   zIndex?: number;
-}> = ({ count = 44, zIndex = 2 }) => {
-  const [items, setItems] = React.useState<
-    { id: number; left: string; top: string; size: number; delay: number; duration: number }[]
-  >([]);
+}> = ({ count = 160, zIndex = 2 }) => {
+  type Item = {
+    id: number;
+    // stored as numbers (0..100) for cheap math, styled as %
+    x: number; // left (%)
+    y: number; // top (%)
+    size: number;
+    phase: number; // random phase offset
+    jitterX: number; // tiny per-item drift amplitude
+    jitterY: number;
+  };
 
+  const [items, setItems] = React.useState<Item[]>([]);
+  const timeRef = React.useRef(0);
+  const rafRef = React.useRef<number | null>(null);
+
+  // Populate a denser field with smaller average size + slight center bias
   React.useEffect(() => {
-    // client-only randoms
-    const arr = Array.from({ length: count }).map((_, i) => {
-      const left = Math.random() * 92 + 4; // 4%..96%
-      const top = Math.random() * 80 + 8; // 8%..88% (avoid extreme edges so shimmer stays visible)
-      const size = Math.round(Math.random() * 18 + 16); // 16..34px
-      const delay = Math.random() * 3; // 0..3s
-      const duration = Math.random() * 4 + 4; // 4..8s fade cycle
-      return { id: i, left: `${left}%`, top: `${top}%`, size, delay, duration };
+    const rand = (min: number, max: number) => Math.random() * (max - min) + min;
+
+    // optional: slight bias toward the middle (bell curve via Box-Muller)
+    const gaussian01 = () => {
+      let u = 0,
+        v = 0;
+      while (u === 0) u = Math.random();
+      while (v === 0) v = Math.random();
+      const n = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v); // ~N(0,1)
+      // remap to 0..1 with gentle center bias
+      return Math.min(1, Math.max(0, 0.5 + 0.22 * n));
+    };
+
+    const arr: Item[] = Array.from({ length: count }).map((_, i) => {
+      // 4..96% bounds to avoid clipping edges
+      const left = 4 + gaussian01() * 92;
+      const top = 8 + gaussian01() * 80;
+      const size = Math.round(rand(12, 22)); // denser: 12..22px
+      return {
+        id: i,
+        x: left,
+        y: top,
+        size,
+        phase: rand(0, Math.PI * 2),
+        jitterX: rand(0.1, 0.5),
+        jitterY: rand(0.1, 0.7),
+      };
     });
+
     setItems(arr);
 
-    // optional re-shuffle every 15s
+    // (optional) soft reshuffle every ~20s to keep field lively without jumps
     const t = setInterval(() => {
-      const shuffled = arr.map((it) => ({
-        ...it,
-        left: `${Math.random() * 92 + 4}%`,
-        top: `${Math.random() * 80 + 8}%`,
-        delay: Math.random() * 3,
-        duration: Math.random() * 4 + 4,
-      }));
-      setItems(shuffled);
-    }, 15000);
+      setItems((prev) =>
+        prev.map((it) => ({
+          ...it,
+          // nudge positions slightly, keep in-bounds
+          x: Math.min(96, Math.max(4, it.x + (Math.random() - 0.5) * 2)),
+          y: Math.min(88, Math.max(8, it.y + (Math.random() - 0.5) * 2)),
+          phase: it.phase + Math.random() * 0.6, // tiny phase drift
+        }))
+      );
+    }, 20000);
+
     return () => clearInterval(t);
   }, [count]);
 
+  // Wave animator (single rAF for all items)
+  React.useEffect(() => {
+    let last = performance.now();
+
+    const tick = (now: number) => {
+      const dt = Math.min(0.05, (now - last) / 1000); // clamp delta
+      last = now;
+      timeRef.current += dt;
+      rafRef.current = requestAnimationFrame(tick);
+      // We trigger a re-render by updating a dummy state via timeRef.current
+      // But to keep it simple and performant, we just flip a no-op state every ~1/60s.
+      // (No separate state needed; using a ref in styles below would not re-render.)
+      setRenderKey((k) => (k + 1) % 1_000_000);
+    };
+
+    rafRef.current = requestAnimationFrame(tick);
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, []);
+
+  // minimal key to trigger re-render at rAF speed
+  const [, setRenderKey] = React.useState(0);
+
+  // Wave parameters (tweak to taste)
+  const kx = 0.12; // spatial frequency along X (per % unit)
+  const ky = 0.08; // spatial frequency along Y
+  const omega = 0.8; // temporal frequency (speed)
+  const opacityBase = 0.15; // minimum visibility
+  const opacityAmp = 0.85; // additional visibility
+  const scaleAmp = 0.06; // subtle breathing in scale
+  const yDrift = 0.6; // vertical bob amplitude (px)
+
   return (
     <Box position="absolute" inset={0} zIndex={zIndex} pointerEvents="none" aria-hidden="true">
-      {items.map((it) => (
-        <motion.div
-          key={it.id}
-          style={{
-            position: "absolute",
-            left: it.left,
-            top: it.top,
-            fontSize: it.size,
-            lineHeight: 1,
-            filter: "saturate(0.9)",
-            transform: "translate(-50%, -50%)",
-          }}
-          initial={{ opacity: 0, y: 8, scale: 0.9 }}
-          animate={{
-            opacity: [0, 0.6, 0],
-            y: [8, 0, -6],
-            scale: [0.9, 1, 0.98],
-          }}
-          transition={{
-            delay: it.delay,
-            duration: it.duration,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        >
-          ♾️
-        </motion.div>
-      ))}
+      {items.map((it) => {
+        const t = timeRef.current;
+        // normalized positions (0..1) help wave look consistent across sizes
+        const xn = it.x / 100;
+        const yn = it.y / 100;
+
+        // traveling wave phase
+        const theta = kx * it.x + ky * it.y + omega * t + it.phase;
+        // 0..1
+        const wave = 0.5 * (1 + Math.sin(theta));
+
+        // opacity breathes with wave; clamp a little to avoid popping
+        const opacity = opacityBase + opacityAmp * wave;
+
+        // subtle scale + vertical drift synced to wave
+        const scale = 1 + scaleAmp * (wave - 0.5) * 2;
+        const driftY = Math.sin(theta * 1.2) * (yDrift + it.jitterY);
+        const driftX = Math.cos(theta * 0.9) * it.jitterX;
+
+        return (
+          <div
+            key={it.id}
+            style={{
+              position: "absolute",
+              left: `${it.x}%`,
+              top: `${it.y}%`,
+              fontSize: it.size,
+              lineHeight: 1,
+              transform: `translate(calc(-50% + ${driftX}px), calc(-50% + ${driftY}px)) scale(${scale})`,
+              color: GOLD,
+              textShadow: "0 0 8px rgba(183,162,125,0.45)",
+              filter: "saturate(0.95)",
+              opacity,
+              transition: "opacity 120ms linear", // tiny smoothing
+              willChange: "transform, opacity",
+            }}
+          >
+            {"\u221E"}
+          </div>
+        );
+      })}
     </Box>
   );
 };
