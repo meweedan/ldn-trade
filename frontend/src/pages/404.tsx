@@ -223,7 +223,7 @@ export default function NotFound() {
                 {t("errors.404.cta_retry") || "Try Again"}
               </Button>
               <Link
-                href={`mailto:${t("legal.common.support_email") || "support@tradeprofitab.ly"}`}
+                href={`mailto:${t("legal.common.support_email") || "support@infini.ly"}`}
                 _hover={{ textDecoration: "none", opacity: 0.9 }}
               >
                 <Button variant="solid" borderRadius="xl" bg={GOLD} color="black" _hover={{ opacity: 0.9 }}>

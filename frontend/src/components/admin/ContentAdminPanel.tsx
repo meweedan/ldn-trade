@@ -74,6 +74,7 @@ type Tier = {
   twitterTimelineUrl?: string;
   href?: string;
   isVipProduct?: boolean;
+  vipType?: "telegram" | "discord";
   isBundle?: boolean;
   bundleTierIds?: string[];
   bundleLabel?: string;
@@ -717,11 +718,16 @@ const ContentAdminPanel: React.FC<ContentAdminPanelProps> = ({
   const [showNewBanner, setShowNewBanner] = React.useState(false);
   const [activeTab, setActiveTab] = React.useState<"content" | "banners">(initialTab);
 
-  const vipTier = React.useMemo(() => {
-    return (tiers || []).find((x: any) => x?.isVipProduct) || null;
+  const vipTelegramTier = React.useMemo(() => {
+    return (tiers || []).find((x: any) => x?.isVipProduct && x?.vipType === "telegram") || null;
   }, [tiers]);
-  const [vipUsd, setVipUsd] = React.useState<string>("");
-  const [vipStripe, setVipStripe] = React.useState<string>("");
+  const vipDiscordTier = React.useMemo(() => {
+    return (tiers || []).find((x: any) => x?.isVipProduct && x?.vipType === "discord") || null;
+  }, [tiers]);
+  const [vipTelegramUsd, setVipTelegramUsd] = React.useState<string>("");
+  const [vipTelegramStripe, setVipTelegramStripe] = React.useState<string>("");
+  const [vipDiscordUsd, setVipDiscordUsd] = React.useState<string>("");
+  const [vipDiscordStripe, setVipDiscordStripe] = React.useState<string>("");
 
   // New Bundle form
   const [bundleName, setBundleName] = React.useState("");
@@ -750,11 +756,16 @@ const ContentAdminPanel: React.FC<ContentAdminPanelProps> = ({
     if (!autoLoad) return;
     (async () => {
       try {
-        const tRes = await apiClient.get("/courses");
-        if (Array.isArray(tRes?.data)) {
-          setTiers(tRes.data);
-          onTiersChange?.(tRes.data);
-        }
+        // Load both courses and subscriptions, then merge
+        const [coursesRes, subsRes] = await Promise.all([
+          apiClient.get("/courses").catch(() => ({ data: [] })),
+          apiClient.get("/subscriptions").catch(() => ({ data: [] })),
+        ]);
+        const courses = Array.isArray(coursesRes?.data) ? coursesRes.data : [];
+        const subs = Array.isArray(subsRes?.data) ? subsRes.data : [];
+        const combined = [...courses, ...subs];
+        setTiers(combined);
+        onTiersChange?.(combined);
       } catch {}
       try {
         const bRes = await apiClient.get("/content/banners");
@@ -775,11 +786,18 @@ const ContentAdminPanel: React.FC<ContentAdminPanelProps> = ({
   }, [autoLoad, apiClient]);
 
   React.useEffect(() => {
-    if (vipTier) {
-      setVipUsd(String(vipTier.price_usdt ?? ""));
-      setVipStripe(String(vipTier.price_stripe ?? ""));
+    if (vipTelegramTier) {
+      setVipTelegramUsd(String(vipTelegramTier.price_usdt ?? ""));
+      setVipTelegramStripe(String(vipTelegramTier.price_stripe ?? ""));
     }
-  }, [vipTier]);
+  }, [vipTelegramTier]);
+
+  React.useEffect(() => {
+    if (vipDiscordTier) {
+      setVipDiscordUsd(String(vipDiscordTier.price_usdt ?? ""));
+      setVipDiscordStripe(String(vipDiscordTier.price_stripe ?? ""));
+    }
+  }, [vipDiscordTier]);
 
   // Helpers
   const onUpload = async (file: File) => {
@@ -988,18 +1006,21 @@ const ContentAdminPanel: React.FC<ContentAdminPanelProps> = ({
   const cardBorder = mode === "dark" ? "gray.700" : "gray.200";
   const cardBg = mode === "dark" ? "black" : "white";
 
-  const createVipProduct = async () => {
+  const createVipProduct = async (vipType: "telegram" | "discord") => {
     setSaving(true);
     try {
+      const isDiscord = vipType === "discord";
       const payload: any = {
-        name: "VIP Telegram",
-        description: "VIP Telegram Monthly Membership",
+        name: isDiscord ? "VIP Discord" : "VIP Telegram",
+        description: isDiscord ? "VIP Discord Monthly Subscription" : "VIP Telegram Monthly Subscription",
         imageUrl: "",
-        price_usdt: Number(vipUsd || 10),
-        price_stripe: Number(vipStripe || 1000),
+        price_usdt: Number(isDiscord ? vipDiscordUsd : vipTelegramUsd || 10),
+        price_stripe: Number(isDiscord ? vipDiscordStripe : vipTelegramStripe || 1000),
         level: "BEGINNER",
         isVipProduct: true,
+        vipType,
       };
+      // Create as subscription product
       const { data } = await apiClient.post("/courses", payload);
       const created = data;
       const next = [...tiers, created];
@@ -1011,15 +1032,18 @@ const ContentAdminPanel: React.FC<ContentAdminPanelProps> = ({
     }
   };
 
-  const saveVipProduct = async () => {
-    if (!vipTier) return createVipProduct();
+  const saveVipProduct = async (vipType: "telegram" | "discord") => {
+    const vipTier = vipType === "telegram" ? vipTelegramTier : vipDiscordTier;
+    if (!vipTier) return createVipProduct(vipType);
     setSaving(true);
     try {
+      const isDiscord = vipType === "discord";
       const payload: any = {
         ...vipTier,
-        price_usdt: Number(vipUsd || 0),
-        price_stripe: Number(vipStripe || 0),
+        price_usdt: Number(isDiscord ? vipDiscordUsd : vipTelegramUsd || 0),
+        price_stripe: Number(isDiscord ? vipDiscordStripe : vipTelegramStripe || 0),
         isVipProduct: true,
+        vipType,
       };
       const { data } = await apiClient.put(`/courses/${vipTier.id}`, payload);
       const updated = data;
@@ -1356,30 +1380,72 @@ const ContentAdminPanel: React.FC<ContentAdminPanelProps> = ({
                 <HStack justify="space-between" mb={3}>
                   <Heading size="md">{t("admin.vip_settings", "VIP Settings")}</Heading>
                 </HStack>
-                <VStack align="stretch" gap={3}>
-                  <HStack gap={3} flexWrap="wrap">
-                    <CInput
-                      placeholder={t("checkout.addons.vip.price_usd", { defaultValue: "USD/month" })}
-                      value={vipUsd}
-                      onChange={(e: any) => setVipUsd(e.target.value)}
-                    />
-                    <CInput
-                      placeholder={t("admin.price_stripe_cents", { defaultValue: "Stripe cents/month" })}
-                      value={vipStripe}
-                      onChange={(e: any) => setVipStripe(e.target.value)}
-                    />
-                  </HStack>
-                  <HStack>
-                    {!vipTier ? (
-                      <Button onClick={createVipProduct} variant="solid" bg={GOLD} isDisabled={saving}>
-                        {t("admin.create_vip", "Create VIP Product")}
-                      </Button>
-                    ) : (
-                      <Button onClick={saveVipProduct} variant="solid" bg={GOLD} isDisabled={saving}>
-                        {t("common.save", "Save")}
-                      </Button>
-                    )}
-                  </HStack>
+                <VStack align="stretch" gap={6}>
+                  {/* VIP Telegram */}
+                  <Box>
+                    <Heading size="sm" mb={3} color={GOLD}>
+                      {t("admin.vip_telegram", "VIP Telegram")}
+                    </Heading>
+                    <VStack align="stretch" gap={3}>
+                      <HStack gap={3} flexWrap="wrap">
+                        <CInput
+                          placeholder={t("checkout.addons.vip.price_usd", { defaultValue: "USD/month" })}
+                          value={vipTelegramUsd}
+                          onChange={(e: any) => setVipTelegramUsd(e.target.value)}
+                        />
+                        <CInput
+                          placeholder={t("admin.price_stripe_cents", { defaultValue: "Stripe cents/month" })}
+                          value={vipTelegramStripe}
+                          onChange={(e: any) => setVipTelegramStripe(e.target.value)}
+                        />
+                      </HStack>
+                      <HStack>
+                        {!vipTelegramTier ? (
+                          <Button onClick={() => createVipProduct("telegram")} variant="solid" bg={GOLD} isDisabled={saving}>
+                            {t("admin.create_vip_telegram", "Create VIP Telegram")}
+                          </Button>
+                        ) : (
+                          <Button onClick={() => saveVipProduct("telegram")} variant="solid" bg={GOLD} isDisabled={saving}>
+                            {t("common.save", "Save")}
+                          </Button>
+                        )}
+                      </HStack>
+                    </VStack>
+                  </Box>
+
+                  <Divider />
+
+                  {/* VIP Discord */}
+                  <Box>
+                    <Heading size="sm" mb={3} color={GOLD}>
+                      {t("admin.vip_discord", "VIP Discord")}
+                    </Heading>
+                    <VStack align="stretch" gap={3}>
+                      <HStack gap={3} flexWrap="wrap">
+                        <CInput
+                          placeholder={t("checkout.addons.vip.price_usd", { defaultValue: "USD/month" })}
+                          value={vipDiscordUsd}
+                          onChange={(e: any) => setVipDiscordUsd(e.target.value)}
+                        />
+                        <CInput
+                          placeholder={t("admin.price_stripe_cents", { defaultValue: "Stripe cents/month" })}
+                          value={vipDiscordStripe}
+                          onChange={(e: any) => setVipDiscordStripe(e.target.value)}
+                        />
+                      </HStack>
+                      <HStack>
+                        {!vipDiscordTier ? (
+                          <Button onClick={() => createVipProduct("discord")} variant="solid" bg={GOLD} isDisabled={saving}>
+                            {t("admin.create_vip_discord", "Create VIP Discord")}
+                          </Button>
+                        ) : (
+                          <Button onClick={() => saveVipProduct("discord")} variant="solid" bg={GOLD} isDisabled={saving}>
+                            {t("common.save", "Save")}
+                          </Button>
+                        )}
+                      </HStack>
+                    </VStack>
+                  </Box>
                 </VStack>
               </GlassCard>
 

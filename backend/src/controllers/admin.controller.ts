@@ -87,6 +87,20 @@ export const uploadMedia = async (req: Request, res: Response) => {
   }
 };
 
+// List all users (admin dashboard)
+export const listUsers = async (_req: Request, res: Response) => {
+  try {
+    const rows = await prisma.users.findMany({
+      select: { id: true, name: true, email: true, role: true, status: true },
+      orderBy: { created_at: 'desc' },
+      take: 1000,
+    });
+    return res.json(rows);
+  } catch {
+    return res.json([]);
+  }
+};
+
 // List unverified users
 export const listUnverifiedUsers = async (_req: Request, res: Response) => {
   try {

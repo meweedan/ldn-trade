@@ -309,7 +309,7 @@ export const scheduleCall = async (req: Request, res: Response) => {
     // Optional: notify ops
     try {
       await sendMail({
-        to: process.env.LEADS_INBOX || 'leads@tradeprofitab.ly',
+        to: process.env.LEADS_INBOX || 'leads@infini.ly',
         subject: `[Schedule] ${record.name} — ${record.ticketId}`,
         text: `New call request at ${when.toISOString()} (tz: ${tz || 'n/a'})\n\nTicket: ${record.ticketId}`,
       });

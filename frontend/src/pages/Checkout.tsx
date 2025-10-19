@@ -89,16 +89,29 @@ const Checkout: React.FC = () => {
   React.useEffect(() => {
     (async () => {
       try {
-        const [me, tResp, mine, all] = await Promise.all([
+        // Try to fetch from both courses and subscriptions endpoints
+        let tResp: any = { data: null };
+        if (tierId) {
+          tResp = await api.get(`/courses/${tierId}`).catch(async () => {
+            // If not found in courses, try subscriptions
+            return await api.get(`/subscriptions/${tierId}`).catch(() => ({ data: null }));
+          });
+        }
+        
+        const [me, mine, coursesResp, subsResp] = await Promise.all([
           api.get("/users/me").catch(() => ({ data: null })),
-          tierId ? api.get(`/courses/${tierId}`) : Promise.resolve({ data: null }),
           getMyPurchases({ ttlMs: 10 * 60 * 1000 }).catch(() => [] as any[]),
           api.get("/courses").catch(() => ({ data: [] })),
+          api.get("/subscriptions").catch(() => ({ data: [] })),
         ]);
+        
         setUser((me as any).data);
-        setTier((tResp as any).data);
-        const listAll = Array.isArray((all as any).data) ? (all as any).data : [];
-        setAllTiers(listAll);
+        setTier(tResp.data);
+        
+        const courses = Array.isArray(coursesResp.data) ? coursesResp.data : [];
+        const subs = Array.isArray(subsResp.data) ? subsResp.data : [];
+        setAllTiers([...courses, ...subs]);
+        
         const list: any[] = Array.isArray(mine) ? (mine as any[]) : [];
         const enrolled = list.some(
           (p) =>

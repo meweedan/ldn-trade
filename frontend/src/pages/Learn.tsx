@@ -1,12 +1,17 @@
+/* eslint-disable react/style-prop-object */
 import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Box, Container, VStack, HStack, Heading, Text, Button, Spinner, Icon } from "@chakra-ui/react";
+import { Box, Container, VStack, HStack, Heading, Text, Button, Spinner, Icon, SimpleGrid, Badge } from "@chakra-ui/react";
 import { Textarea } from "@chakra-ui/react";
 import { useAuth } from "../auth/AuthContext";
 import { useTranslation } from "react-i18next";
 import api, { getMyPurchases } from "../api/client";
-import { ChevronLeft, ChevronRight, Eye, EyeOff, CheckCircle, GraduationCap, Star } from "lucide-react";
+import { ChevronLeft, ChevronRight, Eye, EyeOff, CheckCircle, GraduationCap, Star, Play, FileText, TrendingUp } from "lucide-react";
 import { useThemeMode } from "../themeProvider";
+import ProgressWidget from "../components/ProgressWidget";
+import TrackedVideo from "../components/TrackedVideo";
+import TrackedPDF from "../components/TrackedPDF";
+import { AdvancedRealTimeChart } from "react-ts-tradingview-widgets";
 
 const Learn: React.FC = () => {
   const { id } = useParams<{ id: string }>(); // tier id
@@ -32,7 +37,7 @@ const Learn: React.FC = () => {
   const [myComment, setMyComment] = React.useState<string>("");
   const [submittingReview, setSubmittingReview] = React.useState(false);
   const tpLogo = mode === "dark" ? "/images/logos/TP-White.png" : "/images/logos/TP-Black.png";
-  const TRUSTPILOT_URL = "https://www.trustpilot.com/review/tradeprofitab.ly"; // <-- put your page here
+  const TRUSTPILOT_URL = "https://www.trustpilot.com/review/infini.ly"; // <-- put your page here
 
   const isCompleted = Boolean(
     (course as any)?.completed || (course as any)?.status === "COMPLETED"
@@ -46,9 +51,13 @@ const Learn: React.FC = () => {
   const [showDocuments, setShowDocuments] = React.useState(true);
   const [showVideos, setShowVideos] = React.useState(true);
   const [showSupport, setShowSupport] = React.useState(true);
+  const [showChart, setShowChart] = React.useState(true);
+  
+  // Track which individual resources are loaded
+  const [loadedVideos, setLoadedVideos] = React.useState<Set<number>>(new Set());
+  const [loadedPDFs, setLoadedPDFs] = React.useState<Set<number>>(new Set());
 
-  // Carousel refs
-  const carouselRef = React.useRef<HTMLDivElement | null>(null);
+  // Carousel refs (topCarouselRef still used for scrolling)
   const topCarouselRef = React.useRef<HTMLDivElement | null>(null);
   const materialsVideosRef = React.useRef<HTMLDivElement | null>(null);
 
@@ -86,7 +95,10 @@ const Learn: React.FC = () => {
         if (!ok) {
           setError(t("learn.errors.access_denied"));
         } else if (id) {
-          const resp = await api.get(`/courses/${id}`);
+          // Try courses first, then subscriptions
+          const resp = await api.get(`/courses/${id}`).catch(async () => {
+            return await api.get(`/subscriptions/${id}`);
+          });
           setCourse(resp.data);
           const r = Array.isArray(resp.data?.resources) ? resp.data.resources : [];
           setResources(r);
@@ -182,14 +194,7 @@ const Learn: React.FC = () => {
     return false;
   };
 
-  // --- Carousel controls ---
-  const scrollByCard = (dir: "left" | "right") => {
-    const el = carouselRef.current;
-    if (!el) return;
-    const first = el.firstElementChild as HTMLElement | null;
-    const cardWidth = first ? first.offsetWidth + 16 : Math.floor(el.clientWidth * 0.8);
-    el.scrollBy({ left: dir === "left" ? -cardWidth : cardWidth, behavior: "smooth" });
-  };
+  // --- Carousel controls (removed - using on-demand loading now) ---
   const scrollTopCarousel = (dir: "left" | "right") => {
     const el = topCarouselRef.current;
     if (!el) return;
@@ -648,6 +653,14 @@ const Learn: React.FC = () => {
     try {
       setCompleting(true);
       await api.post(`/courses/${id}/complete`);
+      
+      // Track progress - mark lesson as completed
+      try {
+        await api.post(`/progress/lesson/${id}`);
+      } catch (progressError) {
+        console.error('Failed to track progress:', progressError);
+      }
+      
       setCourse((prev: any) => ({ ...(prev || {}), completed: true, status: "COMPLETED" }));
       if (!hasMyReview) setReviewOpen(true);
       alert(t("learn.completion.marked") || "Course marked as completed");
@@ -791,6 +804,9 @@ const Learn: React.FC = () => {
               </VStack>
             )}
           </HStack>
+
+          {/* Progress Widget */}
+          <ProgressWidget compact />
 
           {/* Visibility toggles */}
           <Box borderWidth={1} borderRadius="lg" borderColor="#b7a27d" bg="bg.surface" p={4}>
@@ -937,6 +953,12 @@ const Learn: React.FC = () => {
                         if (!url) return null;
                         const isVid = /\.(mp4|webm|ogg)(\?|#|$)/i.test(String(url));
                         if (!isVid) return null;
+                        // Find resource ID for this preview/trailer
+                        const resource = resources.find((r: any) => 
+                          r.url === url || r.url === kind
+                        );
+                        const resourceId = resource?.id || `${kind}-${tier.id}`;
+                        
                         return (
                           <Box
                             key={kind}
@@ -950,13 +972,11 @@ const Learn: React.FC = () => {
                             bg="black"
                             style={{ scrollSnapAlign: "start" }}
                           >
-                            <video
+                            <TrackedVideo
+                              resourceId={resourceId}
                               src={toAbsoluteUrl(String(url))}
-                              controls
-                              playsInline
-                              disablePictureInPicture
-                              controlsList="nodownload noplaybackrate"
-                              style={{
+                              tierId={tier.id}
+                              style={{  
                                 display: "block",
                                 width: "100%",
                                 height: "auto",
@@ -1042,7 +1062,7 @@ const Learn: React.FC = () => {
             )}
           </Box>
 
-          {/* Documents (PDFs) — strict language prefix only */}
+          {/* Documents (PDFs) — On-Demand Loading */}
           <Box borderWidth={1} borderRadius="lg" borderColor="#b7a27d" p={5} bg="bg.surface">
             <HStack justify="space-between" mb={2}>
               <Heading size="md">{t("learn.documents.title")}</Heading>
@@ -1064,6 +1084,10 @@ const Learn: React.FC = () => {
                       const src = blob
                         ? `${blob}#toolbar=0&navpanes=0`
                         : `${toAbsoluteUrl(String(doc.url))}#toolbar=0&navpanes=0`;
+                      const resourceId = doc.id || `pdf-${idx}-${tier.id}`;
+                      const isLoaded = loadedPDFs.has(idx);
+                      const fileName = String(doc.url).split("/").pop() || `Document ${idx + 1}`;
+                      
                       return (
                         <Box
                           key={idx}
@@ -1071,48 +1095,75 @@ const Learn: React.FC = () => {
                           onContextMenu={preventContext}
                           onDragStart={preventContext}
                         >
-                          <Box
-                            position="relative"
-                            borderRadius="md"
-                            borderColor="#b7a27d"
-                            overflow="hidden"
-                            borderWidth={1}
-                          >
-                            {blob ? (
-                              <object
-                                data={src}
-                                type="application/pdf"
-                                style={{ width: "100%", height: "70vh", maxHeight: 900 }}
-                              >
-                                <embed
+                          {!isLoaded ? (
+                            <Button
+                              w="full"
+                              h="120px"
+                              bg="bg.surface"
+                              borderWidth={2}
+                              borderColor="#b7a27d"
+                              borderStyle="dashed"
+                              _hover={{ bg: "whiteAlpha.100", borderStyle: "solid" }}
+                              onClick={() => setLoadedPDFs(prev => new Set(prev).add(idx))}
+                            >
+                              <VStack spacing={3}>
+                                <Icon as={FileText} boxSize={8} color="#b7a27d" />
+                                <VStack spacing={1}>
+                                  <Text fontWeight="bold" fontSize="md">
+                                    {fileName.replace(/^(EN_|FR_|AR_)/, '')}
+                                  </Text>
+                                  <Text fontSize="sm" opacity={0.7}>
+                                    {t("common.click_to_load") || "Click to load PDF"}
+                                  </Text>
+                                </VStack>
+                              </VStack>
+                            </Button>
+                          ) : (
+                            <Box
+                              position="relative"
+                              borderRadius="md"
+                              borderColor="#b7a27d"
+                              overflow="hidden"
+                              borderWidth={1}
+                            >
+                              {blob ? (
+                                <TrackedPDF
+                                  resourceId={resourceId}
                                   src={src}
-                                  type="application/pdf"
                                   style={{ width: "100%", height: "70vh", maxHeight: 900 }}
+                                  tierId={tier.id}
+                                  onContextMenu={preventContext}
+                                  watermark={
+                                    <>
+                                      <Box position="absolute" inset={0} pointerEvents="none" zIndex={1} />
+                                      <Watermark
+                                        text={
+                                          user?.email || user?.id
+                                            ? t("learn.watermark.user", { user: user?.email || user?.id })
+                                            : undefined
+                                        }
+                                      />
+                                    </>
+                                  }
                                 />
-                              </object>
-                            ) : (
-                              <Box
-                                display="flex"
-                                alignItems="center"
-                                justifyContent="center"
-                                height="40vh"
-                              >
-                                <Spinner />
-                                <Text ml={2}>{t("learn.documents.loading")}</Text>
-                              </Box>
-                            )}
-                            <Box position="absolute" inset={0} pointerEvents="none" zIndex={1} />
-                            <Watermark
-                              text={
-                                user?.email || user?.id
-                                  ? t("learn.watermark.user", { user: user?.email || user?.id })
-                                  : undefined
-                              }
-                            />
-                          </Box>
-                          <Text mt={2} fontSize="sm" color="text.muted">
-                            {t("learn.guard.note")}
-                          </Text>
+                              ) : (
+                                <Box
+                                  display="flex"
+                                  alignItems="center"
+                                  justifyContent="center"
+                                  height="40vh"
+                                >
+                                  <Spinner />
+                                  <Text ml={2}>{t("learn.documents.loading")}</Text>
+                                </Box>
+                              )}
+                            </Box>
+                          )}
+                          {isLoaded && (
+                            <Text mt={2} fontSize="sm" color="text.muted">
+                              {t("learn.guard.note")}
+                            </Text>
+                          )}
                         </Box>
                       );
                     })}
@@ -1221,7 +1272,7 @@ const Learn: React.FC = () => {
             </HStack>
           )}
 
-          {/* Videos — compact carousel (materials videos near PDFs) */}
+          {/* Videos — On-Demand Loading with Grid */}
           {videos.length > 0 && (
             <Box
               ref={materialsVideosRef}
@@ -1231,107 +1282,153 @@ const Learn: React.FC = () => {
               p={5}
               bg="bg.surface"
             >
-              <HStack justify="space-between" mb={2}>
+              <HStack justify="space-between" mb={4}>
                 <Heading size="md">{t("learn.videos.title")}</Heading>
-                <HStack gap={2}>
-                  <Button
-                    size="sm"
-                    variant="solid"
-                    bg="#b7a27d"
-                    onClick={() => setShowVideos((s) => !s)}
-                  >
-                    {showVideos ? t("common.hide") : t("common.show")}
-                  </Button>
-                  {showVideos && (
-                    <>
-                      <Button
-                        aria-label={t("common.prev")}
-                        size="sm"
-                        variant="outline"
-                        onClick={() => scrollByCard("left")}
-                      >
-                        <HStack gap={2}>
-                          <ChevronLeft size={18} />
-                          <Text>{t("common.prev")}</Text>
-                        </HStack>
-                      </Button>
-                      <Button
-                        aria-label={t("common.next")}
-                        size="sm"
-                        variant="outline"
-                        onClick={() => scrollByCard("right")}
-                      >
-                        <HStack gap={2}>
-                          <ChevronRight size={18} />
-                          <Text>{t("common.next")}</Text>
-                        </HStack>
-                      </Button>
-                    </>
-                  )}
-                </HStack>
+                <Button
+                  size="sm"
+                  variant="solid"
+                  bg="#b7a27d"
+                  onClick={() => setShowVideos((s) => !s)}
+                >
+                  {showVideos ? t("common.hide") : t("common.show")}
+                </Button>
               </HStack>
 
               {showVideos && (
                 <>
-                  <HStack
-                    ref={carouselRef}
-                    gap={4}
-                    overflowX="auto"
-                    pb={2}
-                    style={{
-                      scrollSnapType: "x mandatory",
-                      WebkitOverflowScrolling: "touch",
-                    }}
-                  >
+                  <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
                     {videos.map((vid: any, idx: number) => {
                       const vsrc = toAbsoluteUrl(String(vid.url));
+                      const resourceId = vid.id || `video-${idx}-${tier.id}`;
+                      const isLoaded = loadedVideos.has(idx);
+                      const videoName = String(vid.url).split("/").pop()?.replace(/\.[^/.]+$/, "") || `Video ${idx + 1}`;
+                      
                       return (
-                        <Box
-                          key={idx}
-                          minWidth={"440px"}
-                          maxWidth={"480px"}
-                          borderWidth={1}
-                          borderRadius="md"
-                          borderColor="#b7a27d"
-                          overflow="hidden"
-                          position="relative"
-                          onContextMenu={(e) => e.preventDefault()}
-                          bg="black"
-                          style={{ scrollSnapAlign: "start" }}
-                        >
-                          <video
-                            src={vsrc}
-                            controls
-                            playsInline
-                            disablePictureInPicture
-                            controlsList="nodownload noplaybackrate"
-                            style={{
-                              display: "block",
-                              width: "100%",
-                              height: "auto",
-                              aspectRatio: "16/9" as any,
-                            }}
-                            onContextMenu={(e) => e.preventDefault()}
-                          />
-                          <Box position="absolute" inset={0} pointerEvents="none" zIndex={1} />
-                          <Watermark
-                            text={
-                              user?.email || user?.id
-                                ? t("learn.watermark.user", { user: user?.email || user?.id })
-                                : undefined
-                            }
-                          />
+                        <Box key={idx}>
+                          {!isLoaded ? (
+                            <Button
+                              w="full"
+                              h="200px"
+                              bg="bg.surface"
+                              borderWidth={2}
+                              borderColor="#b7a27d"
+                              borderStyle="dashed"
+                              _hover={{ bg: "whiteAlpha.100", borderStyle: "solid" }}
+                              onClick={() => setLoadedVideos(prev => new Set(prev).add(idx))}
+                            >
+                              <VStack spacing={3}>
+                                <Icon as={Play} boxSize={12} color="#b7a27d" />
+                                <VStack spacing={1}>
+                                  <Text fontWeight="bold" fontSize="md">
+                                    {videoName}
+                                  </Text>
+                                  <Badge colorScheme="blue" fontSize="xs">
+                                    {t("common.video") || "Video"}
+                                  </Badge>
+                                  <Text fontSize="sm" opacity={0.7}>
+                                    {t("common.click_to_load") || "Click to load video"}
+                                  </Text>
+                                </VStack>
+                              </VStack>
+                            </Button>
+                          ) : (
+                            <Box
+                              borderWidth={1}
+                              borderRadius="md"
+                              borderColor="#b7a27d"
+                              overflow="hidden"
+                              position="relative"
+                              onContextMenu={(e) => e.preventDefault()}
+                              bg="black"
+                            >
+                              <TrackedVideo
+                                resourceId={resourceId}
+                                src={vsrc}
+                                tierId={tier.id}
+                                style={{
+                                  display: "block",
+                                  width: "100%",
+                                  height: "auto",
+                                  aspectRatio: "16/9" as any,
+                                }}
+                                onContextMenu={(e) => e.preventDefault()}
+                                watermark={
+                                  <>
+                                    <Box position="absolute" inset={0} pointerEvents="none" zIndex={1} />
+                                    <Watermark
+                                      text={
+                                        user?.email || user?.id
+                                          ? t("learn.watermark.user", { user: user?.email || user?.id })
+                                          : undefined
+                                      }
+                                    />
+                                  </>
+                                }
+                              />
+                            </Box>
+                          )}
                         </Box>
                       );
                     })}
-                  </HStack>
-                  <Text mt={2} fontSize="sm" color="text.muted">
+                  </SimpleGrid>
+                  <Text mt={4} fontSize="sm" color="text.muted">
                     {t("learn.guard.note")}
                   </Text>
                 </>
               )}
             </Box>
           )}
+
+          {/* TradingView Chart Widget */}
+          <Box borderWidth={1} borderRadius="lg" borderColor="#b7a27d" p={5} bg="bg.surface">
+            <HStack justify="space-between" mb={4}>
+              <HStack>
+                <Icon as={TrendingUp} boxSize={6} color="#b7a27d" />
+                <Heading size="md">{t("learn.chart.title") || "Live Chart Practice"}</Heading>
+              </HStack>
+              <Button
+                size="sm"
+                variant="solid"
+                bg="#b7a27d"
+                onClick={() => setShowChart((s) => !s)}
+              >
+                {showChart ? t("common.hide") : t("common.show")}
+              </Button>
+            </HStack>
+            {showChart && (
+              <VStack align="stretch" spacing={3}>
+                <Text fontSize="sm" opacity={0.8}>
+                  {t("learn.chart.description") || "Practice reading charts in real-time. Use the tools below to analyze price action, identify patterns, and apply what you've learned."}
+                </Text>
+                <Box 
+                  borderRadius="md" 
+                  overflow="hidden" 
+                  borderWidth={1} 
+                  borderColor="#b7a27d"
+                  h="600px"
+                >
+                  {/* eslint-disable-next-line react/style-prop-object */}
+                  <AdvancedRealTimeChart
+                    theme={mode === "dark" ? "dark" : "light"}
+                    autosize
+                    symbol="BTCUSD"
+                    interval="D"
+                    timezone="Etc/UTC"
+                    style="1"
+                    locale="en"
+                    toolbar_bg="#f1f3f6"
+                    enable_publishing={false}
+                    allow_symbol_change={true}
+                    save_image={false}
+                    container_id="tradingview_chart"
+                  />
+                </Box>
+                <Text fontSize="xs" opacity={0.6} textAlign="center">
+                  {t("learn.chart.tip") || "💡 Tip: Try different timeframes and symbols to practice your analysis skills"}
+                </Text>
+              </VStack>
+            )}
+          </Box>
 
           {/* Support / Purchase info */}
           <Box borderWidth={1} borderRadius="lg" borderColor="#b7a27d" p={5} bg="bg.surface">

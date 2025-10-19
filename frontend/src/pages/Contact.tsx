@@ -143,14 +143,19 @@ const Contact: React.FC = () => {
     if (preselect) setCourseId(preselect);
   }, [params]);
 
-  // Load course list
+  // Load course list (including subscriptions)
   React.useEffect(() => {
     (async () => {
       try {
-        const resp = await api.get("/courses");
-        const tiers: any[] = Array.isArray(resp.data) ? resp.data : resp.data?.items || [];
+        const [coursesResp, subsResp] = await Promise.all([
+          api.get("/courses").catch(() => ({ data: [] })),
+          api.get("/subscriptions").catch(() => ({ data: [] })),
+        ]);
+        const courses = Array.isArray(coursesResp.data) ? coursesResp.data : [];
+        const subs = Array.isArray(subsResp.data) ? subsResp.data : [];
+        const allTiers = [...courses, ...subs];
         setCourses(
-          tiers.map((t: any) => ({
+          allTiers.map((t: any) => ({
             id: String(t.id),
             name: String(
               t.name || t.title || t("contact.course_fallback", { defaultValue: "Course" })

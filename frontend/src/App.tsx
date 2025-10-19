@@ -30,11 +30,15 @@ import NotFound from "./pages/404";
 import ScrollToTop from "./components/ScrollToTop";
 import Crypto from './pages/Guide/Crypto';
 import EnrollmentCelebration from './components/EnrollmentCelebration';
+import Progress from './pages/Progress';
+import AdminProgress from './pages/admin/Progress';
+import GlobalProtection from './components/GlobalProtection';
 
 function App() {
   return (
     <Box minH="100vh" display="flex" flexDirection="column">
       {/* Router is already provided ABOVE in index.tsx */}
+      <GlobalProtection />
       <ScrollToTop />
       <Header />
       <Box pb={16} flex="1" w="100%">
@@ -50,6 +54,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/progress" element={<Progress />} />
           <Route path="/account" element={<Account />} />
           <Route
             path="/admin"
@@ -72,6 +77,14 @@ function App() {
             element={
               <RequireAdmin>
                 <ContentAdmin />
+              </RequireAdmin>
+            }
+          />
+          <Route
+            path="/admin/progress"
+            element={
+              <RequireAdmin>
+                <AdminProgress />
               </RequireAdmin>
             }
           />

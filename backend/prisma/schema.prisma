@@ -3,9 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider          = "postgresql"
-  url               = env("DATABASE_URL")
-  directUrl         = env("DIRECT_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 /// =====================
@@ -74,34 +74,34 @@ model PromoCode {
 /// =====================
 
 model Session {
-  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  createdAt  DateTime @default(now()) @db.Timestamp(6) @map("created_at")
-  userAgent  String?  @map("user_agent")
-  ip         String?
-  pageviews  Pageview[]
+  id        String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  createdAt DateTime   @default(now()) @map("created_at") @db.Timestamp(6)
+  userAgent String?    @map("user_agent")
+  ip        String?
+  pageviews Pageview[]
 
   // Legacy columns present in DB — keep them, but let Prisma ignore them:
-  firstSeen   DateTime? @map("first_seen")   @ignore
-  lastSeen    DateTime? @map("last_seen")    @ignore
+  firstSeen   DateTime? @map("first_seen") @ignore
+  lastSeen    DateTime? @map("last_seen") @ignore
   source      String?   @ignore
-  userId      String?   @map("user_id")      @ignore
+  userId      String?   @map("user_id") @ignore
   utmCampaign String?   @map("utm_campaign") @ignore
-  utmMedium   String?   @map("utm_medium")   @ignore
-  utmSource   String?   @map("utm_source")   @ignore
+  utmMedium   String?   @map("utm_medium") @ignore
+  utmSource   String?   @map("utm_source") @ignore
 
   @@map("sessions")
 }
 
 model Pageview {
-  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  createdAt  DateTime @default(now()) @db.Timestamp(6) @map("created_at")
-  path       String
-  referrer   String?
-  sessionId  String   @db.Uuid @map("session_id")
-  session    Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+  path      String
+  referrer  String?
+  sessionId String   @map("session_id") @db.Uuid
+  session   Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
   // Legacy column present in DB — keep it, but don’t manage it in Prisma:
-  userAgent  String?  @map("user_agent") @ignore
+  userAgent String? @map("user_agent") @ignore
 
   @@index([sessionId], map: "idx_pageviews_session")
   @@map("pageviews")
@@ -128,25 +128,28 @@ model PromoRedemption {
 /// =====================
 
 model users {
-  id                    String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name                  String
-  email                 String           @unique
-  password              String
-  phone                 String?
-  role                  String           @default("user")
-  status                String           @default("active")
-  last_login            DateTime?        @db.Timestamp(6)
-  created_at            DateTime         @default(now()) @db.Timestamp(6)
-  updated_at            DateTime         @default(now()) @db.Timestamp(6)
-  cart                  Json             @default("[]")
-  password_reset_tokens password_reset_tokens[]
-  refresh_tokens        refresh_tokens[]
-  purchases             Purchase[]
-  communityAccess       CommunityAccess?
-  brokerSignups         BrokerSignup[]
-  CourseReview          CourseReview[]
-  affiliate             Affiliate?
-  assignedCommunications Communication[]  @relation("CommunicationAssignedToUser")
+  id                     String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                   String
+  email                  String                  @unique
+  password               String
+  phone                  String?
+  role                   String                  @default("user")
+  status                 String                  @default("active")
+  last_login             DateTime?               @db.Timestamp(6)
+  created_at             DateTime                @default(now()) @db.Timestamp(6)
+  updated_at             DateTime                @default(now()) @db.Timestamp(6)
+  cart                   Json                    @default("[]")
+  password_reset_tokens  password_reset_tokens[]
+  refresh_tokens         refresh_tokens[]
+  purchases              Purchase[]
+  communityAccess        CommunityAccess?
+  brokerSignups          BrokerSignup[]
+  CourseReview           CourseReview[]
+  affiliate              Affiliate?
+  assignedCommunications Communication[]         @relation("CommunicationAssignedToUser")
+  studentProgress        StudentProgress[]       @relation("StudentProgressUser")
+  userBadges             UserBadge[]             @relation("UserBadges")
+  dailyActivities        DailyActivity[]         @relation("UserDailyActivity")
 
   @@index([email], map: "idx_users_email")
   @@index([role], map: "idx_users_role")
@@ -200,7 +203,7 @@ enum ResourceType {
 }
 
 model CourseTier {
-  id                  String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id                  String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name                String
   description         String
   price_usdt          Float
@@ -221,12 +224,14 @@ model CourseTier {
   discordInviteUrl    String?
   twitterTimelineUrl  String?
   // Commerce flags
-  isVipProduct        Boolean     @default(false)
-  isBundle            Boolean     @default(false)
+  isVipProduct        Boolean           @default(false)
+  vipType             String? // "telegram" | "discord" for subscription products
+  isBundle            Boolean           @default(false)
   bundleTierIds       Json?
   reviews             CourseReview[]
-  createdAt           DateTime    @default(now()) @db.Timestamp(6)
-  updatedAt           DateTime    @default(now()) @db.Timestamp(6)
+  studentProgress     StudentProgress[] @relation("StudentProgressTier")
+  createdAt           DateTime          @default(now()) @db.Timestamp(6)
+  updatedAt           DateTime          @default(now()) @db.Timestamp(6)
 }
 
 model Purchase {
@@ -262,7 +267,8 @@ model Resource {
   type   ResourceType
   url    String
 
-  tier CourseTier @relation(fields: [tierId], references: [id], onDelete: Cascade)
+  tier             CourseTier         @relation(fields: [tierId], references: [id], onDelete: Cascade)
+  resourceProgress ResourceProgress[]
 }
 
 model CourseReview {
@@ -281,14 +287,14 @@ model CourseReview {
 }
 
 model CommunityAccess {
-  id       String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId   String  @unique @db.Uuid
-  telegram Boolean @default(false)
-  discord  Boolean @default(false)
-  twitter  Boolean @default(false)
-  vip      Boolean @default(false)
-  vipStart DateTime?
-  vipEnd   DateTime?
+  id                      String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId                  String    @unique @db.Uuid
+  telegram                Boolean   @default(false)
+  discord                 Boolean   @default(false)
+  twitter                 Boolean   @default(false)
+  vip                     Boolean   @default(false)
+  vipStart                DateTime?
+  vipEnd                  DateTime?
   vipStripeSubscriptionId String?
 
   user users @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -327,15 +333,15 @@ model Banner {
 /// Careers / Jobs
 /// =====================
 model Job {
-  id           String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   title        String
-  description  String           @db.Text
+  description  String   @db.Text
   requirements Json?
   expectedPay  String?
-  closingDate  DateTime         @db.Timestamp(6)
-  isActive     Boolean          @default(true)
-  createdAt    DateTime         @default(now()) @db.Timestamp(6)
-  updatedAt    DateTime         @default(now()) @db.Timestamp(6)
+  closingDate  DateTime @db.Timestamp(6)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now()) @db.Timestamp(6)
+  updatedAt    DateTime @default(now()) @db.Timestamp(6)
 
   applications JobApplication[]
 
@@ -344,9 +350,9 @@ model Job {
 }
 
 model JobApplication {
-  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  jobId       String   @db.Uuid
-  job         Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  id    String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  jobId String @db.Uuid
+  job   Job    @relation(fields: [jobId], references: [id], onDelete: Cascade)
 
   name        String
   email       String
@@ -387,42 +393,173 @@ enum CommunicationPriority {
 
 // ===== Model =====
 model Communication {
-  id              String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  ticketId        String                 @unique
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  ticketId String @unique
 
-  name            String
-  email           String
-  message         String
-  courseId        String?                @map("course_id")
-  courseName      String?                @map("course_name")
-  locale          String?
-  url             String?
-  utm             Json?
-  read            Boolean                @default(false)
-  createdAt       DateTime               @default(now()) @map("created_at") @db.Timestamp(6)
+  name       String
+  email      String
+  message    String
+  courseId   String?  @map("course_id")
+  courseName String?  @map("course_name")
+  locale     String?
+  url        String?
+  utm        Json?
+  read       Boolean  @default(false)
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamp(6)
 
-  phone           String?
-  status          CommunicationStatus    @default(OPEN)
-  priority        CommunicationPriority  @default(MEDIUM)
+  phone    String?
+  status   CommunicationStatus   @default(OPEN)
+  priority CommunicationPriority @default(MEDIUM)
 
-  assignedAdminId String?                @db.Uuid
+  assignedAdminId String?   @db.Uuid
   completedAt     DateTime?
 
   // ===== NEW: Scheduling fields =====
   scheduledAt      DateTime?
   scheduleStatus   ScheduleStatus?
-  scheduleChannel  String?               @default("whatsapp_call")
+  scheduleChannel  String?         @default("whatsapp_call")
   scheduleTz       String?
-  scheduleDuration Int?                  @default(30)
+  scheduleDuration Int?            @default(30)
 
-  assignedAdmin   users?                 @relation("CommunicationAssignedToUser", fields: [assignedAdminId], references: [id], onDelete: SetNull)
+  assignedAdmin users? @relation("CommunicationAssignedToUser", fields: [assignedAdminId], references: [id], onDelete: SetNull)
 
   @@index([read], map: "idx_communications_read")
   @@index([createdAt], map: "idx_communications_created_at")
   @@index([status], map: "idx_communications_status")
   @@index([assignedAdminId], map: "idx_communications_assignee")
-
   // helpful for availability queries:
   @@index([scheduledAt, scheduleStatus], map: "idx_communications_schedule")
   @@map("communications")
+}
+
+/// =====================
+/// Gamification & Progress Tracking
+/// =====================
+
+model StudentProgress {
+  id     String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId String @db.Uuid
+  tierId String @db.Uuid
+
+  // Progress tracking
+  lessonsCompleted Int   @default(0)
+  videosWatched    Int   @default(0)
+  pdfsViewed       Int   @default(0)
+  quizzesScore     Float @default(0)
+  tradingScore     Int   @default(0)
+
+  // Gamification
+  level          Int       @default(1)
+  xp             Int       @default(0)
+  streak         Int       @default(0)
+  lastActiveDate DateTime?
+
+  // Completion tracking
+  completedAt       DateTime?
+  certificateIssued Boolean   @default(false)
+
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+  updatedAt DateTime @default(now()) @db.Timestamp(6)
+
+  user             users              @relation("StudentProgressUser", fields: [userId], references: [id], onDelete: Cascade)
+  tier             CourseTier         @relation("StudentProgressTier", fields: [tierId], references: [id], onDelete: Cascade)
+  resourceProgress ResourceProgress[]
+
+  @@unique([userId, tierId], map: "unique_user_tier_progress")
+  @@index([userId], map: "idx_progress_user")
+  @@index([tierId], map: "idx_progress_tier")
+  @@index([level], map: "idx_progress_level")
+}
+
+model ResourceProgress {
+  id         String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  progressId String @db.Uuid
+  resourceId String @db.Uuid
+
+  // Tracking details
+  completed    Boolean   @default(false)
+  timeSpent    Int       @default(0) // seconds
+  lastPosition Int? // for videos: seconds, for PDFs: page number
+  completedAt  DateTime?
+
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+  updatedAt DateTime @default(now()) @db.Timestamp(6)
+
+  progress StudentProgress @relation(fields: [progressId], references: [id], onDelete: Cascade)
+  resource Resource        @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+
+  @@unique([progressId, resourceId], map: "unique_progress_resource")
+  @@index([progressId], map: "idx_resource_progress_progress")
+  @@index([resourceId], map: "idx_resource_progress_resource")
+}
+
+enum BadgeCategory {
+  MILESTONE
+  ACHIEVEMENT
+  STREAK
+  SPECIAL
+}
+
+model Badge {
+  id          String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String
+  description String
+  imageUrl    String?
+  category    BadgeCategory @default(MILESTONE)
+
+  // Unlock criteria (JSON structure)
+  // Examples:
+  // {"type": "lessons_completed", "count": 10}
+  // {"type": "course_completed", "tierId": "uuid"}
+  // {"type": "streak", "days": 7}
+  // {"type": "videos_watched", "count": 5}
+  unlockCriteria Json
+
+  // Display
+  rarity       String  @default("common") // common, rare, epic, legendary
+  displayOrder Int     @default(0)
+  isActive     Boolean @default(true)
+
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+
+  userBadges UserBadge[]
+
+  @@index([category], map: "idx_badge_category")
+  @@index([isActive], map: "idx_badge_active")
+}
+
+model UserBadge {
+  id      String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId  String @db.Uuid
+  badgeId String @db.Uuid
+
+  unlockedAt DateTime @default(now()) @db.Timestamp(6)
+
+  user  users @relation("UserBadges", fields: [userId], references: [id], onDelete: Cascade)
+  badge Badge @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, badgeId], map: "unique_user_badge")
+  @@index([userId], map: "idx_user_badge_user")
+  @@index([badgeId], map: "idx_user_badge_badge")
+}
+
+model DailyActivity {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId       String   @db.Uuid
+  activityDate DateTime @db.Date
+
+  // Activity metrics
+  lessonsCompleted Int @default(0)
+  videosWatched    Int @default(0)
+  pdfsViewed       Int @default(0)
+  timeSpent        Int @default(0) // seconds
+  xpEarned         Int @default(0)
+
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+
+  user users @relation("UserDailyActivity", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, activityDate], map: "unique_user_date_activity")
+  @@index([userId], map: "idx_daily_activity_user")
+  @@index([activityDate], map: "idx_daily_activity_date")
 }

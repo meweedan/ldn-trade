@@ -10,6 +10,7 @@ import { useThemeMode } from "../themeProvider";
 import { useCohortDeadline } from "../hooks/useCohortDeadline";
 import api from "../api/client";
 import DisplacementSphere from "./DisplacementSphere";
+import ProgressWidget from "./ProgressWidget";
 
 const GOLD = "#b7a27d";
 const MotionBox = motion(Box);
@@ -239,26 +240,28 @@ export default function Hero() {
   const [tgLink, setTgLink] = React.useState<string>("");
   const [enrolledCount, setEnrolledCount] = React.useState(0);
   const [currentPage, setCurrentPage] = React.useState(0);
+  const [cornerWidgetVisible, setCornerWidgetVisible] = React.useState(true);
 
   // Determine if user is enrolled or VIP
   React.useEffect(() => {
     let active = true;
     (async () => {
       try {
-        const [st, mine, meResp, courses] = await Promise.all([
+        const [st, mine, meResp, coursesResp, subsResp] = await Promise.all([
           api.get("/community/status").catch(() => ({ data: null })),
           api.get("/purchase/mine").catch(() => ({ data: [] })),
           api.get("/users/me").catch(() => ({ data: null })),
           api.get("/courses").catch(() => ({ data: [] })),
+          api.get("/subscriptions").catch(() => ({ data: [] })),
         ]);
         const vip = !!(st as any)?.data?.vip;
         const tg = !!(st as any)?.data?.telegram;
         const vipEndDate = (st as any)?.data?.vipEnd || null;
         
-        // Get Telegram URL from VIP tier
-        const allTiers = Array.isArray((courses as any)?.data) ? (courses as any).data : [];
-        const vipTier = allTiers.find((t: any) => t?.isVipProduct);
-        const telegramUrl = vipTier?.telegramUrl || "";
+        // Get Telegram URL from VIP subscription
+        const subs = Array.isArray(subsResp?.data) ? subsResp.data : [];
+        const vipTelegramTier = subs.find((t: any) => t?.isVipProduct && t?.vipType === "telegram");
+        const telegramUrl = vipTelegramTier?.telegramUrl || "";
         
         const list = Array.isArray((mine as any)?.data) ? (mine as any).data : [];
         const confirmed = list.filter(
@@ -413,40 +416,71 @@ export default function Hero() {
           {/* Title / Welcome */}
           {!isLoggedIn ? (
             <>
-              <GradientPill mode={mode} size="lg">
-                <FadeInText
+              <MotionBox
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+                px={{ base: 4, md: 6 }}
+                py={{ base: 3, md: 4 }}
+                borderRadius="28px"
+                backdropFilter="blur(16px) saturate(1.2)"
+                bg="rgba(0, 0, 0, 0.2)"
+                border="1px solid"
+                borderColor="rgba(183,162,125,0.3)"
+                boxShadow="0 20px 50px rgba(0,0,0,0.3)"
+              >
+                <Text
                   as="h1"
                   dir={dir}
                   fontSize={{ base: "2xl", md: "5xl", lg: "6xl" }}
-                  fontWeight="bold"
-                  color={GOLD}
+                  fontWeight="extrabold"
+                  letterSpacing="-0.02em"
+                  lineHeight="1.1"
+                  bgClip="text"
+                  bgGradient={`linear(to-r, ${GOLD}, #e6d8bf)`}
                 >
                   {t("home.hero.title")}
-                </FadeInText>
-              </GradientPill>
-              <GradientPill mode={mode} size="sm">
-                <FadeInText
+                </Text>
+              </MotionBox>
+              <MotionBox
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+                px={{ base: 4, md: 6 }}
+                py={{ base: 2, md: 3 }}
+                borderRadius="24px"
+                backdropFilter="blur(12px) saturate(1.15)"
+                bg="rgba(0, 0, 0, 0.15)"
+                border="1px solid"
+                borderColor="rgba(183,162,125,0.25)"
+                boxShadow="0 16px 40px rgba(0,0,0,0.25)"
+              >
+                <Text
                   as="p"
                   dir={dir}
                   fontSize={{ base: "md", md: "xl" }}
-                  fontWeight="bold"
-                  color={GOLD}
+                  fontWeight="semibold"
+                  color="white"
+                  textShadow="0 2px 8px rgba(0,0,0,0.4)"
                 >
                   {t("home.hero.subtitle")}
-                </FadeInText>
-              </GradientPill>
+                </Text>
+              </MotionBox>
             </>
           ) : (
             // Distinct premium welcome for logged-in users
-            <Box
+            <MotionBox
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
               px={{ base: 4, md: 6 }}
               py={{ base: 3, md: 4 }}
               borderRadius="28px"
-              bg="bg.surface"
-              backdropFilter="blur(10px) saturate(1.1)"
+              backdropFilter="blur(16px) saturate(1.2)"
+              bg="rgba(0, 0, 0, 0.2)"
               border="1px solid"
-              borderColor="rgba(183,162,125,0.55)"
-              boxShadow="0 16px 42px rgba(0,0,0,0.28)"
+              borderColor="rgba(183,162,125,0.3)"
+              boxShadow="0 20px 50px rgba(0,0,0,0.3)"
             >
               <Text
                 as="h1"
@@ -468,11 +502,11 @@ export default function Hero() {
                     "Pick up where you left off — your courses, tools, and community await.",
                 })}
               </Text>
-            </Box>
+            </MotionBox>
           )}
 
-          {/* Mobile countdown chip — show only to guests */}
-          {!isLoggedIn && (
+          {/* Removed mobile countdown from hero - moved to corner widget */}
+          {false && !isLoggedIn && (
             <Box display={{ base: "block", md: "none" }} w="100%">
               {!expired && !isMember && (
                 <MotionBox
@@ -594,8 +628,8 @@ export default function Hero() {
             </Box>
           )}
 
-          {/* Desktop timer/promo — guests only */}
-          {!isLoggedIn && (
+          {/* Desktop timer/promo — moved to corner widget */}
+          {false && !isLoggedIn && (
             <Box display={{ base: "none", md: "block" }} w="100%">
               <VStack gap={3} align="center">
                 {!expired && !isMember && (
@@ -956,7 +990,7 @@ export default function Hero() {
                 borderColor={GOLD}
                 borderWidth="1px"
                 _hover={{ bg: "blackAlpha.300" }}
-                onClick={() => navigate(expired ? "/contact" : "/courses")}
+                onClick={() => navigate(expired ? "/contact" : "/products")}
                 borderRadius="xl"
               >
                 {expired
@@ -978,6 +1012,125 @@ export default function Hero() {
           )}
         </VStack>
       </Container>
+
+      {/* Lower-left corner widget for countdown/promo - closeable */}
+      {!isLoggedIn && !isMember && (
+        <MotionBox
+          position="fixed"
+          bottom={4}
+          left={4}
+          zIndex={1000}
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: cornerWidgetVisible ? 1 : 0, x: cornerWidgetVisible ? 0 : -20 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          display={cornerWidgetVisible ? "block" : "none"}
+        >
+          <Box
+            bg={mode === "dark" ? "rgba(0,0,0,0.9)" : "rgba(255,255,255,0.95)"}
+            backdropFilter="blur(16px) saturate(1.2)"
+            border="1px solid"
+            borderColor={GOLD}
+            borderRadius="xl"
+            p={4}
+            boxShadow="0 20px 50px rgba(0,0,0,0.4)"
+            maxW="320px"
+            position="relative"
+          >
+            {/* Close button */}
+            <IconButton
+              aria-label="Close"
+              icon={<Text fontSize="lg">×</Text>}
+              size="xs"
+              position="absolute"
+              top={2}
+              right={2}
+              bg="transparent"
+              _hover={{ bg: "rgba(183,162,125,0.2)" }}
+              onClick={() => setCornerWidgetVisible(false)}
+            />
+
+            <VStack align="stretch" spacing={3}>
+              {/* Countdown */}
+              {!expired && (
+                <>
+                  <Text fontSize="sm" fontWeight="bold" textAlign="center">
+                    {t("home.urgency.kicker", "Cohort enrollment closes in")}
+                  </Text>
+                  <HStack spacing={2} justify="center" flexWrap="wrap">
+                    {parts.map((p, i) => {
+                      const isSec = p.label === i18n.t("time.seconds_short", "s");
+                      return (
+                        <Box
+                          key={`${p.label}-${i}`}
+                          px={2}
+                          py={1}
+                          borderRadius="md"
+                          bgGradient={`linear(to-b, ${GOLD}, ${mode === "dark" ? "#9b8a6b" : "#cbb89a"})`}
+                          color={isSec && flash ? "red.400" : "white"}
+                          fontWeight="bold"
+                          textAlign="center"
+                          boxShadow={isSec ? "0 4px 12px rgba(255,0,0,0.3)" : "0 4px 12px rgba(183,162,125,0.3)"}
+                        >
+                          <Text as="span" fontFamily="mono" fontSize="sm">
+                            {p.value}
+                          </Text>
+                          <Text as="span" ms={1} fontSize="xs" opacity={0.9}>
+                            {p.label}
+                          </Text>
+                        </Box>
+                      );
+                    })}
+                  </HStack>
+                </>
+              )}
+
+              {/* Promo code */}
+              {(expired || promo?.code) && (
+                <>
+                  <Text fontSize="xs" fontWeight="semibold" textAlign="center" opacity={0.9}>
+                    {expired
+                      ? t("home.promo.kicker_late", "Late access promo:")
+                      : t("home.promo.kicker", "Limited-time course promo:")}
+                  </Text>
+                  <HStack justify="center" spacing={2}>
+                    <Text fontSize="xs" opacity={0.8}>
+                      {t("home.promo.copy", "Copy")}:
+                    </Text>
+                    <Box
+                      px={2}
+                      py={1}
+                      borderRadius="md"
+                      bgGradient={`linear(to-b, ${GOLD}, ${mode === "dark" ? "#9b8a6b" : "#cbb89a"})`}
+                      color="white"
+                      fontWeight="bold"
+                      fontSize="sm"
+                    >
+                      {codeToShow}
+                    </Box>
+                  </HStack>
+                  <Text fontSize="xs" opacity={0.75} textAlign="center">
+                    {expired
+                      ? t("home.promo.details_late", "Missed the cohort? Use this late access code.")
+                      : t("home.promo.details", "Save up to 10% — apply this code before the timer ends.")}
+                  </Text>
+                </>
+              )}
+
+              {/* CTA */}
+              <Button
+                size="sm"
+                bg={GOLD}
+                color="black"
+                _hover={{ opacity: 0.9 }}
+                onClick={() => navigate(expired ? "/contact" : "/products")}
+                borderRadius="lg"
+              >
+                {expired ? t("home.urgency.talk", "Talk to an Advisor") : t("home.urgency.enroll", "Enroll Now")}
+              </Button>
+            </VStack>
+          </Box>
+        </MotionBox>
+      )}
     </Box>
   );
 }

@@ -3,6 +3,7 @@ import { Router } from 'express';
 import authRoutes from './auth.routes';
 import userRoutes from './user.routes';
 import coursesRoutes from './courses.routes';
+import subscriptionsRoutes from './subscriptions.routes';
 import purchaseRoutes from './purchase.routes';
 import resourcesRoutes from './resources.routes';
 import communityRoutes from './community.routes';
@@ -15,6 +16,8 @@ import contactRoutes from './contact.routes';
 import communicationsRoutes from './communications.routes';
 import careersRoutes from './careers.routes';
 import promosRoutes from './promos.routes';
+import progressRoutes from './progress.routes';
+import badgesRoutes from './badges.routes';
 
 const router = Router();
 
@@ -26,6 +29,7 @@ router.use('/', contentRoutes);
 router.use('/careers', careersRoutes);
 // Education app endpoints
 router.use('/courses', coursesRoutes);
+router.use('/subscriptions', subscriptionsRoutes);
 router.use('/purchase', purchaseRoutes);
 router.use('/resources', resourcesRoutes);
 router.use('/community', communityRoutes);
@@ -35,5 +39,7 @@ router.use('/payments', paymentsRoutes);
 router.use('/contact', contactRoutes);
 router.use('/communications', communicationsRoutes);
 router.use('/promos', promosRoutes);
+router.use('/progress', progressRoutes);
+router.use('/badges', badgesRoutes);
 
 export default router;

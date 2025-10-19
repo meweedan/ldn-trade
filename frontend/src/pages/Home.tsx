@@ -38,7 +38,7 @@ import { AdvancedRealTimeChart } from "react-ts-tradingview-widgets";
 import api from "../api/client";
 import BannerCarousel from "../components/BannerCarousel";
 import { useThemeMode } from "../themeProvider";
-import { ChevronLeft, ChevronRight, Star } from "lucide-react";
+import { ChevronLeft, ChevronRight, Star, Trophy, Zap, Award, TrendingUp } from "lucide-react";
 import Hero from "../components/Hero";
 import { useSessionMemory } from "../hooks/useSessionMemory";
 import CryptoMatrix from "../components/CryptoMatrix";
@@ -46,6 +46,8 @@ import ForexMatrix from "../components/ForexMatrix";
 import { getMyPurchases } from "../api/client";
 import { useAuth } from "../auth/AuthContext";
 import TimelineNewsTabs from "../components/TimelineNewsTabs";
+import Leaderboard from "../components/Leaderboard";
+import LeaderboardOnboarding from "../components/LeaderboardOnboarding";
 
 // ===== Three.js lightweight visualizers (no extra deps) =====
 const MotionBox = motion(Box);
@@ -225,6 +227,7 @@ const Home: React.FC = () => {
   const { user } = useAuth() as any; // optional, safe even if unused elsewhere
   const [isEnrolled, setIsEnrolled] = React.useState(false);
   const [enrolledTiers, setEnrolledTiers] = React.useState<any[]>([]);
+  const [isNewUser, setIsNewUser] = React.useState(false);
 
   React.useEffect(() => {
     let mounted = true;
@@ -237,6 +240,15 @@ const Home: React.FC = () => {
         const list = Array.isArray(mine) ? mine : [];
         const confirmed = list.filter((p: any) => String(p?.status).toUpperCase() === "CONFIRMED");
         setIsEnrolled(confirmed.length > 0);
+        
+        // Check if user is new (enrolled within last 7 days)
+        const sevenDaysAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
+        const hasRecentEnrollment = confirmed.some((p: any) => {
+          const createdAt = new Date(p.createdAt).getTime();
+          return createdAt > sevenDaysAgo;
+        });
+        setIsNewUser(hasRecentEnrollment && confirmed.length <= 2); // New if recently enrolled and has 2 or fewer courses
+        
         // map to tiers we already fetched
         const tiersMap = new Map(tiers.map((t: any) => [t.id, t]));
         const myTiers = confirmed.map((p: any) => tiersMap.get(p.tierId)).filter(Boolean);
@@ -251,10 +263,17 @@ const Home: React.FC = () => {
 
   React.useEffect(() => {
     let mounted = true;
-    api
-      .get("/courses")
-      .then((r) => {
-        if (mounted) setTiers(Array.isArray(r.data) ? r.data : []);
+    // Load both courses and subscriptions
+    Promise.all([
+      api.get("/courses").catch(() => ({ data: [] })),
+      api.get("/subscriptions").catch(() => ({ data: [] })),
+    ])
+      .then(([coursesResp, subsResp]) => {
+        if (mounted) {
+          const courses = Array.isArray(coursesResp.data) ? coursesResp.data : [];
+          const subs = Array.isArray(subsResp.data) ? subsResp.data : [];
+          setTiers([...courses, ...subs]);
+        }
       })
       .catch(() => {
         if (mounted) setTiers([]);
@@ -264,20 +283,21 @@ const Home: React.FC = () => {
     };
   }, []);
 
-  const go = React.useCallback(
-    (delta: number) => {
-      setCourseIdx((i) => (tiers.length ? (i + delta + tiers.length) % tiers.length : 0));
-    },
-    [tiers.length]
-  );
+  // Separate courses and subscriptions
+  const { coursesOnly, subscriptionsOnly } = React.useMemo(() => {
+    const courses = tiers.filter((t) => !t.isVipProduct);
+    const subs = tiers.filter((t) => t.isVipProduct);
+    return { coursesOnly: courses, subscriptionsOnly: subs };
+  }, [tiers]);
 
-  const shownTiers = React.useMemo(() => {
-    const n = tiers.length;
-    if (!n) return [] as any[];
-    const out = [] as any[];
-    for (let k = 0; k < Math.min(3, n); k++) out.push(tiers[(courseIdx + k) % n]);
-    return out;
-  }, [tiers, courseIdx]);
+  const [featuredTab, setFeaturedTab] = React.useState(0); // 0=courses, 1=subscriptions
+  const activeTiers = featuredTab === 0 ? coursesOnly : subscriptionsOnly;
+
+  // Show 4 items for courses, 2 for subscriptions - no carousel/pagination
+  const displayTiers = React.useMemo(() => {
+    const maxItems = featuredTab === 0 ? 4 : 2; // 4 courses, 2 subscriptions
+    return activeTiers.slice(0, maxItems);
+  }, [activeTiers, featuredTab]);
 
   const TipsAndTricks: React.FC = () => (
     <Box py={{ base: 6, md: 10 }}>
@@ -894,37 +914,36 @@ const Home: React.FC = () => {
         {isEnrolled ? (
           <>
             {/* Enrolled View: keep Hero (already at top), keep Banner (above), and the CTA image below */}
-            <TipsAndTricks />
+            <Leaderboard />
             <EnrolledCoursesQuickAccess />
+            <TipsAndTricks />
             <MarketsBoard mode={mode} accentColor={accentColor} t={t} />
-            <TimelineNewsTabs
-              mode={mode === "dark" ? "dark" : "light"}
-            />
+            <TimelineNewsTabs mode={mode === "dark" ? "dark" : "light"} />
             {/* Keep your existing start-trading-cta image */}
-              <Box>
-                <Box mb={{ base: 8, md: 12 }} marginTop={10} px={{ base: 4, md: 0 }}>
-                  <Image
-                    src={
-                      isAR
-                        ? "/images/rand/start-trading-cta-ar.png"
-                        : isFR
-                        ? "/images/rand/start-trading-cta-fr.png"
-                        : "/images/rand/start-trading-cta.png"
-                    }
-                    alt={
-                      isAR
-                        ? "ابدأ التداول الآن — تعليم احترافي لكل المستويات"
-                        : t("home.cta.image_alt") ||
-                          "Start trading — premium education for every level"
-                    }
-                    w="70%"
-                    maxW="container.lg"
-                    mx="auto"
-                    objectFit="cover"
-                    loading="lazy"
-                  />
-                </Box>
+            <Box>
+              <Box mb={{ base: 8, md: 12 }} marginTop={10} px={{ base: 4, md: 0 }}>
+                <Image
+                  src={
+                    isAR
+                      ? "/images/rand/start-trading-cta-ar.png"
+                      : isFR
+                      ? "/images/rand/start-trading-cta-fr.png"
+                      : "/images/rand/start-trading-cta.png"
+                  }
+                  alt={
+                    isAR
+                      ? "ابدأ التداول الآن — تعليم احترافي لكل المستويات"
+                      : t("home.cta.image_alt") ||
+                        "Start trading — premium education for every level"
+                  }
+                  w="70%"
+                  maxW="container.lg"
+                  mx="auto"
+                  objectFit="cover"
+                  loading="lazy"
+                />
               </Box>
+            </Box>
             <BrokerCTA />
           </>
         ) : (
@@ -1189,16 +1208,52 @@ const Home: React.FC = () => {
               <Heading
                 textAlign="center"
                 color={accentColor}
-                mb={8}
+                mb={6}
                 fontSize={{ base: "3xl", md: "4xl" }}
               >
                 {t("home.courses.title") || "Featured Courses"}
               </Heading>
 
-              {/* Mobile: show 4 courses in 2x2 grid, no sliders */}
+              {/* Tabs for Courses / Subscriptions */}
+              <Box maxW="400px" mx="auto" mb={8}>
+                <Tabs
+                  index={featuredTab}
+                  onChange={setFeaturedTab}
+                  isFitted
+                  variant="unstyled"
+                  w="full"
+                >
+                  <TabList w="full" bg={accentColor} borderRadius="xl" p="2" gap="2">
+                    <Tab
+                      borderRadius="md"
+                      fontWeight="semibold"
+                      _hover={{ bg: "rgba(255,255,255,0.08)" }}
+                      _selected={{
+                        bg: mode === "dark" ? "black" : "white",
+                        color: accentColor,
+                      }}
+                    >
+                      {t("courses.tab", { defaultValue: "Courses" })}
+                    </Tab>
+                    <Tab
+                      borderRadius="md"
+                      fontWeight="semibold"
+                      _hover={{ bg: "rgba(255,255,255,0.08)" }}
+                      _selected={{
+                        bg: mode === "dark" ? "black" : "white",
+                        color: accentColor,
+                      }}
+                    >
+                      {t("subscriptions.tab", { defaultValue: "Subscriptions" })}
+                    </Tab>
+                  </TabList>
+                </Tabs>
+              </Box>
+
+              {/* Mobile: 2x2 grid, no carousel */}
               <Box display={{ base: "block", md: "none" }}>
                 <SimpleGrid columns={2} gap={4}>
-                  {tiers.slice(0, 4).map((tier, idx) => (
+                  {displayTiers.map((tier, idx) => (
                     <MotionBox
                       key={tier.id || idx}
                       initial={{ opacity: 0, y: 30 }}
@@ -1260,151 +1315,159 @@ const Home: React.FC = () => {
                 </SimpleGrid>
               </Box>
 
-              {/* Desktop/Tablet: keep carousel */}
-              <Box display={{ base: "none", md: "block" }} position="relative">
-                <SimpleGrid columns={{ base: 1, md: 3 }} gap={8}>
-                  {shownTiers.map((tier, idx) => (
-                    <MotionBox
-                      key={tier.id || idx}
-                      initial={{ opacity: 0, y: 30 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.4 }}
-                      viewport={{ once: true }}
-                    >
-                      <Box
-                        position="relative"
-                        borderRadius="2xl"
-                        overflow="hidden"
-                        boxShadow="2xl"
-                        border="1px solid"
-                        bg={mode === "dark" ? "black" : "white"}
-                        borderColor="#b7a27d"
+              {/* Desktop/Tablet: grid layout, no carousel */}
+              <Box display={{ base: "none", md: "block" }}>
+                {displayTiers.length === 0 ? (
+                  <Text textAlign="center" opacity={0.7} py={8}>
+                    {featuredTab === 0
+                      ? t("home.courses.no_courses", { defaultValue: "No courses available" })
+                      : t("home.courses.no_subscriptions", {
+                          defaultValue: "No subscriptions available",
+                        })}
+                  </Text>
+                ) : (
+                  <SimpleGrid columns={{ base: 1, md: featuredTab === 0 ? 4 : 2 }} gap={8}>
+                    {displayTiers.map((tier, idx) => (
+                      <MotionBox
+                        key={tier.id || idx}
+                        initial={{ opacity: 0, y: 30 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.4 }}
+                        viewport={{ once: true }}
                       >
-                        <Box p={8} textAlign="center">
-                          <VStack gap={4}>
-                            <Heading size="lg">{tier.name}</Heading>
-                            <Text fontSize="sm">{tier.description}</Text>
-                            {(() => {
-                              const { avg, count } = getAvgRating(tier);
-                              if (!avg) return null;
-                              const rounded = Math.round(avg);
-                              return (
-                                <VStack gap={1}>
-                                  <HStack justify="center" gap={1}>
-                                    {Array.from({ length: 5 }).map((_, k) => (
-                                      <Icon
-                                        key={k}
-                                        as={Star}
-                                        boxSize={4}
-                                        color={k < rounded ? accentColor : "gray.400"}
-                                        fill={k < rounded ? accentColor : "none"}
-                                      />
-                                    ))}
-                                  </HStack>
-                                  <Text fontSize="xs" opacity={0.8}>
-                                    {fmtAvg(avg)} • {count || 0} {t("common.reviews") || "reviews"}
-                                  </Text>
-                                </VStack>
-                              );
-                            })()}
-                          </VStack>
-                        </Box>
-                        {(() => {
-                          const positives = getPositiveComments(tier, 3);
-                          if (positives.length === 0) return null;
-
-                          return (
-                            <Box px={8} pt={0} pb={4}>
-                              <VStack align="stretch" gap={3}>
-                                {positives.map((r: any, i: number) => (
-                                  <Box key={r.id || i} p={3}>
-                                    <HStack justify="space-between" mb={1}>
-                                      <HStack gap={1}>
-                                        {Array.from({ length: 5 }).map((_, k) => (
-                                          <Icon
-                                            key={k}
-                                            as={Star}
-                                            boxSize={3.5}
-                                            color={
-                                              k < (Number(r.rating) || 0) ? accentColor : "gray.400"
-                                            }
-                                            fill={
-                                              k < (Number(r.rating) || 0) ? accentColor : "none"
-                                            }
-                                          />
-                                        ))}
-                                      </HStack>
-                                      <Text fontSize="xs" opacity={0.7}>
-                                        {r?.user?.name || t("common.anonymous") || "Student"} •{" "}
-                                        {r?.created_at
-                                          ? new Date(r.created_at).toLocaleDateString()
-                                          : ""}
-                                      </Text>
+                        <Box
+                          position="relative"
+                          borderRadius="2xl"
+                          overflow="hidden"
+                          boxShadow="2xl"
+                          border="1px solid"
+                          bg={mode === "dark" ? "black" : "white"}
+                          borderColor="#b7a27d"
+                        >
+                          <Box p={8} textAlign="center">
+                            <VStack gap={4}>
+                              <Heading size="lg">{tier.name}</Heading>
+                              <Text fontSize="sm">{tier.description}</Text>
+                              {(() => {
+                                const { avg, count } = getAvgRating(tier);
+                                if (!avg) return null;
+                                const rounded = Math.round(avg);
+                                return (
+                                  <VStack gap={1}>
+                                    <HStack justify="center" gap={1}>
+                                      {Array.from({ length: 5 }).map((_, k) => (
+                                        <Icon
+                                          key={k}
+                                          as={Star}
+                                          boxSize={4}
+                                          color={k < rounded ? accentColor : "gray.400"}
+                                          fill={k < rounded ? accentColor : "none"}
+                                        />
+                                      ))}
                                     </HStack>
-
-                                    <Text
-                                      fontSize="sm"
-                                      style={{
-                                        display: "-webkit-box",
-                                        WebkitLineClamp: "3",
-                                        WebkitBoxOrient: "vertical",
-                                        overflow: "hidden",
-                                      }}
-                                    >
-                                      {String(r.comment).slice(0, 240) +
-                                        (String(r.comment).length > 240 ? "..." : "")}
+                                    <Text fontSize="xs" opacity={0.8}>
+                                      {fmtAvg(avg)} • {count || 0}{" "}
+                                      {t("common.reviews") || "reviews"}
                                     </Text>
-                                  </Box>
-                                ))}
-                              </VStack>
-                            </Box>
-                          );
-                        })()}
-                        <Box p={8} pt={0}>
-                          <Button
-                            w="full"
-                            size="lg"
-                            bg={accentColor}
-                            onClick={() => navigate(`/courses/${tier.id}`)}
-                          >
-                            {t("home.courses.view") || "View Curriculum"}
-                          </Button>
+                                  </VStack>
+                                );
+                              })()}
+                            </VStack>
+                          </Box>
+                          {(() => {
+                            const positives = getPositiveComments(tier, 3);
+                            if (positives.length === 0) return null;
+
+                            return (
+                              <Box px={8} pt={0} pb={4}>
+                                <VStack align="stretch" gap={3}>
+                                  {positives.map((r: any, i: number) => (
+                                    <Box key={r.id || i} p={3}>
+                                      <HStack justify="space-between" mb={1}>
+                                        <HStack gap={1}>
+                                          {Array.from({ length: 5 }).map((_, k) => (
+                                            <Icon
+                                              key={k}
+                                              as={Star}
+                                              boxSize={3.5}
+                                              color={
+                                                k < (Number(r.rating) || 0)
+                                                  ? accentColor
+                                                  : "gray.400"
+                                              }
+                                              fill={
+                                                k < (Number(r.rating) || 0) ? accentColor : "none"
+                                              }
+                                            />
+                                          ))}
+                                        </HStack>
+                                        <Text fontSize="xs" opacity={0.7}>
+                                          {r?.user?.name || t("common.anonymous") || "Student"} •{" "}
+                                          {r?.created_at
+                                            ? new Date(r.created_at).toLocaleDateString()
+                                            : ""}
+                                        </Text>
+                                      </HStack>
+
+                                      <Text
+                                        fontSize="sm"
+                                        style={{
+                                          display: "-webkit-box",
+                                          WebkitLineClamp: "3",
+                                          WebkitBoxOrient: "vertical",
+                                          overflow: "hidden",
+                                        }}
+                                      >
+                                        {String(r.comment).slice(0, 240) +
+                                          (String(r.comment).length > 240 ? "..." : "")}
+                                      </Text>
+                                    </Box>
+                                  ))}
+                                </VStack>
+                              </Box>
+                            );
+                          })()}
+                          <Box p={8} pt={0}>
+                            <Button
+                              w="full"
+                              size="lg"
+                              bg={accentColor}
+                              onClick={() => navigate(`/courses/${tier.id}`)}
+                            >
+                              {t("home.courses.view") || "View Curriculum"}
+                            </Button>
+                          </Box>
                         </Box>
-                      </Box>
-                    </MotionBox>
-                  ))}
-                </SimpleGrid>
-
-                {tiers.length > 3 && (
-                  <>
-                    <IconButton
-                      aria-label="Previous"
-                      variant="solid"
-                      bg="#b7a27d"
-                      color="white"
-                      position="absolute"
-                      top="50%"
-                      left={{ base: 0, md: -6 }}
-                      onClick={() => go(-1)}
-                    >
-                      {isRTL ? <ChevronRight /> : <ChevronLeft />}
-                    </IconButton>
-
-                    <IconButton
-                      aria-label="Next"
-                      variant="solid"
-                      bg="#b7a27d"
-                      color="white"
-                      position="absolute"
-                      top="50%"
-                      right={{ base: 0, md: -6 }}
-                      onClick={() => go(1)}
-                    >
-                      {isRTL ? <ChevronLeft /> : <ChevronRight />}
-                    </IconButton>
-                  </>
+                      </MotionBox>
+                    ))}
+                  </SimpleGrid>
                 )}
               </Box>
+            </Box>
+
+            {/* Leaderboard Section */}
+            <Box mt={{ base: 8, md: 12 }}>
+              <VStack spacing={6} align="stretch">
+                <VStack spacing={2} align="center">
+                  <HStack>
+                    <Icon as={Trophy} boxSize={8} color={accentColor} />
+                    <Heading size="xl" color={accentColor}>
+                      {t("leaderboard.title") || "Top Students"}
+                    </Heading>
+                  </HStack>
+                  <Text fontSize="lg" textAlign="center" opacity={0.9}>
+                    {t("leaderboard.subtitle", "See who's leading the way in trading mastery")}
+                  </Text>
+                </VStack>
+
+                {/* Onboarding Hints */}
+                <Box display="flex" justifyContent="center">
+                  <LeaderboardOnboarding isNewUser={isNewUser} />
+                </Box>
+
+                {/* Leaderboard Component */}
+                <Leaderboard />
+              </VStack>
             </Box>
 
             {/* Stats Bar + Trustpilot-like Carousel */}

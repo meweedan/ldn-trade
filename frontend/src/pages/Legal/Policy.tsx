@@ -141,7 +141,7 @@ export default function PrivacyRefundPolicy() {
             <Text color="text.muted">
               {t("legal.refund.process") ||
                 "To initiate a refund, email support with your order ID, wallet address, and reason."}{" "}
-              <Code>{t("legal.common.support_email") || "support@tradeprofitab.ly"}</Code>
+              <Code>{t("legal.common.support_email") || "support@infini.ly"}</Code>
             </Text>
           </Section>
 
@@ -257,8 +257,8 @@ export default function PrivacyRefundPolicy() {
             <Text color="text.muted">
               {t("legal.common.contact_text") ||
                 "For privacy questions or refund requests, reach us at "}
-              <Link href="mailto:support@tradeprofitab.ly" color={GOLD}>
-                {t("legal.common.support_email") || "support@tradeprofitab.ly"}
+              <Link href="mailto:support@infini.ly" color={GOLD}>
+                {t("legal.common.support_email") || "support@infini.ly"}
               </Link>
               .
             </Text>

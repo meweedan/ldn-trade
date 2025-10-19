@@ -162,8 +162,8 @@ const resources = {
         addons: {
           vip: {
             title: "VIP Telegram (monthly)",
-            subtitle: "Recurring $20/month. Cancel anytime.",
-            choose: "Add ($20/month)"
+            subtitle: "Recurring monthly. Cancel anytime.",
+            choose: "Add now"
           }
         },
         libyana: {
@@ -266,6 +266,8 @@ const resources = {
         loading: 'Loading...',
         prev: 'Previous',
         next: 'Next',
+        click_to_load: 'Click to load',
+        video: 'Video',
         price: 'Price',
         price_usdt: 'Price (USDT)',
         price_stripe: 'Price (Stripe cents)',
@@ -285,6 +287,7 @@ const resources = {
         preview: 'preview',
         forbidden: 'Forbidden', // used as fallback in ContentAdmin
         copied: 'Copied',
+        got_it: 'Got it, thanks!',
       },
       instructor: {
         name: 'Instructor Name',
@@ -412,24 +415,73 @@ const resources = {
         open: 'Open',
         settings_hint: 'Use the header controls to switch language. More settings coming soon.',
         vip_title: 'VIP Telegram',
-        vip_status_active: 'Status: Active ($20/month)',
+        vip_status_active: 'Status: Active',
         vip_status_inactive: 'Not subscribed.',
         vip_join: 'Open VIP Telegram',
-        vip_started: 'Started',
-        vip_renews: 'Renews',
-        vip_subscribe: 'Subscribe $20/month',
-        vip_renew: 'Renew Subscription',
-        vip_days_left: 'Days remaining',
-        days: 'days'
-      },
-      account: {
-        title: 'My account',
-        subtitle: 'Profile details and account settings',
-      },
-      title: "Trading Courses",
-      states: {
-        loading: "Loading…",
         empty: "No courses yet."
+      },
+      progress: {
+        title: 'My Progress',
+        overview: 'Overview',
+        badges: 'Badges',
+        leaderboard: 'Leaderboard',
+        level: 'Level',
+        xp: 'XP',
+        streak: 'Streak',
+        days: 'days',
+        courses_completed: 'Courses Completed',
+        total_xp: 'Total XP',
+        xp_to_next_level: 'XP to next level',
+        days_in_a_row: 'days in a row',
+        out_of: 'out of',
+        course_progress: 'Course Progress',
+        complete: 'complete',
+        lessons: 'lessons',
+        videos: 'videos',
+        pdfs: 'PDFs',
+        completed: 'Completed',
+        in_progress: 'In Progress',
+        not_started: 'Not Started',
+        keep_learning: 'Keep Learning!',
+        great_progress: 'Great progress! Keep it up!',
+        xp_earned: 'XP earned',
+        progress_saved: 'Progress Saved!',
+        badge_unlocked: 'Badge Unlocked!',
+        new_level: 'Level Up!',
+        reached_level: 'You reached level {{level}}!',
+      },
+      badges: {
+        title: 'Badges',
+        my_badges: 'My Badges',
+        all_badges: 'All Badges',
+        unlocked: 'Unlocked',
+        locked: 'Locked',
+        no_badges_yet: 'No badges unlocked yet',
+        complete_lessons: 'Complete lessons and courses to earn badges!',
+        rarity: {
+          common: 'Common',
+          rare: 'Rare',
+          epic: 'Epic',
+          legendary: 'Legendary',
+        },
+        category: {
+          milestone: 'Milestone',
+          achievement: 'Achievement',
+          streak: 'Streak',
+          special: 'Special',
+        },
+        unlock_progress: 'Unlock Progress',
+        unlocked_at: 'Unlocked',
+      },
+      leaderboard: {
+        title: 'Leaderboard',
+        top_students: 'Top Students',
+        rank: 'Rank',
+        student: 'Student',
+        level: 'Level',
+        xp: 'XP',
+        you: 'You',
+        top_3: 'Top 3',
       },
       errors: {
         load_failed: "Failed to load courses"
@@ -492,6 +544,11 @@ const resources = {
         },
         videos: {
           title: "Videos"
+        },
+        chart: {
+          title: "Live Chart Practice",
+          description: "Practice reading charts in real-time. Use the tools below to analyze price action, identify patterns, and apply what you've learned.",
+          tip: "💡 Tip: Try different timeframes and symbols to practice your analysis skills"
         },
         guard: {
           note: "Downloads are disabled. Screenshots are discouraged."
@@ -572,11 +629,14 @@ const resources = {
         subtitle: "Plus: get exclusive access to our courses.",
         cta: "Join",
         placeholder: "Enter your email address",
-        success: "Thank you for your interest!",
         name: "Your Name",
         phone: "Phone",
         email: "Email",
-        error: "Something went wrong. Please try again.",
+        name_required: 'Please enter your name.',
+        email_invalid: 'Please enter a valid email.',
+        phone_invalid: 'Please enter a valid phone number.',
+        success: 'Thank you for your interest!',
+        error: 'Something went wrong. Please try again.',
       },
       home: {
         offers: 'Limited-time Offers',
@@ -621,8 +681,8 @@ const resources = {
           kicker: "Limited-time course promo:",
           copy: "Copy",
           details: "Save up to 10% — apply this code at checkout before the timer ends.",
-          kicker_late: "Late access promo:",
-          details_late: "Missed the cohort? Use this late access code."
+          kicker_late: "Missed your chance?",
+          details_late: "Use this late access code."
 
         },
         trustpilot: {
@@ -647,11 +707,19 @@ const resources = {
         },
         faq: {
           title: "Frequently Asked Questions",
-          subtitle: "Find quick answers below. Still stuck? Reach out — we’re happy to help.",
+          subtitle: "Find quick answers below. Still stuck? Reach out — we're happy to help.",
+          q1: "Who are these programs for?",
+          a1: "Beginners to advanced learners looking for structured, outcome-focused training.",
+          q2: "How are the courses delivered?",
+          a2: "Live cohorts and self-paced modules with community support and downloadable resources.",
+          q3: "Do I get a certificate?",
+          a3: "Yes, you'll receive a certificate of completion you can share on LinkedIn.",
+          q4: "Can I try before committing?",
+          a4: "We offer previews and sample lessons so you can explore before you enroll.",
           items: [
             { q: "Who are these programs for?", a: "Beginners to advanced learners looking for structured, outcome-focused training." },
             { q: "How are the courses delivered?", a: "Live cohorts and self-paced modules with community support and downloadable resources." },
-            { q: "Do I get a certificate?", a: "Yes, you’ll receive a certificate of completion you can share on LinkedIn." },
+            { q: "Do I get a certificate?", a: "Yes, you'll receive a certificate of completion you can share on LinkedIn." },
             { q: "Can I try before committing?", a: "We offer previews and sample lessons so you can explore before you enroll." }
           ]
         },
@@ -678,10 +746,12 @@ const resources = {
           four_desc: 'Showcase your achievement upon graduation.',
         },
         courses: {
-          title: 'Featured Courses',
-          cta: 'View Curriculum',
-          view: 'View Now',
+          title: 'Our services',
+          cta: 'Join',
+          view: 'View',
           access: 'Access',
+          no_courses: 'No courses available',
+          no_subscriptions: 'No subscriptions available',
         },
         cta: {
           kicker: 'Ready to Learn?',
@@ -1002,6 +1072,8 @@ const resources = {
         expires_at: "Expire le",
         prev: "Précédent",
         next: "Suivant",
+        click_to_load: "Cliquer pour charger",
+        video: "Vidéo",
         title: "Titre",
         subtitle: "Sous-titre",
         note: "Remarque",
@@ -1016,6 +1088,7 @@ const resources = {
         preview: "aperçu",
         forbidden: 'Interdit',
         copied: 'Copié',
+        got_it: 'Compris, merci!',
       },
       instructor: {
         name: "Nom du formateur",
@@ -1057,6 +1130,15 @@ const resources = {
         applications: 'Postulants',
         communications: 'Communications',
         promos: 'Promos',
+        badge_stats: {
+          title: 'Statistiques des Badges',
+          total_badges: 'Total des Badges',
+          most_popular: 'Le Plus Populaire',
+          rarest: 'Le Plus Rare',
+          students: 'étudiants',
+          available: 'Disponible à débloquer',
+          unlock_stats: 'Statistiques de Déblocage',
+        },
         comm: {
           search_ph: 'Rechercher nom, e-mail, message…',
           status_read: 'LU',
@@ -1119,6 +1201,91 @@ const resources = {
         toast_sent_title: "Message envoyé",
         toast_sent_desc: "Nous vous recontacterons bientôt.",
       },
+      progress: {
+        title: 'Ma Progression',
+        overview: 'Aperçu',
+        badges: 'Badges',
+        leaderboard: 'Classement',
+        level: 'Niveau',
+        xp: 'XP',
+        streak: 'Série',
+        days: 'jours',
+        courses_completed: 'Cours Terminés',
+        total_xp: 'XP Total',
+        xp_to_next_level: 'XP au prochain niveau',
+        days_in_a_row: 'jours d\'affilée',
+        out_of: 'sur',
+        course_progress: 'Progression du Cours',
+        complete: 'terminé',
+        lessons: 'leçons',
+        videos: 'vidéos',
+        pdfs: 'PDFs',
+        completed: 'Terminé',
+        in_progress: 'En Cours',
+        not_started: 'Pas Commencé',
+        keep_learning: 'Continuez!',
+        great_progress: 'Excellent progrès! Continuez!',
+        xp_earned: 'XP gagné',
+        progress_saved: 'Progression Sauvegardée!',
+        badge_unlocked: 'Badge Débloqué!',
+        new_level: 'Niveau Supérieur!',
+        reached_level: 'Vous avez atteint le niveau {{level}}!',
+      },
+      badges: {
+        title: 'Badges',
+        my_badges: 'Mes Badges',
+        all_badges: 'Tous les Badges',
+        unlocked: 'Débloqué',
+        locked: 'Verrouillé',
+        no_badges_yet: 'Aucun badge débloqué',
+        complete_lessons: 'Complétez des leçons pour gagner des badges!',
+        rarity: {
+          common: 'Commun',
+          rare: 'Rare',
+          epic: 'Épique',
+          legendary: 'Légendaire',
+        },
+        category: {
+          milestone: 'Étape',
+          achievement: 'Réussite',
+          streak: 'Série',
+          special: 'Spécial',
+        },
+        unlock_progress: 'Progression de Déverrouillage',
+        unlocked_at: 'Débloqué',
+      },
+      leaderboard: {
+        title: 'Classement',
+        subtitle: 'Découvrez qui mène la voie vers la maîtrise du trading',
+        top_students: 'Meilleurs Étudiants',
+        rank: 'Rang',
+        student: 'Étudiant',
+        level: 'Niveau',
+        xp: 'XP',
+        you: 'Vous',
+        top_3: 'Top 3',
+        how_to_compete: 'Comment Participer',
+        loading: 'Chargement...',
+        no_data: 'Aucune donnée disponible',
+        onboarding: {
+          title: 'Grimpez dans le Classement!',
+          description: 'Rivalisez avec d\'autres étudiants et gagnez votre place au sommet! Voici comment gagner de l\'XP et grimper dans les rangs:',
+          watch_videos: 'Regarder des Vidéos',
+          watch_videos_desc: 'Complétez des leçons vidéo pour gagner de l\'expérience',
+          read_pdfs: 'Lire des PDFs',
+          read_pdfs_desc: 'Étudiez les supports de cours et les ressources',
+          complete_lessons: 'Terminer des Leçons',
+          complete_lessons_desc: 'Terminez des leçons entières pour monter de niveau plus rapidement',
+          complete_courses: 'Terminer des Cours',
+          complete_courses_desc: 'Terminez des cours complets pour des boosts d\'XP massifs',
+          maintain_streak: 'Maintenez Votre Série',
+          maintain_streak_desc: 'Apprenez chaque jour pour gagner des bonus de série',
+          pro_tip: 'Conseil Pro:',
+          pro_tip_desc: 'Débloquez des badges en atteignant des jalons! Les badges mettent en valeur vos réalisations et votre dévouement. Consultez votre page de progression pour voir quels badges vous pouvez débloquer ensuite.',
+          view_progress: 'Voir Ma Progression',
+          get_started: 'Commencer',
+        },
+      },
       dashboard: {
         title: 'Tableau de bord',
         subtitle: 'Gérez vos cours et votre compte',
@@ -1160,12 +1327,12 @@ const resources = {
         open: 'Ouvrir',
         settings_hint: 'Use the header controls to switch language. More settings coming soon.',
         vip_title: 'VIP Telegram',
-        vip_status_active: 'Active ($20/mois)',
+        vip_status_active: 'Active',
         vip_status_inactive: 'Non abonné.',
         vip_join: 'Ouvrir Telegram VIP',
         vip_started: 'Commencé',
         vip_renews: 'Renouvelle',
-        vip_subscribe: 'Souscrire $20/mois',
+        vip_subscribe: 'Souscrire',
         vip_renew: 'Renouveler la souscription',
         vip_days_left: 'Jours restants',
       },
@@ -1257,6 +1424,11 @@ const resources = {
         videos: {
           title: "Vidéos"
         },
+        chart: {
+          title: "Pratique de Graphiques en Direct",
+          description: "Pratiquez la lecture de graphiques en temps réel. Utilisez les outils ci-dessous pour analyser l'action des prix, identifier les modèles et appliquer ce que vous avez appris.",
+          tip: "💡 Astuce: Essayez différentes périodes et symboles pour pratiquer vos compétences d'analyse"
+        },
         guard: {
           note: "Le téléchargement est désactivé. Les captures d’écran sont déconseillées."
         },
@@ -1285,14 +1457,17 @@ const resources = {
       },
       lead: {
         title: "Rejoignez notre newsletter et recevez les dernières actualités du marché !",
-        subtitle: "De plus : bénéficiez d’un accès exclusif à nos formations.",
-        cta: "S’inscrire",
+        subtitle: "De plus : bénéficiez d'un accès exclusif à nos formations.",
+        cta: "S'inscrire",
         placeholder: "Entrez votre adresse e-mail",
-        success: "Merci pour votre intérêt ! Votre inscription est confirmée.",
         name: "Votre nom",
         phone: "Téléphone",
         email: "E-mail",
-        error: "Une erreur s’est produite. Veuillez réessayer.",
+        name_required: 'Veuillez entrer votre nom.',
+        email_invalid: 'Veuillez entrer une adresse e-mail valide.',
+        phone_invalid: 'Veuillez entrer un numéro de téléphone valide.',
+        success: "Merci pour votre intérêt !",
+        error: "Une erreur s'est produite. Veuillez réessayer.",
       },
       home: {
         hero: {
@@ -1346,7 +1521,9 @@ const resources = {
         promo: {
           kicker: "Promo cours limitée :",
           copy: "Copier",
-          details: "Économisez jusqu’à 10 % — appliquez ce code au paiement avant la fin du temps."
+          details: "Économisez jusqu’à 10 % — appliquez ce code au paiement avant la fin du temps.",
+          kicker_late: "Promo accès tardif :",
+          details_late: "Missed your chance? Use this late access code."
         },
         trustpilot: {
           title: "Vérifié par les apprenants — et ça se voit",
@@ -1397,8 +1574,8 @@ const resources = {
           four_desc: 'Valorisez votre accomplissement après le cursus.',
         },
         courses: {
-          title: 'Cours à la une',
-          cta: 'Voir',
+          title: 'Nos services',
+          cta: 'Rejoindre',
           view: 'Voir',
           access: 'Accéder',
         },
@@ -1495,7 +1672,7 @@ const resources = {
           vip: {
             title: "VIP Telegram (mensuelle)",
             subtitle: "Abonnement mensuel. Annulez à tout moment.",
-            choose: "Ajouter ($20/mois)"
+            choose: "Ajouter (mensuelle)"
           }
         },
         errors: {
@@ -1615,6 +1792,10 @@ const resources = {
       Indices_Timeline: "آخر أخبار المؤشرات",
       All_Crypto_Headlines: "جميع أخبار العملات الرقمية",
       Crypto_Timeline: "آخر أخبار العملات الرقمية",
+      subscriptions: {
+        tab: "الاشتراكات",
+        vip: "VIP",
+      },
       celebration: {
         title: "تم تأكيد الانضمام!",
         body: "تهانينا، تم تسجيلك بنجاح في {{course_name}}.",
@@ -1757,6 +1938,7 @@ const resources = {
         products: 'المنتجات',
         no_messages: 'لا توجد رسائل',
         copy: 'نسخ',
+        hide: 'إخفاء',
         download_qr: 'تحميل QR',
         phone: 'رقم الهاتف',
         email: 'البريد الإلكتروني',
@@ -1779,10 +1961,11 @@ const resources = {
         delete: 'حذف',
         prev: 'السابق',
         next: 'التالي',
-        currency: 'العملة',
+        click_to_load: 'انقر للتحميل',
+        video: 'فيديو',
+        title: 'العنوان',
         expires_in: 'تاريخ انتهاء صلاحية السعر',
         expires_at: 'ينتهي في',
-        title: 'العنوان',
         close: 'إغلاق',
         subtitle: 'العنوان الفرعي',
         note: 'ملاحظة',
@@ -1795,6 +1978,7 @@ const resources = {
         preview: 'معاينة',
         forbidden: 'ممنوع',
         copied: 'تم النسخ',
+        got_it: 'فهمت، شكراً!',
       },
       instructor: {
         name: 'اسم المدرّس',
@@ -1835,6 +2019,15 @@ const resources = {
         jobs: 'الوظائف',
         applications: 'الطلبات',
         communications: 'التواصلات',
+        badge_stats: {
+          title: 'إحصائيات الشارات',
+          total_badges: 'إجمالي الشارات',
+          most_popular: 'الأكثر شعبية',
+          rarest: 'الأندر',
+          students: 'طلاب',
+          available: 'متاح للفتح',
+          unlock_stats: 'إحصائيات الفتح',
+        },
         comm: {
           search_ph: 'ابحث بالاسم أو البريد أو الرسالة…',
           status_read: 'مقروء',
@@ -1870,7 +2063,7 @@ const resources = {
         pending_balance: 'الرصيد المعلّق',
         overview: 'نظرة عامة',
         view: 'عرض',
-        must_be_admin: 'يجب أن تكون مديرًا لعرض هذه الصفحة.'
+        must_be_admin: 'يجب أن تكون مديرًا لعرض هذه الصفحة.',
       },
       header: {
         hi: 'مرحباً، {{name}}',
@@ -1935,7 +2128,7 @@ const resources = {
           vip: {
             title: "تيليجرام VIP (شهري)",
             subtitle: "اشتراك شهري. إلغاء في أي وقت.",
-            choose: "إضافة ($20/شهرياً)"
+            choose: "إضافة (شهرياً)"
           }
         },
         libyana: {
@@ -1985,6 +2178,91 @@ const resources = {
           proof_failed: "تعذّر إرسال الإثبات"
         }
       },
+      progress: {
+        title: 'تقدمي',
+        overview: 'نظرة عامة',
+        badges: 'الشارات',
+        leaderboard: 'لوحة المتصدرين',
+        level: 'المستوى',
+        xp: 'نقاط الخبرة',
+        streak: 'السلسلة',
+        days: 'أيام',
+        courses_completed: 'الكورسات المكتملة',
+        total_xp: 'إجمالي نقاط الخبرة',
+        xp_to_next_level: 'نقاط للمستوى التالي',
+        days_in_a_row: 'أيام متتالية',
+        out_of: 'من',
+        course_progress: 'تقدم الكورس',
+        complete: 'مكتمل',
+        lessons: 'دروس',
+        videos: 'فيديوهات',
+        pdfs: 'ملفات PDF',
+        completed: 'مكتمل',
+        in_progress: 'قيد التقدم',
+        not_started: 'لم يبدأ',
+        keep_learning: 'استمر في التعلم!',
+        great_progress: 'تقدم رائع! استمر!',
+        xp_earned: 'نقاط خبرة مكتسبة',
+        progress_saved: 'تم حفظ التقدم!',
+        badge_unlocked: 'تم فتح شارة!',
+        new_level: 'مستوى جديد!',
+        reached_level: 'وصلت إلى المستوى {{level}}!',
+      },
+      badges: {
+        title: 'الشارات',
+        my_badges: 'شاراتي',
+        all_badges: 'جميع الشارات',
+        unlocked: 'مفتوحة',
+        locked: 'مقفلة',
+        no_badges_yet: 'لا توجد شارات مفتوحة بعد',
+        complete_lessons: 'أكمل الدروس والكورسات لكسب الشارات!',
+        rarity: {
+          common: 'عادية',
+          rare: 'نادرة',
+          epic: 'ملحمية',
+          legendary: 'أسطورية',
+        },
+        category: {
+          milestone: 'إنجاز',
+          achievement: 'تحصيل',
+          streak: 'سلسلة',
+          special: 'خاصة',
+        },
+        unlock_progress: 'تقدم الفتح',
+        unlocked_at: 'فتحت في',
+      },
+      leaderboard: {
+        title: 'لوحة المتصدرين',
+        subtitle: 'اكتشف من يقود الطريق نحو إتقان التداول',
+        top_students: 'أفضل الطلاب',
+        rank: 'الترتيب',
+        student: 'الطالب',
+        level: 'المستوى',
+        xp: 'نقاط الخبرة',
+        you: 'أنت',
+        top_3: 'أفضل 3',
+        how_to_compete: 'كيف تتنافس',
+        loading: 'جار التحميل...',
+        no_data: 'لا توجد بيانات متاحة',
+        onboarding: {
+          title: 'تسلق لوحة المتصدرين!',
+          description: 'تنافس مع الطلاب الآخرين واكسب مكانك في القمة! إليك كيفية كسب نقاط الخبرة والتقدم في الترتيب:',
+          watch_videos: 'شاهد الفيديوهات',
+          watch_videos_desc: 'أكمل دروس الفيديو لكسب الخبرة',
+          read_pdfs: 'اقرأ ملفات PDF',
+          read_pdfs_desc: 'ادرس مواد الكورس والموارد',
+          complete_lessons: 'أكمل الدروس',
+          complete_lessons_desc: 'أنهِ الدروس الكاملة لترتقي بمستواك بشكل أسرع',
+          complete_courses: 'أكمل الكورسات',
+          complete_courses_desc: 'أنهِ الكورسات الكاملة للحصول على دفعات ضخمة من نقاط الخبرة',
+          maintain_streak: 'حافظ على سلسلتك',
+          maintain_streak_desc: 'تعلم كل يوم لكسب مكافآت السلسلة',
+          pro_tip: 'نصيحة احترافية:',
+          pro_tip_desc: 'افتح الشارات بالوصول إلى المعالم! الشارات تعرض إنجازاتك وتفانيك. تحقق من صفحة التقدم الخاصة بك لمعرفة الشارات التي يمكنك فتحها بعد ذلك.',
+          view_progress: 'عرض تقدمي',
+          get_started: 'ابدأ',
+        },
+      },
       dashboard: {
         title: 'لوحة التحكم',
         subtitle: 'إدارة الكورسات والحساب',
@@ -2027,12 +2305,12 @@ const resources = {
         open: 'فتح',
         settings_hint: 'Use the header controls to switch language. More settings coming soon.',
         vip_title: 'VIP Telegram',
-        vip_status_active: 'مفعل ($20/شهرياً)',
+        vip_status_active: 'مفعل',
         vip_status_inactive: 'غير مفعل.',
         vip_join: 'فتح Telegram VIP',
         vip_started: 'اشتركت في',
         vip_renews: 'تجدد في',
-        vip_subscribe: 'اشترك بـ$20/شهرياً فقط',
+        vip_subscribe: 'اشترك',
         vip_renew: 'تجديد الاشتراك',
         vip_days_left: 'الايام المتبقية',
       },
@@ -2110,6 +2388,11 @@ const resources = {
         videos: {
           title: "الفيديوهات"
         },
+        chart: {
+          title: "ممارسة الرسوم البيانية المباشرة",
+          description: "تدرب على قراءة الرسوم البيانية في الوقت الفعلي. استخدم الأدوات أدناه لتحليل حركة السعر وتحديد الأنماط وتطبيق ما تعلمته.",
+          tip: "💡 نصيحة: جرب أطر زمنية ورموز مختلفة لممارسة مهارات التحليل الخاصة بك"
+        },
         guard: {
           note: "تم تعطيل التنزيل. لا ننصح بالتقاط لقطات الشاشة."
         },
@@ -2141,10 +2424,13 @@ const resources = {
         subtitle: "بالإضافة إلى ذلك: احصل على وصول حصري إلى دوراتنا التدريبية.",
         cta: "انضم",
         placeholder: "أدخل بريدك الإلكتروني",
-        success: "شكرًا لاهتمامك! تم الاشتراك بنجاح.",
         name: "اسمك",
         phone: "رقم الهاتف",
         email: "البريد الإلكتروني",
+        name_required: 'يرجى إدخال اسمك.',
+        email_invalid: 'يرجى إدخال بريد إلكتروني صحيح.',
+        phone_invalid: 'يرجى إدخال رقم هاتف صحيح.',
+        success: "شكرًا لاهتمامك!",
         error: "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
       },
       home: {
@@ -2203,7 +2489,9 @@ const resources = {
         promo: {
           kicker: "عرض خصم للكورس لفترة محدودة:",
           copy: "نسخ",
-          details: "وفّر حتى 10% — استخدم هذا الكود عند الدفع قبل انتهاء الوقت."
+          details: "وفّر حتى 10% — استخدم هذا الكود عند الدفع قبل انتهاء الوقت.",
+          kicker_late: "فاتك العرض؟",
+          details_late: "استعمل هذا الكود عند الدفع."
         },
         trustpilot: {
           title: "موثوق من المتعلمين — والنتائج واضحة",
@@ -2254,9 +2542,11 @@ const resources = {
           four_desc: 'اعرض إنجازك عند التخرج.',
         },
         courses: {
-          title: 'كورسات مميزة',
-          cta: 'استعرض المنهج',
-          view: 'ابداء الكورس',
+          title: 'خدماتنا',
+          cta: 'انضم',
+          view: 'عرض',
+          no_courses: 'لا توجد كورسات حتى الآن.',
+          no_subscriptions: 'لا توجد اشتراكات حتى الآن.',
           access: 'الوصول',
         },
         cta: {
@@ -2268,7 +2558,9 @@ const resources = {
           image_alt: 'ابدأ التداول — تعليم احترافي لكل المستويات',
         },
       },
-      title: "كورسات التداول",
+      courses: {
+        tab: "كورسات التداول",
+      },
       states: {
         loading: "جاري التحميل…",
         empty: "لا توجد كورسات حتى الآن."
@@ -2581,7 +2873,7 @@ const NEW_PAGE_STRINGS = {
           last_updated: "Last updated",
           contact: "Contact",
           contact_text: "For privacy questions or refund requests, reach us at ",
-          support_email: "support@tradeprofitab.ly",
+          support_email: "support@infini.ly",
           disclaimer: "Nothing here is financial advice. Trading involves substantial risk of loss. Educational content is provided as-is without guarantees."
         }
       },
@@ -2884,7 +3176,7 @@ const NEW_PAGE_STRINGS = {
           last_updated: "آخر تحديث",
           contact: "تواصل معنا",
           contact_text: "للاستفسارات حول الخصوصية أو طلبات الاسترداد، تواصل معنا عبر ",
-          support_email: "support@tradeprofitab.ly",
+          support_email: "support@infini.ly",
           disclaimer: "لا يُعد أي مما ورد هنا نصيحة مالية. التداول ينطوي على مخاطر كبيرة بالخسارة. يُقدَّم المحتوى التعليمي كما هو ودون أي ضمانات."
         }
       },
@@ -3259,7 +3551,7 @@ const NEW_PAGE_STRINGS = {
           last_updated: "Dernière mise à jour",
           contact: "Contact",
           contact_text: "Pour toute question relative à la confidentialité ou aux remboursements, contactez-nous à ",
-          support_email: "support@tradeprofitab.ly",
+          support_email: "support@infini.ly",
           disclaimer: "Rien ici ne constitue un conseil financier. Le trading comporte un risque significatif de perte. Le contenu éducatif est fourni tel quel, sans garantie."
         }
       },

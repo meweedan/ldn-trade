@@ -24,6 +24,7 @@ import { Link as RouterLink } from "react-router-dom";
 import api from "../../api/client";
 import { useTranslation } from "react-i18next";
 import { Star } from "lucide-react";
+import { useThemeMode } from "../../themeProvider";
 import { TokenUSDT } from "@web3icons/react";
 
 type Review = { rating: number };
@@ -64,12 +65,19 @@ const CoursesList: React.FC = () => {
   const [tiers, setTiers] = React.useState<CourseTier[]>([]);
   const [loading, setLoading] = React.useState<boolean>(true);
   const [error, setError] = React.useState<string | null>(null);
+  const { mode } = useThemeMode(); // "light" | "dark"
 
   React.useEffect(() => {
     (async () => {
       try {
-        const resp = await api.get("/courses");
-        setTiers(resp.data || []);
+        // Load both courses and subscriptions
+        const [coursesResp, subsResp] = await Promise.all([
+          api.get("/courses").catch(() => ({ data: [] })),
+          api.get("/subscriptions").catch(() => ({ data: [] })),
+        ]);
+        const courses = Array.isArray(coursesResp.data) ? coursesResp.data : [];
+        const subs = Array.isArray(subsResp.data) ? subsResp.data : [];
+        setTiers([...courses, ...subs]);
       } catch (e: any) {
         setError(
           e?.response?.data?.message || t("errors.load_failed", { defaultValue: "Failed to load." })
@@ -152,10 +160,29 @@ const CoursesList: React.FC = () => {
           )}
 
           {!loading && !error && tiers.length > 0 && (
-            <Tabs variant="enclosed" colorScheme="yellow">
-              <TabList>
-                <Tab>{t("courses.tab", { defaultValue: "Courses" })}</Tab>
-                <Tab>{t("subscriptions.tab", { defaultValue: "Subscriptions" })}</Tab>
+            <Tabs isFitted variant="unstyled" w="full">
+              <TabList w="full" bg={GOLD} borderRadius="xl" p="2" gap="2">
+                <Tab
+                  borderRadius="md"
+                  fontWeight="semibold"
+                  _hover={{ bg: "rgba(255,255,255,0.08)" }}
+                  _selected={{
+                    // keep gold + white text; show active state with a subtle underline glow
+                    bg: mode === "dark" ? "black" : "white",
+                  }}
+                >
+                  {t("courses.tab", { defaultValue: "Courses" })}
+                </Tab>
+                <Tab
+                  borderRadius="md"
+                  fontWeight="semibold"
+                  _hover={{ bg: "rgba(255,255,255,0.08)" }}
+                  _selected={{
+                    bg: mode === "dark" ? "black" : "white",
+                  }}
+                >
+                  {t("subscriptions.tab", { defaultValue: "Subscriptions" })}
+                </Tab>
               </TabList>
               <TabPanels>
                 <TabPanel px={0}>
@@ -213,7 +240,7 @@ const CoursesList: React.FC = () => {
                             <HStack gap={3}>
                               <Button
                                 as={RouterLink}
-                                to={`/courses/${tier.id}`}
+                                to={`/products/${tier.id}`}
                                 variant="outline"
                                 borderColor={GOLD}
                                 color={GOLD}

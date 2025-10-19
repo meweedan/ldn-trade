@@ -2,7 +2,11 @@ import prisma from '../config/prisma';
 import { Request, Response } from 'express';
 
 export async function listTiers(_req: Request, res: Response) {
-  const tiers = await prisma.courseTier.findMany({ orderBy: { price_stripe: 'asc' } });
+  // Exclude VIP subscription products (isVipProduct=true) from regular courses list
+  const tiers = await prisma.courseTier.findMany({ 
+    where: { isVipProduct: false },
+    orderBy: { price_stripe: 'asc' } 
+  });
   // Enrich with aggregates (confirmed purchases, ratings)
   const enriched = await Promise.all(
     tiers.map(async (tier: any) => {

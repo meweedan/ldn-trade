@@ -3,6 +3,7 @@ import { Box, Heading, Text, VStack, HStack, Badge, Button, Spinner } from '@cha
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getMyPurchases } from '../api/client';
+import ProgressWidget from '../components/ProgressWidget';
 
 const Enrolled: React.FC = () => {
   const { t } = useTranslation() as any;
@@ -50,6 +51,11 @@ const Enrolled: React.FC = () => {
 
   return (
     <Box p={{ base: 4, md: 8 }}>
+      {/* Progress Widget */}
+      <Box mb={6}>
+        <ProgressWidget compact />
+      </Box>
+
       {(vipInfo.active || vipInfo.endIso) && (
         <Box
           p={3}

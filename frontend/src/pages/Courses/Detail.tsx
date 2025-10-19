@@ -215,7 +215,7 @@ const CourseDetail: React.FC = () => {
                     borderWidth="1px"
                     position="relative"
                   >
-                    <AspectRatio ratio={16 / 9} bg="black">
+                    <AspectRatio ratio={16 / 9} bg="bg.surface">
                       <MotionBox
                         key={idx}
                         initial={{ opacity: 0 }}
@@ -303,7 +303,7 @@ const CourseDetail: React.FC = () => {
                             <Box
                               height="60px"
                               width="90px"
-                              bg="black"
+                              bg="bg.surface"
                               color="white"
                               display="flex"
                               alignItems="center"
@@ -609,7 +609,7 @@ const CourseDetail: React.FC = () => {
             </Box>
 
             {/* ===== Materials (gated) ===== */}
-            <Box>
+            {/* <Box>
               <Heading size="md" mt={2} mb={3}>
                 {t("materials.title", { defaultValue: "Course materials" })}
               </Heading>
@@ -640,7 +640,7 @@ const CourseDetail: React.FC = () => {
                   </Text>
                 )}
               </RequireEnrollment>
-            </Box>
+            </Box> */}
 
             {/* ===== Reviews ===== */}
             <Box>
@@ -691,7 +691,7 @@ const CourseDetail: React.FC = () => {
                         borderColor="border.default"
                         borderRadius="md"
                         scrollSnapAlign="start"
-                        bg="transparent"
+                        bg="bg.surface"
                       >
                         <HStack justify="space-between" align="start">
                           <VStack align="start" gap={1}>

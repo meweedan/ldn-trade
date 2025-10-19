@@ -1,3 +1,4 @@
+// Users list for admin dashboard
 import { listAdminsForAssign } from './../controllers/communications.controller';
 import { Router } from 'express';
 import { authenticate, authorize } from '../middleware/auth';
@@ -18,6 +19,7 @@ import {
   updatePromoCode,
   deletePromoCode,
   uploadMedia,
+  listUsers,
 } from '../controllers/admin.controller';
 
 import {
@@ -36,6 +38,9 @@ const router = Router();
 
 // All admin routes require admin role
 router.use(authenticate, authorize('admin'));
+
+// Users list for admin dashboard
+router.get('/users', listUsers);
 
 // Verify accounts
 router.post('/users/:id/verify', verifyUser);

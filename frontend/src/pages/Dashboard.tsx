@@ -11,6 +11,11 @@ import {
   Badge,
   Image,
   ButtonProps,
+  Tabs,
+  TabList,
+  TabPanels,
+  Tab,
+  TabPanel,
   Spinner,
   SimpleGrid,
   Progress,
@@ -25,6 +30,9 @@ import CommunicationsAdminPanel from "../components/admin/CommunicationsAdminPan
 import JobsAdminPanel from "../components/admin/JobsAdminPanel";
 import ApplicationsAdminPanel from "../components/admin/ApplicationsAdminPanel";
 import api, { getMyPurchases } from "../api/client";
+import ProgressWidget from "../components/ProgressWidget";
+import StudentProgressAnalytics from "../components/admin/StudentProgressAnalytics";
+import BadgeLeaderboard from "../components/admin/BadgeLeaderboard";
 
 // Charts
 import {
@@ -117,7 +125,7 @@ const Dashboard: React.FC = () => {
   const { user } = useAuth() as any;
 
   const [activeTab, setActiveTab] = React.useState<
-    "overview" | "courses" | "account" | "purchases" | "settings" | "admin"
+    "overview" | "courses" | "account" | "purchases" | "settings" | "admin" | "progress"
   >("overview");
   const [loading, setLoading] = React.useState(false);
   const [purchases, setPurchases] = React.useState<Purchase[]>([]);
@@ -131,7 +139,7 @@ const Dashboard: React.FC = () => {
   const tgLink = React.useMemo(() => (tgHandle ? `https://t.me/${tgHandle}` : "https://t.me/"), [tgHandle]);
 
   const [adminSubTab, setAdminSubTab] = React.useState<
-    "analytics" | "verifications" | "content" | "communications" | "promos" | "jobs" | "applications"
+    "analytics" | "verifications" | "content" | "communications" | "promos" | "jobs" | "applications" | "progress"
   >("analytics");
 
 
@@ -251,18 +259,24 @@ const Dashboard: React.FC = () => {
       setLoading(true);
       setAdmLoading(true);
       try {
-        // Load purchases and courses in parallel
-        const [mine, coursesResp] = await Promise.allSettled([
+        // Load purchases, courses, and subscriptions in parallel
+        const [mine, coursesResp, subsResp] = await Promise.allSettled([
           getMyPurchases({ ttlMs: 10 * 60 * 1000 }),
           api.get("/courses"),
+          api.get("/subscriptions"),
         ]);
 
         const myPurchases: Purchase[] =
           mine.status === "fulfilled" && Array.isArray(mine.value) ? mine.value : [];
-        const tiersFromApi: Tier[] =
+        const coursesFromApi: Tier[] =
           coursesResp.status === "fulfilled" && Array.isArray(coursesResp.value.data)
             ? coursesResp.value.data
             : [];
+        const subsFromApi: Tier[] =
+          subsResp.status === "fulfilled" && Array.isArray(subsResp.value.data)
+            ? subsResp.value.data
+            : [];
+        const tiersFromApi = [...coursesFromApi, ...subsFromApi];
 
         if (!isMounted) return;
         setPurchases(myPurchases);
@@ -521,6 +535,9 @@ const Dashboard: React.FC = () => {
           {/* --------- USER OVERVIEW --------- */}
           {activeTab === "overview" && (
             <VStack align="stretch" gap={4}>
+              {/* Progress Widget */}
+              <ProgressWidget />
+
               <GlassCard>
                 <Heading size="md" mb={2}>
                   {t("header.hi", { name: user?.name || user?.email || "Trader" })}
@@ -633,6 +650,16 @@ const Dashboard: React.FC = () => {
                   onClick={() => setAdminSubTab("applications")}
                 >
                   {t("admin.applications")}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="solid"
+                  bg={adminSubTab === "progress" ? brand : brand}
+                  color="white"
+                  _hover={{ bg: brand, opacity: 0.9 }}
+                  onClick={() => setAdminSubTab("progress")}
+                >
+                  {t("admin.progress")}
                 </Button>
               </HStack>
 
@@ -898,6 +925,36 @@ const Dashboard: React.FC = () => {
               {adminSubTab === "applications" && (
                 <GlassCard>
                   <ApplicationsAdminPanel />
+                </GlassCard>
+              )}
+
+              {/* --- Progress tab: now using your component --- */}
+              {adminSubTab === "progress" && (
+                <GlassCard>
+                   <Box bg="transparent" py={8}>
+                        <Container maxW="container.xl">
+                          <VStack align="stretch" spacing={6}>
+                            <Heading size="xl">Student Progress & Analytics</Heading>
+                            
+                            <Tabs colorScheme="blue" variant="enclosed">
+                              <TabList>
+                                <Tab>📊 Student Progress</Tab>
+                                <Tab>🏆 Badge Statistics</Tab>
+                              </TabList>
+                              
+                              <TabPanels>
+                                <TabPanel px={0}>
+                                  <StudentProgressAnalytics />
+                                </TabPanel>
+                                
+                                <TabPanel px={0}>
+                                  <BadgeLeaderboard />
+                                </TabPanel>
+                              </TabPanels>
+                            </Tabs>
+                          </VStack>
+                        </Container>
+                      </Box>
                 </GlassCard>
               )}
 
