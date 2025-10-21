@@ -18,6 +18,7 @@ import careersRoutes from './careers.routes';
 import promosRoutes from './promos.routes';
 import progressRoutes from './progress.routes';
 import badgesRoutes from './badges.routes';
+import spinRoutes from './spin.routes';
 
 const router = Router();
 
@@ -41,5 +42,6 @@ router.use('/communications', communicationsRoutes);
 router.use('/promos', promosRoutes);
 router.use('/progress', progressRoutes);
 router.use('/badges', badgesRoutes);
+router.use('/spin', spinRoutes);
 
 export default router;

@@ -34,15 +34,16 @@ app.use(
   })
 );
 
-if (process.env.NODE_ENV !== "test" && process.env.DISABLE_RATE_LIMIT !== "1") {
-  const limiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 300 });
-  app.use((req, res, next) => {
-    // Skip limiting for monitoring/analytics and preflight
-    if (req.method === "OPTIONS") return next();
-    if (req.path === "/monitoring" || req.path === "/analytics/track") return next();
-    return limiter(req, res, next);
-  });
-}
+// Rate limiting disabled for development
+// if (process.env.NODE_ENV !== "test" && process.env.DISABLE_RATE_LIMIT !== "1") {
+//   const limiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 300 });
+//   app.use((req, res, next) => {
+//     // Skip limiting for monitoring/analytics, spin wheel, and preflight
+//     if (req.method === "OPTIONS") return next();
+//     if (req.path === "/monitoring" || req.path === "/analytics/track" || req.path === "/spin") return next();
+//     return limiter(req, res, next);
+//   });
+// }
 
 /* ---------------- CORS (permissive to unblock) ---------------- */
 // Reflect any Origin and allow credentials; tighten later if needed

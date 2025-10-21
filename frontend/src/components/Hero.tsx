@@ -10,6 +10,7 @@ import { useThemeMode } from "../themeProvider";
 import { useCohortDeadline } from "../hooks/useCohortDeadline";
 import api from "../api/client";
 import DisplacementSphere from "./DisplacementSphere";
+import SpinningWheel from "./SpinningWheel";
 import ProgressWidget from "./ProgressWidget";
 
 const GOLD = "#b7a27d";
@@ -241,6 +242,7 @@ export default function Hero() {
   const [enrolledCount, setEnrolledCount] = React.useState(0);
   const [currentPage, setCurrentPage] = React.useState(0);
   const [cornerWidgetVisible, setCornerWidgetVisible] = React.useState(true);
+  const [spinOpen, setSpinOpen] = React.useState(false);
 
   // Determine if user is enrolled or VIP
   React.useEffect(() => {
@@ -377,29 +379,31 @@ export default function Hero() {
   const isLoggedIn = !!me;
 
   return (
-    <Box
-      as="section"
-      position="relative"
-      minH={{ base: "96vh", md: "94vh" }}
-      overflow="hidden"
-      dir={dir}
-    >
-      <InfinityLayer count={12} zIndex={3} />
-      {/* Displacement Sphere Background - always visible, morphs based on enrollment */}
+    <>
       <Box
-        position="absolute"
-        top="50%"
-        left="50%"
-        transform="translate(-50%, -50%)"
-        zIndex={3}
-        pointerEvents="none"
+        as="section"
+        position="relative"
+        minH={{ base: "96vh", md: "94vh" }}
         overflow="hidden"
-        w={{ base: "min(110vw, 900px)", md: "min(88vw, 1200px)", lg: "min(70vw, 1400px)" }}
-        h={{ base: "58vh", md: "62vh", lg: "68vh" }}
+        dir={dir}
       >
-        <DisplacementSphere />
-      </Box>
-
+      <InfinityLayer count={12} zIndex={3} />
+      {/* Displacement Sphere Background - hide when spin wheel is open */}
+      {!spinOpen && (
+        <Box
+          position="absolute"
+          top="50%"
+          left="50%"
+          transform="translate(-50%, -50%)"
+          zIndex={3}
+          pointerEvents="none"
+          overflow="hidden"
+          w={{ base: "min(110vw, 900px)", md: "min(88vw, 1200px)", lg: "min(70vw, 1400px)" }}
+          h={{ base: "58vh", md: "62vh", lg: "68vh" }}
+        >
+          <DisplacementSphere />
+        </Box>
+      )}
       {/* Content */}
       <Container
         maxW={{ base: "92%", md: "container.2xl" }}
@@ -465,6 +469,17 @@ export default function Hero() {
                 >
                   {t("home.hero.subtitle")}
                 </Text>
+                <HStack mt={3} justify="center">
+                  <Button
+                    size="sm"
+                    bg={GOLD}
+                    color="black"
+                    _hover={{ opacity: 0.9 }}
+                    onClick={() => setSpinOpen(true)}
+                  >
+                    {t("home.spin_and_win", { defaultValue: "Spin & Win" })}
+                  </Button>
+                </HStack>
               </MotionBox>
             </>
           ) : (
@@ -505,267 +520,6 @@ export default function Hero() {
             </MotionBox>
           )}
 
-          {/* Removed mobile countdown from hero - moved to corner widget */}
-          {false && !isLoggedIn && (
-            <Box display={{ base: "block", md: "none" }} w="100%">
-              {!expired && !isMember && (
-                <MotionBox
-                  role="status"
-                  aria-live="polite"
-                  variants={pulse}
-                  initial="initial"
-                  animate="animate"
-                  alignSelf="center"
-                  bg={mode === "dark" ? "black" : "white"}
-                  color={mode === "dark" ? "white" : "black"}
-                  border="1px solid"
-                  borderColor={GOLD}
-                  boxShadow={shadowLg}
-                  borderRadius="24px"
-                  px={3}
-                  py={2}
-                  backdropFilter="blur(8px)"
-                  mx="auto"
-                  mb={1}
-                  maxW="min(100%, 560px)"
-                >
-                  <HStack gap={2} flexWrap="wrap" justify="center">
-                    <Text fontSize="sm" opacity={0.9} fontWeight="semibold">
-                      {t("home.urgency.kicker", "Cohort enrollment closes in")}
-                    </Text>
-                    <MotionHStack
-                      gap={1.5}
-                      initial={{ opacity: 0, y: -4 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.1, duration: 0.35, ease: "easeOut" }}
-                    >
-                      {parts.map((p, i) => {
-                        const isSec = p.label === i18n.t("time.seconds_short", "s");
-                        return (
-                          <Box
-                            key={`${p.label}-${i}`}
-                            px={2}
-                            py={1}
-                            bgGradient={`linear(to-b, ${GOLD}, ${
-                              mode === "dark" ? "#9b8a6b" : "#cbb89a"
-                            })`}
-                            color={isSec && flash ? "red.400" : "white"}
-                            fontWeight="bold"
-                            lineHeight="1"
-                            minW="ch"
-                            textAlign="center"
-                            boxShadow={
-                              isSec
-                                ? "0 6px 18px rgba(255,0,0,0.35)"
-                                : "0 6px 18px rgba(183,162,125,0.35)"
-                            }
-                          >
-                            <Text as="span" fontFamily="mono" fontSize="sm">
-                              {p.value}
-                            </Text>
-                            <Text as="span" ms={1} fontSize="xs" opacity={0.9}>
-                              {p.label}
-                            </Text>
-                          </Box>
-                        );
-                      })}
-                    </MotionHStack>
-                  </HStack>
-                </MotionBox>
-              )}
-
-              {/* Mobile promo — guests only */}
-              {(expired || promo?.code) && (
-                <MotionBox
-                  mt={2}
-                  initial={{ opacity: 0, y: -4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3 }}
-                  bg={mode === "dark" ? "black" : "white"}
-                  color={mode === "dark" ? "white" : "black"}
-                  border="1px solid"
-                  borderColor={GOLD}
-                  boxShadow={shadowLg}
-                  borderRadius="20px"
-                  px={3}
-                  py={2}
-                  backdropFilter="blur(8px)"
-                  mx="auto"
-                  maxW="min(100%, 560px)"
-                >
-                  <HStack gap={2} justify="center" flexWrap="wrap">
-                    <Text fontSize="sm" opacity={0.95}>
-                      {expired
-                        ? t("home.promo.kicker_late", "Late access promo:")
-                        : t("home.promo.kicker", "Limited-time cohort promo:")}
-                    </Text>
-                    <Box
-                      px={2}
-                      py={1}
-                      borderRadius="md"
-                      bgGradient={`linear(to-b, ${GOLD}, ${
-                        mode === "dark" ? "#9b8a6b" : "#cbb89a"
-                      })`}
-                      color="white"
-                      fontWeight="bold"
-                    >
-                      {codeToShow}
-                    </Box>
-                  </HStack>
-                  <Text mt={1} fontSize="sm" opacity={0.85} textAlign="center">
-                    {expired
-                      ? t(
-                          "home.promo.details_late",
-                          "Missed the cohort? Use this late access code."
-                        )
-                      : t(
-                          "home.promo.details",
-                          "Save up to 10% — apply this code before the timer ends."
-                        )}
-                  </Text>
-                </MotionBox>
-              )}
-            </Box>
-          )}
-
-          {/* Desktop timer/promo — moved to corner widget */}
-          {false && !isLoggedIn && (
-            <Box display={{ base: "none", md: "block" }} w="100%">
-              <VStack gap={3} align="center">
-                {!expired && !isMember && (
-                  <MotionBox
-                    role="status"
-                    aria-live="polite"
-                    variants={pulse}
-                    initial="initial"
-                    animate="animate"
-                    bg={mode === "dark" ? "black" : "white"}
-                    color={mode === "dark" ? "white" : "black"}
-                    border="1px solid"
-                    borderColor={GOLD}
-                    boxShadow="0 16px 40px rgba(0,0,0,0.18)"
-                    borderRadius="24px"
-                    px={5}
-                    py={4}
-                    backdropFilter="blur(10px) saturate(1.1)"
-                    maxW="min(100%, 720px)"
-                    mx="auto"
-                  >
-                    <VStack gap={3} align="center">
-                      <Text fontSize="lg" fontWeight="bold" opacity={0.95}>
-                        {t("home.urgency.kicker", "Cohort enrollment closes in")}
-                      </Text>
-                      <MotionHStack
-                        gap={2}
-                        initial={{ opacity: 0, y: -4 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.1, duration: 0.35, ease: "easeOut" }}
-                        flexWrap="wrap"
-                        justify="center"
-                      >
-                        {parts.map((p, i) => {
-                          const isSec = p.label === i18n.t("time.seconds_short", "s");
-                          return (
-                            <Box
-                              key={`${p.label}-${i}`}
-                              px={3}
-                              py={2}
-                              borderRadius="md"
-                              bgGradient={`linear(to-b, ${GOLD}, ${
-                                mode === "dark" ? "#9b8a6b" : "#cbb89a"
-                              })`}
-                              color={isSec && flash ? "red.400" : "white"}
-                              fontWeight="bold"
-                              lineHeight="1"
-                              minW="ch"
-                              textAlign="center"
-                              boxShadow={
-                                isSec
-                                  ? "0 8px 22px rgba(255,0,0,0.35)"
-                                  : "0 8px 22px rgba(183,162,125,0.35)"
-                              }
-                            >
-                              <Text as="span" fontFamily="mono" fontSize="lg">
-                                {p.value}
-                              </Text>
-                              <Text as="span" ms={2} fontSize="xs" opacity={0.9}>
-                                {p.label}
-                              </Text>
-                            </Box>
-                          );
-                        })}
-                      </MotionHStack>
-                    </VStack>
-                  </MotionBox>
-                )}
-
-                {(expired || promo?.code) && (
-                  <MotionBox
-                    w="100%"
-                    mt={2}
-                    initial={{ opacity: 0, y: -4 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3 }}
-                    bg={mode === "dark" ? "black" : "white"}
-                    color={mode === "dark" ? "white" : "black"}
-                    border="1px solid"
-                    borderColor={GOLD}
-                    boxShadow="0 12px 28px rgba(0,0,0,0.18)"
-                    borderRadius="18px"
-                    px={4}
-                    py={3}
-                    backdropFilter="blur(8px)"
-                    maxW="min(100%, 720px)"
-                    mx="auto"
-                  >
-                    <HStack gap={3} justify="center" flexWrap="wrap">
-                      <Text fontWeight="semibold">
-                        {expired
-                          ? t("home.promo.kicker_late", "Late access promo:")
-                          : t("home.promo.kicker", "Limited-time cohort promo:")}
-                      </Text>
-                      <HStack gap={2}>
-                        <Box
-                          px={3}
-                          py={1}
-                          borderRadius="md"
-                          bgGradient={`linear(to-b, ${GOLD}, ${
-                            mode === "dark" ? "#9b8a6b" : "#cbb89a"
-                          })`}
-                          color="white"
-                          fontWeight="bold"
-                        >
-                          {codeToShow}
-                        </Box>
-                        <Button
-                          size="xs"
-                          variant="outline"
-                          borderColor={GOLD}
-                          color={GOLD}
-                          _hover={{ bg: "#b7a27d", color: "white" }}
-                          onClick={() => copy(codeToShow)}
-                        >
-                          {t("home.promo.copy", "Copy")}
-                        </Button>
-                      </HStack>
-                    </HStack>
-                    <Text mt={1} fontSize="sm" opacity={0.85} textAlign="center">
-                      {expired
-                        ? t(
-                            "home.promo.details_late",
-                            "Missed the cohort? Use this late access code."
-                          )
-                        : t(
-                            "home.promo.details",
-                            "Save up to 10% — apply this code before the timer ends."
-                          )}
-                    </Text>
-                  </MotionBox>
-                )}
-              </VStack>
-            </Box>
-          )}
-
           {/* VIP Telegram status for logged-in users */}
           {isLoggedIn && vipActive && (
             <Box
@@ -794,192 +548,205 @@ export default function Hero() {
                     </Button>
                   )}
                 </HStack>
-                {vipEnd && (() => {
-                  const end = new Date(vipEnd).getTime();
-                  const now = Date.now();
-                  const leftMs = Math.max(0, end - now);
-                  const dayMs = 24 * 60 * 60 * 1000;
-                  const daysLeft = Math.max(0, Math.ceil(leftMs / dayMs));
-                  const totalDays = 30; // assume 30-day subscription
-                  const pct = Math.max(0, Math.min(100, Math.round((daysLeft / totalDays) * 100)));
-                  const color = daysLeft <= 2 ? "red" : daysLeft <= 10 ? "orange" : "blue";
-                  return (
-                    <VStack align="stretch" gap={2}>
-                      <HStack justify="space-between">
-                        <Text fontSize="sm" opacity={0.85}>
-                          {t("home.hero.days_remaining", { defaultValue: "Days remaining" })}
-                        </Text>
-                        <Text fontSize="sm" fontWeight="semibold">
-                          {daysLeft} {t("home.hero.days", { defaultValue: "days" })}
-                        </Text>
-                      </HStack>
-                      <Progress value={pct} colorScheme={color} borderRadius="md" size="sm" />
-                    </VStack>
-                  );
-                })()}
+                {vipEnd &&
+                  (() => {
+                    const end = new Date(vipEnd).getTime();
+                    const now = Date.now();
+                    const leftMs = Math.max(0, end - now);
+                    const dayMs = 24 * 60 * 60 * 1000;
+                    const daysLeft = Math.max(0, Math.ceil(leftMs / dayMs));
+                    const totalDays = 30; // assume 30-day subscription
+                    const pct = Math.max(
+                      0,
+                      Math.min(100, Math.round((daysLeft / totalDays) * 100))
+                    );
+                    const color = daysLeft <= 2 ? "red" : daysLeft <= 10 ? "orange" : "blue";
+                    return (
+                      <VStack align="stretch" gap={2}>
+                        <HStack justify="space-between">
+                          <Text fontSize="sm" opacity={0.85}>
+                            {t("home.hero.days_remaining", { defaultValue: "Days remaining" })}
+                          </Text>
+                          <Text fontSize="sm" fontWeight="semibold">
+                            {daysLeft} {t("home.hero.days", { defaultValue: "days" })}
+                          </Text>
+                        </HStack>
+                        <Progress value={pct} colorScheme={color} borderRadius="md" size="sm" />
+                      </VStack>
+                    );
+                  })()}
               </VStack>
             </Box>
           )}
 
           {/* Enrolled courses summary */}
-          {isLoggedIn && enrolledCount > 0 && (() => {
-            const count = recentCourses.length;
-            // Determine columns: 1 course = 1 col, 2-3 courses = up to 3 cols, 4+ courses = 3 cols
-            const columns = count === 1 ? 1 : count <= 3 ? count : 3;
-            
-            // Mobile pagination: 3 courses per page
-            const coursesPerPage = 3;
-            const totalPages = Math.ceil(count / coursesPerPage);
-            const startIdx = currentPage * coursesPerPage;
-            const endIdx = startIdx + coursesPerPage;
-            const currentCourses = recentCourses.slice(startIdx, endIdx);
-            
-            return (
-              <Box
-                w="100%"
-                bg="bg.surface"
-                border="1px solid"
-                borderColor={GOLD}
-                borderRadius="lg"
-                p={{ base: 3, md: 4 }}
-                maxW="900px"
-              >
-                <Text fontWeight="bold" mb={2} color={GOLD}>
-                  {t("home.hero.enrolled_courses", { defaultValue: "Your Courses" })}
-                </Text>
-                <Text fontSize="sm" opacity={0.85} mb={3}>
-                  {enrolledCount} {t("home.hero.courses_enrolled", { defaultValue: "courses enrolled" })}
-                </Text>
-                
-                {/* Desktop: Show all in grid */}
-                <Box display={{ base: "none", md: "block" }}>
-                  <SimpleGrid columns={columns} spacing={3}>
-                    {recentCourses.map((c, i) => {
-                      const tier = c.tier;
-                      const productLink = tier?.telegramUrl || tier?.discordInviteUrl || `/learn/${c.id}`;
-                      return (
-                        <Box
-                          key={i}
-                          p={3}
-                          border="1px solid"
-                          borderColor={GOLD}
-                          borderRadius="md"
-                          bg="bg.subtle"
-                          display="flex"
-                          flexDirection="column"
-                          gap={2}
-                        >
-                          <Text fontWeight="semibold" fontSize="sm">{c.name}</Text>
-                          <Button
-                            size="sm"
-                            bg={GOLD}
-                            color="black"
-                            _hover={{ filter: "brightness(0.95)" }}
-                            onClick={() => {
-                              if (tier?.telegramUrl || tier?.discordInviteUrl) {
-                                window.open(productLink, "_blank", "noreferrer");
-                              } else {
-                                navigate(productLink);
-                              }
-                            }}
-                          >
-                            {t("home.courses.access", { defaultValue: "Access" })}
-                          </Button>
-                        </Box>
-                      );
-                    })}
-                  </SimpleGrid>
-                </Box>
-                
-                {/* Mobile: Paginated view */}
-                <Box display={{ base: "block", md: "none" }}>
-                  <VStack align="stretch" spacing={3}>
-                    {currentCourses.map((c, i) => {
-                      const tier = c.tier;
-                      const productLink = tier?.telegramUrl || tier?.discordInviteUrl || `/learn/${c.id}`;
-                      return (
-                        <Box
-                          key={startIdx + i}
-                          p={3}
-                          border="1px solid"
-                          borderColor={GOLD}
-                          borderRadius="md"
-                          bg="bg.subtle"
-                          display="flex"
-                          flexDirection="column"
-                          gap={2}
-                        >
-                          <Text fontWeight="semibold" fontSize="sm">{c.name}</Text>
-                          <Button
-                            size="sm"
-                            bg={GOLD}
-                            color="black"
-                            _hover={{ filter: "brightness(0.95)" }}
-                            onClick={() => {
-                              if (tier?.telegramUrl || tier?.discordInviteUrl) {
-                                window.open(productLink, "_blank", "noreferrer");
-                              } else {
-                                navigate(productLink);
-                              }
-                            }}
-                          >
-                            {t("home.courses.access", { defaultValue: "Access" })}
-                          </Button>
-                        </Box>
-                      );
-                    })}
-                  </VStack>
-                  
-                  {/* Pagination controls for mobile */}
-                  {totalPages > 1 && (
-                    <Flex align="center" justify="center" gap={3} mt={4}>
-                      <IconButton
-                        aria-label="Previous page"
-                        icon={<Text fontSize="lg">{dir === "rtl" ? "→" : "←"}</Text>}
-                        size="sm"
-                        bg={GOLD}
-                        color="black"
-                        isDisabled={currentPage === 0}
-                        onClick={() => setCurrentPage(p => Math.max(0, p - 1))}
-                        _hover={{ opacity: 0.8 }}
-                        _disabled={{ opacity: 0.3, cursor: "not-allowed" }}
-                      />
-                      
-                      {/* Page dots */}
-                      <HStack spacing={2}>
-                        {Array.from({ length: totalPages }).map((_, idx) => (
+          {isLoggedIn &&
+            enrolledCount > 0 &&
+            (() => {
+              const count = recentCourses.length;
+              // Determine columns: 1 course = 1 col, 2-3 courses = up to 3 cols, 4+ courses = 3 cols
+              const columns = count === 1 ? 1 : count <= 3 ? count : 3;
+
+              // Mobile pagination: 3 courses per page
+              const coursesPerPage = 3;
+              const totalPages = Math.ceil(count / coursesPerPage);
+              const startIdx = currentPage * coursesPerPage;
+              const endIdx = startIdx + coursesPerPage;
+              const currentCourses = recentCourses.slice(startIdx, endIdx);
+
+              return (
+                <Box
+                  w="100%"
+                  bg="bg.surface"
+                  border="1px solid"
+                  borderColor={GOLD}
+                  borderRadius="lg"
+                  p={{ base: 3, md: 4 }}
+                  maxW="900px"
+                >
+                  <Text fontWeight="bold" mb={2} color={GOLD}>
+                    {t("home.hero.enrolled_courses", { defaultValue: "Your Courses" })}
+                  </Text>
+                  <Text fontSize="sm" opacity={0.85} mb={3}>
+                    {enrolledCount}{" "}
+                    {t("home.hero.courses_enrolled", { defaultValue: "courses enrolled" })}
+                  </Text>
+
+                  {/* Desktop: Show all in grid */}
+                  <Box display={{ base: "none", md: "block" }}>
+                    <SimpleGrid columns={columns} spacing={3}>
+                      {recentCourses.map((c, i) => {
+                        const tier = c.tier;
+                        const productLink =
+                          tier?.telegramUrl || tier?.discordInviteUrl || `/learn/${c.id}`;
+                        return (
                           <Box
-                            key={idx}
-                            w={2}
-                            h={2}
-                            borderRadius="full"
-                            bg={idx === currentPage ? GOLD : "gray.500"}
-                            opacity={idx === currentPage ? 1 : 0.4}
-                            cursor="pointer"
-                            onClick={() => setCurrentPage(idx)}
-                            transition="all 0.2s"
-                            _hover={{ opacity: 1 }}
-                          />
-                        ))}
-                      </HStack>
-                      
-                      <IconButton
-                        aria-label="Next page"
-                        icon={<Text fontSize="lg">{dir === "rtl" ? "←" : "→"}</Text>}
-                        size="sm"
-                        bg={GOLD}
-                        color="black"
-                        isDisabled={currentPage === totalPages - 1}
-                        onClick={() => setCurrentPage(p => Math.min(totalPages - 1, p + 1))}
-                        _hover={{ opacity: 0.8 }}
-                        _disabled={{ opacity: 0.3, cursor: "not-allowed" }}
-                      />
-                    </Flex>
-                  )}
+                            key={i}
+                            p={3}
+                            border="1px solid"
+                            borderColor={GOLD}
+                            borderRadius="md"
+                            bg="bg.subtle"
+                            display="flex"
+                            flexDirection="column"
+                            gap={2}
+                          >
+                            <Text fontWeight="semibold" fontSize="sm">
+                              {c.name}
+                            </Text>
+                            <Button
+                              size="sm"
+                              bg={GOLD}
+                              color="black"
+                              _hover={{ filter: "brightness(0.95)" }}
+                              onClick={() => {
+                                if (tier?.telegramUrl || tier?.discordInviteUrl) {
+                                  window.open(productLink, "_blank", "noreferrer");
+                                } else {
+                                  navigate(productLink);
+                                }
+                              }}
+                            >
+                              {t("home.courses.access", { defaultValue: "Access" })}
+                            </Button>
+                          </Box>
+                        );
+                      })}
+                    </SimpleGrid>
+                  </Box>
+
+                  {/* Mobile: Paginated view */}
+                  <Box display={{ base: "block", md: "none" }}>
+                    <VStack align="stretch" spacing={3}>
+                      {currentCourses.map((c, i) => {
+                        const tier = c.tier;
+                        const productLink =
+                          tier?.telegramUrl || tier?.discordInviteUrl || `/learn/${c.id}`;
+                        return (
+                          <Box
+                            key={startIdx + i}
+                            p={3}
+                            border="1px solid"
+                            borderColor={GOLD}
+                            borderRadius="md"
+                            bg="bg.subtle"
+                            display="flex"
+                            flexDirection="column"
+                            gap={2}
+                          >
+                            <Text fontWeight="semibold" fontSize="sm">
+                              {c.name}
+                            </Text>
+                            <Button
+                              size="sm"
+                              bg={GOLD}
+                              color="black"
+                              _hover={{ filter: "brightness(0.95)" }}
+                              onClick={() => {
+                                if (tier?.telegramUrl || tier?.discordInviteUrl) {
+                                  window.open(productLink, "_blank", "noreferrer");
+                                } else {
+                                  navigate(productLink);
+                                }
+                              }}
+                            >
+                              {t("home.courses.access", { defaultValue: "Access" })}
+                            </Button>
+                          </Box>
+                        );
+                      })}
+                    </VStack>
+
+                    {/* Pagination controls for mobile */}
+                    {totalPages > 1 && (
+                      <Flex align="center" justify="center" gap={3} mt={4}>
+                        <IconButton
+                          aria-label="Previous page"
+                          icon={<Text fontSize="lg">{dir === "rtl" ? "→" : "←"}</Text>}
+                          size="sm"
+                          bg={GOLD}
+                          color="black"
+                          isDisabled={currentPage === 0}
+                          onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
+                          _hover={{ opacity: 0.8 }}
+                          _disabled={{ opacity: 0.3, cursor: "not-allowed" }}
+                        />
+
+                        {/* Page dots */}
+                        <HStack spacing={2}>
+                          {Array.from({ length: totalPages }).map((_, idx) => (
+                            <Box
+                              key={idx}
+                              w={2}
+                              h={2}
+                              borderRadius="full"
+                              bg={idx === currentPage ? GOLD : "gray.500"}
+                              opacity={idx === currentPage ? 1 : 0.4}
+                              cursor="pointer"
+                              onClick={() => setCurrentPage(idx)}
+                              transition="all 0.2s"
+                              _hover={{ opacity: 1 }}
+                            />
+                          ))}
+                        </HStack>
+
+                        <IconButton
+                          aria-label="Next page"
+                          icon={<Text fontSize="lg">{dir === "rtl" ? "←" : "→"}</Text>}
+                          size="sm"
+                          bg={GOLD}
+                          color="black"
+                          isDisabled={currentPage === totalPages - 1}
+                          onClick={() => setCurrentPage((p) => Math.min(totalPages - 1, p + 1))}
+                          _hover={{ opacity: 0.8 }}
+                          _disabled={{ opacity: 0.3, cursor: "not-allowed" }}
+                        />
+                      </Flex>
+                    )}
+                  </Box>
                 </Box>
-              </Box>
-            );
-          })()}
+              );
+            })()}
 
           {/* CTAs — hide when logged in */}
           {!isLoggedIn && (
@@ -1012,125 +779,10 @@ export default function Hero() {
           )}
         </VStack>
       </Container>
+      </Box>
 
-      {/* Lower-left corner widget for countdown/promo - closeable */}
-      {!isLoggedIn && !isMember && (
-        <MotionBox
-          position="fixed"
-          bottom={4}
-          left={4}
-          zIndex={1000}
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: cornerWidgetVisible ? 1 : 0, x: cornerWidgetVisible ? 0 : -20 }}
-          transition={{ duration: 0.5, ease: "easeOut" }}
-          display={cornerWidgetVisible ? "block" : "none"}
-        >
-          <Box
-            bg={mode === "dark" ? "rgba(0,0,0,0.9)" : "rgba(255,255,255,0.95)"}
-            backdropFilter="blur(16px) saturate(1.2)"
-            border="1px solid"
-            borderColor={GOLD}
-            borderRadius="xl"
-            p={4}
-            boxShadow="0 20px 50px rgba(0,0,0,0.4)"
-            maxW="320px"
-            position="relative"
-          >
-            {/* Close button */}
-            <IconButton
-              aria-label="Close"
-              icon={<Text fontSize="lg">×</Text>}
-              size="xs"
-              position="absolute"
-              top={2}
-              right={2}
-              bg="transparent"
-              _hover={{ bg: "rgba(183,162,125,0.2)" }}
-              onClick={() => setCornerWidgetVisible(false)}
-            />
-
-            <VStack align="stretch" spacing={3}>
-              {/* Countdown */}
-              {!expired && (
-                <>
-                  <Text fontSize="sm" fontWeight="bold" textAlign="center">
-                    {t("home.urgency.kicker", "Cohort enrollment closes in")}
-                  </Text>
-                  <HStack spacing={2} justify="center" flexWrap="wrap">
-                    {parts.map((p, i) => {
-                      const isSec = p.label === i18n.t("time.seconds_short", "s");
-                      return (
-                        <Box
-                          key={`${p.label}-${i}`}
-                          px={2}
-                          py={1}
-                          borderRadius="md"
-                          bgGradient={`linear(to-b, ${GOLD}, ${mode === "dark" ? "#9b8a6b" : "#cbb89a"})`}
-                          color={isSec && flash ? "red.400" : "white"}
-                          fontWeight="bold"
-                          textAlign="center"
-                          boxShadow={isSec ? "0 4px 12px rgba(255,0,0,0.3)" : "0 4px 12px rgba(183,162,125,0.3)"}
-                        >
-                          <Text as="span" fontFamily="mono" fontSize="sm">
-                            {p.value}
-                          </Text>
-                          <Text as="span" ms={1} fontSize="xs" opacity={0.9}>
-                            {p.label}
-                          </Text>
-                        </Box>
-                      );
-                    })}
-                  </HStack>
-                </>
-              )}
-
-              {/* Promo code */}
-              {(expired || promo?.code) && (
-                <>
-                  <Text fontSize="xs" fontWeight="semibold" textAlign="center" opacity={0.9}>
-                    {expired
-                      ? t("home.promo.kicker_late", "Late access promo:")
-                      : t("home.promo.kicker", "Limited-time course promo:")}
-                  </Text>
-                  <HStack justify="center" spacing={2}>
-                    <Text fontSize="xs" opacity={0.8}>
-                      {t("home.promo.copy", "Copy")}:
-                    </Text>
-                    <Box
-                      px={2}
-                      py={1}
-                      borderRadius="md"
-                      bgGradient={`linear(to-b, ${GOLD}, ${mode === "dark" ? "#9b8a6b" : "#cbb89a"})`}
-                      color="white"
-                      fontWeight="bold"
-                      fontSize="sm"
-                    >
-                      {codeToShow}
-                    </Box>
-                  </HStack>
-                  <Text fontSize="xs" opacity={0.75} textAlign="center">
-                    {expired
-                      ? t("home.promo.details_late", "Missed the cohort? Use this late access code.")
-                      : t("home.promo.details", "Save up to 10% — apply this code before the timer ends.")}
-                  </Text>
-                </>
-              )}
-
-              {/* CTA */}
-              <Button
-                size="sm"
-                bg={GOLD}
-                color="black"
-                _hover={{ opacity: 0.9 }}
-                onClick={() => navigate(expired ? "/contact" : "/products")}
-                borderRadius="lg"
-              >
-                {expired ? t("home.urgency.talk", "Talk to an Advisor") : t("home.urgency.enroll", "Enroll Now")}
-              </Button>
-            </VStack>
-          </Box>
-        </MotionBox>
-      )}
-    </Box>
+      {/* Spinning Wheel Modal - render outside hero box to avoid overflow:hidden */}
+      <SpinningWheel isOpen={spinOpen} onClose={() => setSpinOpen(false)} />
+    </>
   );
 }

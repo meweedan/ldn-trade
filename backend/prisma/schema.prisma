@@ -150,6 +150,7 @@ model users {
   studentProgress        StudentProgress[]       @relation("StudentProgressUser")
   userBadges             UserBadge[]             @relation("UserBadges")
   dailyActivities        DailyActivity[]         @relation("UserDailyActivity")
+  prizeWins              PrizeWinner[]           @relation("PrizeWinnerUser")
 
   @@index([email], map: "idx_users_email")
   @@index([role], map: "idx_users_role")
@@ -562,4 +563,50 @@ model DailyActivity {
   @@unique([userId, activityDate], map: "unique_user_date_activity")
   @@index([userId], map: "idx_daily_activity_user")
   @@index([activityDate], map: "idx_daily_activity_date")
+}
+
+/// =====================
+/// Prizes & Draws
+/// =====================
+
+enum Audience {
+  ENROLLED
+  VISITOR
+}
+
+model Prize {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String
+  photoUrl  String?
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+
+  draws PrizeDraw[]
+}
+
+model PrizeDraw {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  prizeId    String   @db.Uuid
+  audience   Audience
+  executedAt DateTime @default(now()) @db.Timestamp(6)
+
+  prize   Prize        @relation(fields: [prizeId], references: [id], onDelete: Cascade)
+  winners PrizeWinner[]
+
+  @@index([prizeId], map: "idx_prizedraw_prize")
+  @@index([audience, executedAt], map: "idx_prizedraw_audience_time")
+}
+
+model PrizeWinner {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  drawId    String   @db.Uuid
+  userId    String?  @db.Uuid
+  position  Int
+  name      String
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+
+  draw PrizeDraw @relation(fields: [drawId], references: [id], onDelete: Cascade)
+  user users?    @relation("PrizeWinnerUser", fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([drawId], map: "idx_prizewinner_draw")
+  @@index([userId], map: "idx_prizewinner_user")
 }

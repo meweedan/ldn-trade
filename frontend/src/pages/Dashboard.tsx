@@ -26,6 +26,7 @@ import { useAuth } from "../auth/AuthContext";
 import ContentAdminPanel from "../components/admin/ContentAdminPanel"; // ← now used
 import VerifAdminPanel from "../components/admin/VerifAdminPanel"; // ← now used
 import PromoAdminPanel from "../components/admin/PromoAdminPanel";
+import PrizesAdminPanel from "../components/admin/PrizesAdminPanel";
 import CommunicationsAdminPanel from "../components/admin/CommunicationsAdminPanel";
 import JobsAdminPanel from "../components/admin/JobsAdminPanel";
 import ApplicationsAdminPanel from "../components/admin/ApplicationsAdminPanel";
@@ -139,7 +140,7 @@ const Dashboard: React.FC = () => {
   const tgLink = React.useMemo(() => (tgHandle ? `https://t.me/${tgHandle}` : "https://t.me/"), [tgHandle]);
 
   const [adminSubTab, setAdminSubTab] = React.useState<
-    "analytics" | "verifications" | "content" | "communications" | "promos" | "jobs" | "applications" | "progress"
+    "analytics" | "verifications" | "content" | "communications" | "promos" | "prizes" | "jobs" | "applications" | "progress"
   >("analytics");
 
 
@@ -624,6 +625,16 @@ const Dashboard: React.FC = () => {
                 <Button
                   size="sm"
                   variant="solid"
+                  bg={adminSubTab === "prizes" ? brand : brand}
+                  color="white"
+                  _hover={{ bg: brand, opacity: 0.9 }}
+                  onClick={() => setAdminSubTab("prizes")}
+                >
+                  {t("admin.prizes") || "Prizes"}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="solid"
                   bg={adminSubTab === "communications" ? brand : brand}
                   color="white"
                   _hover={{ bg: brand, opacity: 0.9 }}
@@ -670,7 +681,7 @@ const Dashboard: React.FC = () => {
                     {t("admin.admin_overview")}
                   </Heading>
 
-                  <SimpleGrid columns={[1, 2, 3, 6]} gap={4}>
+                  <SimpleGrid columns={[1, 2, 3, 3]} gap={4}>
                     <Box p={4} borderRadius="lg" bg={kpiBg}>
                       <Heading size="xs" mb={1}>
                         {t("dashboard.total_revenue")}
@@ -904,6 +915,13 @@ const Dashboard: React.FC = () => {
               {adminSubTab === "promos" && (
                 <GlassCard>
                   <PromoAdminPanel />
+                </GlassCard>
+              )}
+
+              {/* --- Prizes tab --- */}
+              {adminSubTab === "prizes" && (
+                <GlassCard>
+                  <PrizesAdminPanel />
                 </GlassCard>
               )}
 

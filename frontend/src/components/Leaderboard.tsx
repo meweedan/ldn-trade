@@ -11,7 +11,6 @@ import {
   Badge,
   Icon,
   Flex,
-  useColorModeValue,
   Table,
   Thead,
   Tbody,
@@ -23,6 +22,7 @@ import {
 import { Trophy, Medal, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import api from '../api/client';
+import { useThemeMode } from '../themeProvider';
 
 const GOLD = '#b7a27d';
 const ITEMS_PER_PAGE = 10;
@@ -39,8 +39,9 @@ export const Leaderboard: React.FC = () => {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const { mode } = useThemeMode();
 
-  const hoverBg = useColorModeValue('gray.50', 'gray.700');
+  const hoverBg = mode === 'dark' ? 'black' : 'white';
 
   useEffect(() => {
     fetchLeaderboard();

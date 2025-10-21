@@ -22,6 +22,9 @@ import {
   listUsers,
 } from '../controllers/admin.controller';
 
+import { listPrizes, createPrize, createPrizeDraw } from '../controllers/prizes.controller';
+import { createFakeUsers, seedMixedReviews } from '../controllers/fakes.controller';
+
 import {
   listCommunications,
   getCommunicationAdmin,
@@ -63,6 +66,15 @@ router.get('/promos', listPromoCodes);
 router.post('/promos', createPromoCode);
 router.patch('/promos/:id', updatePromoCode);
 router.delete('/promos/:id', deletePromoCode);
+
+// Prizes & draws
+router.get('/prizes', listPrizes);
+router.post('/prizes', createPrize);
+router.post('/prizes/:id/draw', createPrizeDraw);
+
+// Fake data helpers
+router.post('/fakes/users', createFakeUsers);
+router.post('/fakes/reviews', seedMixedReviews);
 
 // Admins list (for assignment dropdowns)
 router.get('/admins', listAdminsForAssign);
